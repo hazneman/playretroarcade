@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Play Retro Arcade – Snake</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Play a fast, retro Snake game right in your browser. Mobile-friendly, no download." />
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <style>
+    :root { --bg:#0d0f14; --fg:#e6e6e6; --accent:#6ee7ff; --grid:#1b2230; --good:#6aff8a; --bad:#ff6e6e; }
+    *{box-sizing:border-box} html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{max-width:720px;margin:0 auto;padding:16px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:8px 0 12px}
+    h1{font-size:1.1rem;margin:0;color:var(--fg);opacity:.9}
+    .stats{display:flex;gap:12px;align-items:center}
+    .pill{padding:6px 10px;border:1px solid #2a3346;border-radius:999px;background:#111725;color:var(--fg)}
+    .btn{cursor:pointer;border:1px solid #2a3346;background:#111725;color:var(--fg);padding:8px 12px;border-radius:10px}
+    .btn:hover{border-color:#3b4763}
+    .board{position:relative;background:#0f1420;border:1px solid #283144;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.35);aspect-ratio:1/1}
+    canvas{width:100%;height:100%;display:block;border-radius:16px}
+    .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+    .overlay .card{pointer-events:auto;background:rgba(8,12,20,.88);border:1px solid #273149;border-radius:16px;padding:16px 18px;text-align:center;backdrop-filter: blur(4px)}
+    .overlay h2{margin:0 0 6px;font-size:1.1rem}
+    .overlay p{margin:6px 0 0;color:#b9c2d3}
+    .controls{display:grid;grid-template-areas:".. up .." "left pause right" ".. down ..";gap:10px;justify-items:center;align-items:center;margin:14px auto 0;max-width:360px}
+    .ctrl{width:64px;height:48px;border-radius:12px;border:1px solid #2a3346;background:#0f1626;color:var(--fg);font-weight:600}
+    .ctrl:active{transform:scale(.98)}
+    .up{grid-area:up} .down{grid-area:down} .left{grid-area:left} .right{grid-area:right}
+    .pause{grid-area:pause;width:84px}
+    footer{opacity:.6;margin:12px 0 4px;font-size:.85rem}
+    @media (hover:none){ .controls{display:grid} }
+  </style>
+
+  <!-- Basic schema for a playable web game -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"VideoGame",
+    "name":"Snake – Play Retro Arcade",
+    "applicationCategory":"Game",
+    "operatingSystem":"Web",
+    "genre":"Arcade",
+    "url":"https://playretroarcade.com/snake",
+    "playMode":"SinglePlayer"
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Snake — Play Retro Arcade</h1>
+      <div class="stats">
+        <span class="pill">Score: <strong id="score">0</strong></span>
+        <span class="pill">Best: <strong id="best">0</strong></span>
+        <button id="btnPause" class="btn" title="Pause/Resume (P)">Pause</button>
+        <button id="btnRestart" class="btn" title="Restart (R)">Restart</button>
+      </div>
+    </header>
+
+    <div class="board" id="board">
+      <canvas id="game" width="480" height="480" aria-label="Snake game canvas"></canvas>
+      <div class="overlay" id="overlay" hidden>
+        <div class="card">
+          <h2 id="overlayTitle">Paused</h2>
+          <p>Press <kbd>R</kbd> to restart or <kbd>P</kbd> to continue.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Touch controls (auto useful on mobile) -->
+    <div class="controls" id="touchControls">
+      <button class="ctrl up"    data-dir="up">▲</button>
+      <button class="ctrl left"  data-dir="left">◀</button>
+      <button class="ctrl pause" data-action="pause">⏯</button>
+      <button class="ctrl right" data-dir="right">▶</button>
+      <button class="ctrl down"  data-dir="down">▼</button>
+    </div>
+
+    <footer>Controls: Arrow Keys / WASD / Swipe • Pause: P • Restart: R</footer>
+  </div>
+
+  <script>
+  // ====== Config ======
+  const GRID = 24;           // grid cells per side
+  const SPEED = 8;           // moves per second
+  const CELL = 480 / GRID;   // base cell size (canvas is 480x480)
+  const COLORS = { bg:'#0f1420', grid:'#1a2131', snake:'#6ee7ff', head:'#6aff8a', food:'#ffb86b', hit:'#ff6e6e' };
+
+  // ====== State ======
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const bestEl  = document.getElementById('best');
+  const overlay = document.getElementById('overlay');
+  const overlayTitle = document.getElementById('overlayTitle');
+  const btnPause = document.getElementById('btnPause');
+  const btnRestart = document.getElementById('btnRestart');
+  const board = document.getElementById('board');
+
+  let snake, dir, nextDir, food, score, best, playing, dead;
+  let last = 0, step = 1000 / SPEED;
+
+  function reset() {
+    snake = [{x:12, y:12},{x:11,y:12},{x:10,y:12}];
+    dir = {x:1,y:0}; nextDir = {...dir};
+    score = 0; scoreEl.textContent = score;
+    dead = false; playing = true; hideOverlay();
+    spawnFood(); draw(0);
+  }
+
+  function spawnFood(){
+    do {
+      food = { x: (Math.random()*GRID|0), y: (Math.random()*GRID|0) };
+    } while (snake.some(s => s.x===food.x && s.y===food.y));
+  }
+
+  function setBest(v){
+    best = Math.max(+localStorage.getItem('snake_best')||0, v||0);
+    localStorage.setItem('snake_best', best);
+    bestEl.textContent = best;
+  }
+  setBest(0);
+
+  // ====== Input ======
+  const KEYS = {ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
+                w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'};
+  addEventListener('keydown', e=>{
+    if (e.key==='p' || e.key==='P') return togglePause();
+    if (e.key==='r' || e.key==='R') return reset();
+    const k = KEYS[e.key]; if(!k) return;
+    e.preventDefault(); turn(k);
+  });
+
+  function turn(k){
+    const d = {up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}}[k];
+    // prevent reversing directly
+    if (d && (d.x!==-dir.x || d.y!==-dir.y)) nextDir = d;
+  }
+
+  // Touch buttons
+  document.getElementById('touchControls').addEventListener('click', (e)=>{
+    const dir = e.target.dataset.dir;
+    const action = e.target.dataset.action;
+    if (dir) turn(dir);
+    if (action === 'pause') togglePause();
+  });
+
+  // Swipe support
+  let touchStart=null;
+  board.addEventListener('touchstart',(e)=>{ if(e.touches[0]) touchStart={x:e.touches[0].clientX, y:e.touches[0].clientY}; },{passive:true});
+  board.addEventListener('touchend',(e)=>{
+    if(!touchStart) return;
+    const dx=(e.changedTouches[0].clientX - touchStart.x);
+    const dy=(e.changedTouches[0].clientY - touchStart.y);
+    if(Math.hypot(dx,dy) < 24) return;
+    if(Math.abs(dx) > Math.abs(dy)) turn(dx>0?'right':'left');
+    else turn(dy>0?'down':'up');
+    touchStart=null;
+  },{passive:true});
+
+  btnPause.onclick = togglePause;
+  btnRestart.onclick = reset;
+
+  function togglePause(){
+    if(dead) return;
+    playing = !playing;
+    if(playing) hideOverlay(); else showOverlay('Paused');
+  }
+
+  function showOverlay(text){
+    overlayTitle.textContent = text;
+    overlay.hidden = false;
+  }
+  function hideOverlay(){ overlay.hidden = true; }
+
+  // ====== Game Loop ======
+  function update(){
+    dir = nextDir;
+    const head = { x: (snake[0].x + dir.x + GRID) % GRID,
+                   y: (snake[0].y + dir.y + GRID) % GRID };
+
+    // hit self?
+    if (snake.some(s => s.x===head.x && s.y===head.y)) {
+      dead = true; playing = false; setBest(score); showOverlay('Game Over');
+      flashHit(); return;
+    }
+
+    snake.unshift(head);
+    if (head.x===food.x && head.y===food.y){
+      score += 10; scoreEl.textContent = score; setBest(score); spawnFood();
+    } else {
+      snake.pop();
+    }
+  }
+
+  function drawGrid(){
+    ctx.fillStyle = COLORS.bg; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle = COLORS.grid; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for(let i=1;i<GRID;i++){ const p=i*CELL; ctx.moveTo(p,0); ctx.lineTo(p,canvas.height); ctx.moveTo(0,p); ctx.lineTo(canvas.width,p); }
+    ctx.stroke();
+  }
+
+  function draw(){
+    drawGrid();
+    // food
+    ctx.fillStyle = COLORS.food;
+    roundRect(food.x*CELL+2, food.y*CELL+2, CELL-4, CELL-4, 6, true);
+    // snake
+    snake.forEach((s,i)=>{
+      ctx.fillStyle = i===0 ? COLORS.head : COLORS.snake;
+      roundRect(s.x*CELL+2, s.y*CELL+2, CELL-4, CELL-4, 6, true);
+    });
+  }
+
+  function roundRect(x,y,w,h,r,fill){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    if(fill) ctx.fill(); else ctx.stroke();
+  }
+
+  function flashHit(){
+    // quick red flash
+    const t0 = performance.now();
+    (function raf(t){
+      const k = Math.min(1, (t-t0)/300);
+      ctx.fillStyle = COLORS.hit + Math.floor(160*(1-k)).toString(16).padStart(2,'0');
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      if(k<1) requestAnimationFrame(raf);
+    })(t0);
+  }
+
+  function loop(ts){
+    if(playing && !dead && ts-last>step){ last=ts; update(); }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // Fit canvas resolution to container while keeping GRID scaling crisp
+  function resize(){
+    const size = Math.min(board.clientWidth, board.clientHeight);
+    canvas.width = canvas.height = Math.round(size/GRID)*GRID;
+  }
+  addEventListener('resize', resize);
+
+  // ====== Start ======
+  resize(); reset(); requestAnimationFrame(loop);
+
+  // ====== Ad placeholder (add AdSense later on Game Over) ======
+  // On production, inject interstitial/banner in overlay when Game Over triggers.
+  // Example: create a <div id="ad-slot"></div> inside .card and mount AdSense code there.
+  </script>
+</body>
+</html>
