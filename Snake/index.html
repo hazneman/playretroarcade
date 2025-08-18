@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>Play Retro Arcade – Snake</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="description" content="Play a fast, retro Snake game right in your browser. Mobile-friendly, no download." />
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <style>
@@ -23,12 +23,22 @@
     .overlay h2{margin:0 0 6px;font-size:1.1rem}
     .overlay p{margin:6px 0 0;color:#b9c2d3}
     .controls{display:grid;grid-template-areas:".. up .." "left pause right" ".. down ..";gap:10px;justify-items:center;align-items:center;margin:14px auto 0;max-width:360px}
-    .ctrl{width:64px;height:48px;border-radius:12px;border:1px solid #2a3346;background:#0f1626;color:var(--fg);font-weight:600}
+    .ctrl{width:64px;height:48px;border-radius:12px;border:1px solid #2a3346;background:#0f1626;color:var(--fg);font-weight:600;touch-action:manipulation;user-select:none}
     .ctrl:active{transform:scale(.98)}
     .up{grid-area:up} .down{grid-area:down} .left{grid-area:left} .right{grid-area:right}
     .pause{grid-area:pause;width:84px}
     footer{opacity:.6;margin:12px 0 4px;font-size:.85rem}
-    @media (hover:none){ .controls{display:grid} }
+    @media (hover:none){ 
+      .controls{display:grid} 
+      .ctrl{width:70px;height:54px;font-size:18px}
+      .pause{width:90px}
+    }
+    @media (max-width: 480px){ 
+      .wrap{padding:12px}
+      header{flex-direction:column;gap:8px;align-items:stretch}
+      .stats{justify-content:center}
+      .board{margin:8px 0}
+    }
   </style>
 
   <!-- Basic schema for a playable web game -->
@@ -98,13 +108,23 @@
   const board = document.getElementById('board');
 
   let snake, dir, nextDir, food, score, best, playing = false, dead;
+  let gameState = 'welcome'; // 'welcome', 'playing', 'paused', 'gameOver'
+  let last = 0, step = 1000 / SPEED;
 
   function reset() {
     snake = [{x:12, y:12},{x:11,y:12},{x:10,y:12}];
     dir = {x:1,y:0}; nextDir = {...dir};
     score = 0; scoreEl.textContent = score;
-    dead = false; playing = true; hideOverlay();
+    dead = false; playing = true; gameState = 'playing'; 
+    hideOverlay();
+    console.log('Reset called, overlay should be hidden, game state:', gameState);
     spawnFood(); draw(0);
+  }
+
+  function startGame() {
+    console.log('startGame called, changing state to playing');
+    gameState = 'playing';
+    reset();
   }
 
   function spawnFood(){
@@ -124,8 +144,18 @@
   const KEYS = {ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
                 w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'};
   addEventListener('keydown', e=>{
+    console.log('Key pressed:', e.key, 'Game state:', gameState);
+    if (gameState === 'welcome') {
+      console.log('Starting game...');
+      startGame();
+      return;
+    }
     if (e.key==='p' || e.key==='P') return togglePause();
-    if (e.key==='r' || e.key==='R') return reset();
+    if (e.key==='r' || e.key==='R') {
+      if (gameState === 'gameOver') startGame();
+      else reset();
+      return;
+    }
     const k = KEYS[e.key]; if(!k) return;
     e.preventDefault(); turn(k);
   });
@@ -138,6 +168,13 @@
 
   // Touch buttons
   document.getElementById('touchControls').addEventListener('click', (e)=>{
+    e.preventDefault(); // Prevent double-tap zoom
+    console.log('Touch control clicked, game state:', gameState);
+    if (gameState === 'welcome') {
+      console.log('Starting game from touch...');
+      startGame();
+      return;
+    }
     const dir = e.target.dataset.dir;
     const action = e.target.dataset.action;
     if (dir) turn(dir);
@@ -148,10 +185,15 @@
   let touchStart=null;
   board.addEventListener('touchstart',(e)=>{ if(e.touches[0]) touchStart={x:e.touches[0].clientX, y:e.touches[0].clientY}; },{passive:true});
   board.addEventListener('touchend',(e)=>{
+    if (gameState === 'welcome') {
+      startGame();
+      return;
+    }
     if(!touchStart) return;
     const dx=(e.changedTouches[0].clientX - touchStart.x);
     const dy=(e.changedTouches[0].clientY - touchStart.y);
-    if(Math.hypot(dx,dy) < 24) return;
+    const minSwipeDistance = 20; // Reduced for better mobile responsiveness
+    if(Math.hypot(dx,dy) < minSwipeDistance) return;
     if(Math.abs(dx) > Math.abs(dy)) turn(dx>0?'right':'left');
     else turn(dy>0?'down':'up');
     touchStart=null;
@@ -160,17 +202,38 @@
   btnPause.onclick = togglePause;
   btnRestart.onclick = reset;
 
+  // Canvas click to start
+  canvas.addEventListener('click', (e) => {
+    e.preventDefault(); // Prevent double-tap zoom
+    if (gameState === 'welcome') {
+      startGame();
+    }
+  });
+
   function togglePause(){
-    if(dead) return;
-    playing = !playing;
-    if(playing) hideOverlay(); else showOverlay('Paused');
+    if(dead || gameState === 'welcome' || gameState === 'gameOver') return;
+    if (gameState === 'playing') {
+      gameState = 'paused';
+      playing = false;
+      showOverlay('Paused', 'Press <kbd>P</kbd> to continue');
+    } else if (gameState === 'paused') {
+      gameState = 'playing';
+      playing = true;
+      hideOverlay();
+    }
   }
 
-  function showOverlay(text){
-    overlayTitle.textContent = text;
+  function showOverlay(title, message){
+    overlayTitle.textContent = title;
+    overlay.querySelector('p').innerHTML = message;
     overlay.hidden = false;
+    overlay.style.display = 'flex';
   }
-  function hideOverlay(){ overlay.hidden = true; }
+  function hideOverlay(){ 
+    overlay.hidden = true;
+    overlay.style.display = 'none';
+    console.log('Overlay hidden and display set to none');
+  }
 
   // ====== Game Loop ======
   function update(){
@@ -180,7 +243,8 @@
 
     // hit self?
     if (snake.some(s => s.x===head.x && s.y===head.y)) {
-      dead = true; playing = false; setBest(score); showOverlay('Game Over');
+      dead = true; playing = false; gameState = 'gameOver'; setBest(score); 
+      showOverlay('Game Over', 'Press <kbd>R</kbd> to restart');
       flashHit(); return;
     }
 
@@ -202,14 +266,17 @@
 
   function draw(){
     drawGrid();
-    // food
-    ctx.fillStyle = COLORS.food;
-    roundRect(food.x*CELL+2, food.y*CELL+2, CELL-4, CELL-4, 6, true);
-    // snake
-    snake.forEach((s,i)=>{
-      ctx.fillStyle = i===0 ? COLORS.head : COLORS.snake;
-      roundRect(s.x*CELL+2, s.y*CELL+2, CELL-4, CELL-4, 6, true);
-    });
+    // Only draw game elements if game has started
+    if (gameState !== 'welcome' && snake && food) {
+      // food
+      ctx.fillStyle = COLORS.food;
+      roundRect(food.x*CELL+2, food.y*CELL+2, CELL-4, CELL-4, 6, true);
+      // snake
+      snake.forEach((s,i)=>{
+        ctx.fillStyle = i===0 ? COLORS.head : COLORS.snake;
+        roundRect(s.x*CELL+2, s.y*CELL+2, CELL-4, CELL-4, 6, true);
+      });
+    }
   }
 
   function roundRect(x,y,w,h,r,fill){
@@ -242,12 +309,20 @@
   // Fit canvas resolution to container while keeping GRID scaling crisp
   function resize(){
     const size = Math.min(board.clientWidth, board.clientHeight);
-    canvas.width = canvas.height = Math.round(size/GRID)*GRID;
+    const pixelRatio = window.devicePixelRatio || 1;
+    const canvasSize = Math.round(size/GRID)*GRID;
+    canvas.width = canvasSize * pixelRatio;
+    canvas.height = canvasSize * pixelRatio;
+    canvas.style.width = canvasSize + 'px';
+    canvas.style.height = canvasSize + 'px';
+    ctx.scale(pixelRatio, pixelRatio);
   }
   addEventListener('resize', resize);
 
   // ====== Start ======
-  resize(); reset(); requestAnimationFrame(loop);
+  resize(); 
+  showOverlay('Welcome to Snake!', 'Click or press any key to start');
+  requestAnimationFrame(loop);
 
   // ====== Ad placeholder (add AdSense later on Game Over) ======
   // On production, inject interstitial/banner in overlay when Game Over triggers.
