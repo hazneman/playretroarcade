@@ -97,8 +97,7 @@
   const btnRestart = document.getElementById('btnRestart');
   const board = document.getElementById('board');
 
-  let snake, dir, nextDir, food, score, best, playing, dead;
-  let last = 0, step = 1000 / SPEED;
+  let snake, dir, nextDir, food, score, best, playing = false, dead;
 
   function reset() {
     snake = [{x:12, y:12},{x:11,y:12},{x:10,y:12}];
@@ -181,11 +180,8 @@
 
     // hit self?
     if (snake.some(s => s.x===head.x && s.y===head.y)) {
-      dead = true; playing = false; setBest(score); 
-      flashHit(); 
-      // Auto restart after 1 second instead of showing game over message
-      setTimeout(reset, 1000);
-      return;
+      dead = true; playing = false; setBest(score); showOverlay('Game Over');
+      flashHit(); return;
     }
 
     snake.unshift(head);
