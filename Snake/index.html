@@ -181,8 +181,11 @@
 
     // hit self?
     if (snake.some(s => s.x===head.x && s.y===head.y)) {
-      dead = true; playing = false; setBest(score); showOverlay('Game Over');
-      flashHit(); return;
+      dead = true; playing = false; setBest(score); 
+      flashHit(); 
+      // Auto restart after 1 second instead of showing game over message
+      setTimeout(reset, 1000);
+      return;
     }
 
     snake.unshift(head);
