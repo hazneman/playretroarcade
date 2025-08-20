@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayRetroArcade - Classic Games Collection</title>
+  <meta name="description" content="Quick, clean, and kid-friendly retro games. Pick a classic and play instantly — no installs required.">
+  <link rel="icon" href="./Public/logo.png" type="image/png">
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --card: #18181c;
+      --muted: #9aa0a6;
+      --text: #e8eaed;
+      --accent: #4fc3f7;
+      --line: #2a2a30;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { 
+      background: linear-gradient(135deg, #0b0b0d 0%, #1a1a1f 100%); 
+      color: var(--text); 
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    .container { max-width: 1120px; margin: 0 auto; padding: 32px 16px; }
+    
+    .header { 
+      display: flex; 
+      align-items: center; 
+      gap: 16px; 
+      margin-bottom: 32px; 
+      text-align: left;
+    }
+    .logo { 
+      width: 192px;
+      height: 192px;
+      object-fit: contain;
+      display: block;
+      image-rendering: crisp-edges;
+      -webkit-image-smoothing: high;
+      filter: none;
+    }
+    .header h1 { 
+      margin: 0; 
+      font-size: 28px; 
+      font-weight: 800; 
+      line-height: 1.2; 
+    }
+    .subtitle { 
+      color: var(--muted); 
+      font-size: 16px; 
+      margin-top: 8px; 
+      max-width: 500px;
+    }
+
+    .toolbar { 
+      display: grid; 
+      grid-template-columns: 1fr auto auto; 
+      gap: 12px; 
+      align-items: center; 
+      margin: 24px 0; 
+    }
+    .input, .select { 
+      background: rgba(255,255,255,0.1); 
+      color: var(--text); 
+      border: 1px solid var(--line); 
+      padding: 12px 16px; 
+      border-radius: 12px; 
+      font-size: 14px;
+    }
+    .input::placeholder { color: var(--muted); }
+    .select { min-width: 150px; }
+
+    .section-title { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      margin: 32px 0 16px; 
+    }
+    .section-title h2 { 
+      margin: 0; 
+      font-size: 20px; 
+      font-weight: 600;
+    }
+
+    .grid { 
+      display: grid; 
+      gap: 20px; 
+      margin-bottom: 24px;
+    }
+    .grid.cols-4 { grid-template-columns: repeat(1, 1fr); }
+    @media (min-width: 640px) { .grid.cols-4 { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 900px) { .grid.cols-4 { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1200px) { .grid.cols-4 { grid-template-columns: repeat(4, 1fr); } }
+
+    .card { 
+      background: rgba(255,255,255,0.05); 
+      border: 1px solid var(--line); 
+      border-radius: 16px; 
+      overflow: hidden; 
+      transition: all 0.3s ease; 
+      cursor: pointer;
+    }
+    .card:hover { 
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.3); 
+      border-color: var(--accent);
+    }
+    
+    .card-body { padding: 16px; }
+    .cover { 
+      aspect-ratio: 16/9; 
+      display: grid; 
+      place-items: center; 
+      font-size: 48px; 
+      background: linear-gradient(145deg, #1e293b, #0f172a); 
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent 30%, rgba(79, 195, 247, 0.1) 50%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .card:hover .cover::before { opacity: 1; }
+
+    .title-row { 
+      display: flex; 
+      align-items: flex-start; 
+      justify-content: space-between; 
+      gap: 12px; 
+      margin-bottom: 8px; 
+    }
+    .game-title { 
+      margin: 0; 
+      font-size: 16px; 
+      font-weight: 600; 
+      color: var(--text);
+    }
+    .description { 
+      margin: 0 0 12px; 
+      font-size: 13px; 
+      color: var(--muted); 
+      line-height: 1.4; 
+    }
+    .badge { 
+      background: var(--accent); 
+      color: #000; 
+      border-radius: 12px; 
+      padding: 4px 8px; 
+      font-size: 11px; 
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .meta { 
+      margin: 12px 0; 
+      display: flex; 
+      gap: 12px; 
+      font-size: 12px; 
+      color: var(--muted); 
+      align-items: center; 
+    }
+    .meta span { display: flex; align-items: center; gap: 4px; }
+
+    .tags { 
+      margin: 12px 0; 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 6px; 
+    }
+    .tag { 
+      border: 1px solid var(--line); 
+      border-radius: 12px; 
+      padding: 4px 8px; 
+      font-size: 11px; 
+      color: var(--muted); 
+      background: rgba(255,255,255,0.05); 
+    }
+
+    .play-button { 
+      background: var(--accent); 
+      color: #000; 
+      border: none; 
+      border-radius: 12px; 
+      padding: 10px 16px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: all 0.2s ease;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .play-button:hover { 
+      background: #29b6f6; 
+      transform: translateY(-1px);
+    }
+
+    .recently-played { margin: 32px 0; }
+    .recent-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+      gap: 16px; 
+    }
+    .recent-card { 
+      text-align: center; 
+      cursor: pointer; 
+      transition: transform 0.2s ease;
+    }
+    .recent-card:hover { transform: scale(1.05); }
+    .recent-cover { 
+      aspect-ratio: 1; 
+      background: linear-gradient(145deg, #1e293b, #0f172a); 
+      border-radius: 12px; 
+      display: grid; 
+      place-items: center; 
+      font-size: 24px; 
+      margin-bottom: 8px;
+    }
+    .recent-title { 
+      font-size: 12px; 
+      color: var(--text); 
+      margin: 0;
+    }
+
+    .footer { 
+      margin: 48px 0 24px; 
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      color: var(--muted); 
+      font-size: 13px; 
+    }
+    .footer a { 
+      color: var(--accent); 
+      text-decoration: none; 
+      margin-left: 16px;
+    }
+    .footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .toolbar { grid-template-columns: 1fr; }
+      .header { flex-direction: column; text-align: center; }
+      .section-title { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .footer { flex-direction: column; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <img src="./Public/logo.png" alt="PlayRetroArcade Logo" class="logo">
+      <div>
+        <h1>PlayRetroArcade</h1>
+        <div class="subtitle">
+          Quick, clean, and kid-friendly retro games. Pick a classic and play instantly — no installs required.
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="toolbar">
+      <input 
+        type="text" 
+        class="input" 
+        placeholder="Search games..." 
+        id="searchInput"
+      >
+      <select class="select" id="genreFilter">
+        <option value="All">All Genres</option>
+        <option value="Arcade">Arcade</option>
+        <option value="Puzzle">Puzzle</option>
+        <option value="Action">Action</option>
+        <option value="Sports">Sports</option>
+      </select>
+      <select class="select" id="sortBy">
+        <option value="popular">Most Popular</option>
+        <option value="rating">Top Rated</option>
+        <option value="new">Recently Added</option>
+      </select>
+    </div>
+
+    <!-- Featured Games -->
+    <div class="section-title">
+      <h2>🔥 Featured Games</h2>
+    </div>
+    <div class="grid cols-4" id="featuredGames">
+      <!-- Games will be populated by JavaScript -->
+    </div>
+
+    <!-- Recently Played -->
+    <div class="recently-played" id="recentlyPlayedSection" style="display: none;">
+      <div class="section-title">
+        <h2>🕒 Recently Played</h2>
+      </div>
+      <div class="recent-grid" id="recentGames">
+        <!-- Recent games will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- All Games -->
+    <div class="section-title">
+      <h2>🎯 All Games</h2>
+      <span id="gameCount" style="color: var(--muted); font-size: 14px;"></span>
+    </div>
+    <div class="grid cols-4" id="allGames">
+      <!-- All games will be populated by JavaScript -->
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div>© 2025 PlayRetroArcade - Classic Gaming Experience</div>
+      <nav>
+        <a href="#about">About</a>
+        <a href="#games">Games</a>
+        <a href="https://github.com/hazneman/playretroarcade" target="_blank">GitHub</a>
+      </nav>
+    </footer>
+  </div>
+
+  <script>
+    // Game catalog
+    const GAMES = [
+      {
+        id: "snake-classic",
+        title: "Snake Classic",
+        description: "Navigate the snake to eat food and grow longer. Don't hit the walls or yourself!",
+        genres: ["Arcade", "Puzzle"],
+        players: "1",
+        rating: 4.8,
+        plays: 12045,
+        updatedAt: "2025-08-20",
+        route: "./Snake/index.html",
+        emoji: "🐍"
+      },
+      {
+        id: "tetris",
+        title: "Tetris",
+        description: "Stack falling blocks to clear lines in this timeless puzzle classic.",
+        genres: ["Arcade", "Puzzle"],
+        players: "1",
+        rating: 4.9,
+        plays: 24550,
+        updatedAt: "2025-08-15",
+        route: "#tetris",
+        emoji: "🟦"
+      },
+      {
+        id: "pong",
+        title: "Pong",
+        description: "The original arcade game. Two paddles, one ball, endless fun.",
+        genres: ["Arcade", "Sports"],
+        players: "1-2",
+        rating: 4.2,
+        plays: 8042,
+        updatedAt: "2025-08-10",
+        route: "#pong",
+        emoji: "🏓"
+      },
+      {
+        id: "space-invaders",
+        title: "Space Invaders",
+        description: "Defend Earth from waves of descending alien invaders.",
+        genres: ["Arcade", "Action"],
+        players: "1",
+        rating: 4.7,
+        plays: 16780,
+        updatedAt: "2025-08-18",
+        route: "#space-invaders",
+        emoji: "👾"
+      },
+      {
+        id: "breakout",
+        title: "Breakout",
+        description: "Break all the bricks with your paddle and ball in this arcade classic.",
+        genres: ["Arcade"],
+        players: "1",
+        rating: 4.5,
+        plays: 11200,
+        updatedAt: "2025-08-12",
+        route: "#breakout",
+        emoji: "🧱"
+      },
+      {
+        id: "pac-man",
+        title: "Pac-Man",
+        description: "Navigate the maze, eat dots, and avoid the colorful ghosts.",
+        genres: ["Arcade", "Puzzle"],
+        players: "1",
+        rating: 4.9,
+        plays: 35600,
+        updatedAt: "2025-08-16",
+        route: "#pac-man",
+        emoji: "🟡"
+      }
+    ];
+
+    // Recent plays management
+    function getRecentPlays() {
+      try {
+        return JSON.parse(localStorage.getItem('pra_recent') || '[]');
+      } catch {
+        return [];
+      }
+    }
+
+    function addToRecentPlays(game) {
+      const recent = getRecentPlays();
+      const filtered = recent.filter(g => g.id !== game.id);
+      const updated = [game, ...filtered].slice(0, 6);
+      localStorage.setItem('pra_recent', JSON.stringify(updated));
+      renderRecentGames();
+    }
+
+    // Render functions
+    function createGameCard(game) {
+      return `
+        <div class="card" onclick="playGame('${game.id}')">
+          <div class="cover">
+            ${game.emoji}
+          </div>
+          <div class="card-body">
+            <div class="title-row">
+              <h3 class="game-title">${game.title}</h3>
+              <span class="badge">${game.players}P</span>
+            </div>
+            <p class="description">${game.description}</p>
+            <div class="meta">
+              <span>⭐ ${game.rating.toFixed(1)}</span>
+              <span>•</span>
+              <span>🔥 ${game.plays.toLocaleString()}</span>
+            </div>
+            <div class="tags">
+              ${game.genres.map(genre => `<span class="tag">${genre}</span>`).join('')}
+            </div>
+            <button class="play-button" onclick="event.stopPropagation(); playGame('${game.id}')">
+              Play Now →
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function createRecentGameCard(game) {
+      return `
+        <div class="recent-card" onclick="playGame('${game.id}')">
+          <div class="recent-cover">${game.emoji}</div>
+          <div class="recent-title">${game.title}</div>
+        </div>
+      `;
+    }
+
+    function renderGames(games, containerId) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = games.map(createGameCard).join('');
+    }
+
+    function renderRecentGames() {
+      const recent = getRecentPlays();
+      const section = document.getElementById('recentlyPlayedSection');
+      const container = document.getElementById('recentGames');
+      
+      if (recent.length > 0) {
+        section.style.display = 'block';
+        container.innerHTML = recent.map(createRecentGameCard).join('');
+      } else {
+        section.style.display = 'none';
+      }
+    }
+
+    function filterAndSortGames() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const genre = document.getElementById('genreFilter').value;
+      const sortBy = document.getElementById('sortBy').value;
+
+      let filtered = GAMES.filter(game => {
+        const matchesSearch = search === '' || 
+          game.title.toLowerCase().includes(search) || 
+          game.description.toLowerCase().includes(search);
+        const matchesGenre = genre === 'All' || game.genres.includes(genre);
+        return matchesSearch && matchesGenre;
+      });
+
+      // Sort games
+      if (sortBy === 'popular') {
+        filtered.sort((a, b) => b.plays - a.plays);
+      } else if (sortBy === 'rating') {
+        filtered.sort((a, b) => b.rating - a.rating);
+      } else if (sortBy === 'new') {
+        filtered.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      }
+
+      return filtered;
+    }
+
+    function updateGameDisplay() {
+      const filtered = filterAndSortGames();
+      renderGames(filtered, 'allGames');
+      
+      // Update featured games (top 4)
+      renderGames(filtered.slice(0, 4), 'featuredGames');
+      
+      // Update game count
+      document.getElementById('gameCount').textContent = `${filtered.length} games`;
+    }
+
+    function playGame(gameId) {
+      const game = GAMES.find(g => g.id === gameId);
+      if (game) {
+        addToRecentPlays(game);
+        if (game.route.startsWith('#')) {
+          alert(`${game.title} - Coming Soon!\\n\\nThis game is not yet implemented. Only Snake is currently available.`);
+        } else {
+          window.location.href = game.route;
+        }
+      }
+    }
+
+    // Event listeners
+    document.getElementById('searchInput').addEventListener('input', updateGameDisplay);
+    document.getElementById('genreFilter').addEventListener('change', updateGameDisplay);
+    document.getElementById('sortBy').addEventListener('change', updateGameDisplay);
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      updateGameDisplay();
+      renderRecentGames();
+    });
+  </script>
+</body>
+</html>

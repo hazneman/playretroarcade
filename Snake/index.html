@@ -5,7 +5,7 @@
   <title>Play Retro Arcade – Snake</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="description" content="Play a fast, retro Snake game right in your browser. Mobile-friendly, no download." />
-  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <link rel="icon" href="../Public/logo.png" type="image/png">
   <style>
     :root { --bg:#0d0f14; --fg:#e6e6e6; --accent:#6ee7ff; --grid:#1b2230; --good:#6aff8a; --bad:#ff6e6e; }
     *{box-sizing:border-box} html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial}
@@ -13,6 +13,9 @@
     header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:8px 0 12px}
     h1{font-size:1.1rem;margin:0;color:var(--fg);opacity:.9}
     .stats{display:flex;gap:12px;align-items:center}
+    .home-btn{background:var(--accent);color:#000;border:none;border-radius:8px;padding:6px 12px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+    .home-btn:hover{background:#4dd0ed}
+    .logo{width:96px;height:96px;object-fit:contain;display:block;image-rendering:crisp-edges}
     .pill{padding:6px 10px;border:1px solid #2a3346;border-radius:999px;background:#111725;color:var(--fg)}
     .btn{cursor:pointer;border:1px solid #2a3346;background:#111725;color:var(--fg);padding:8px 12px;border-radius:10px}
     .btn:hover{border-color:#3b4763}
@@ -36,6 +39,7 @@
     @media (max-width: 480px){ 
       .wrap{padding:12px}
       header{flex-direction:column;gap:8px;align-items:stretch}
+      header > div:first-child{justify-content:center;flex-wrap:wrap}
       .stats{justify-content:center}
       .board{margin:8px 0}
     }
@@ -58,7 +62,11 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Snake — Play Retro Arcade</h1>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="../index.html" class="home-btn">← Home</a>
+        <img src="../Public/logo.png" alt="Logo" class="logo">
+        <h1>Snake — Play Retro Arcade</h1>
+      </div>
       <div class="stats">
         <span class="pill">Score: <strong id="score">0</strong></span>
         <span class="pill">Best: <strong id="best">0</strong></span>
