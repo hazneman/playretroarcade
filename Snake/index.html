@@ -3,34 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>Play Retro Arcade – Snake</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover,   function initializeMusic() {
-    if (musicInitialized) return;
-    
-    // Set volume to a comfortable level
-    backgroundMusic.volume = 0.4; // Slightly higher for better music
-    eatSound.volume = 0.6; // Sound effects a bit louder
-    
-    // Add error handlers for audio files
-    backgroundMusic.addEventListener('error', () => {
-      console.log('Background music file not found, using Web Audio fallback');
-      createFallbackMusic();
-    });
-    
-    eatSound.addEventListener('error', () => {
-      console.log('Eat sound file not found');
-    });
-    
-    // Test if audio files are loaded
-    backgroundMusic.addEventListener('canplaythrough', () => {
-      console.log('Background music loaded successfully');
-    });
-    
-    eatSound.addEventListener('canplaythrough', () => {
-      console.log('Eat sound loaded successfully');
-    });
-    
-    musicInitialized = true;
-  }no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="description" content="Play a fast, retro Snake game right in your browser. Mobile-friendly, no download." />
   <link rel="icon" href="../Public/logo.png" type="image/png">
   <style>
@@ -230,14 +203,28 @@
   function initializeMusic() {
     if (musicInitialized) return;
     
-    // Set volume to a comfortable level
-    backgroundMusic.volume = 0.3;
-    eatSound.volume = 0.4; // Slightly louder for sound effects
+    // Set volume to higher levels for better audibility
+    backgroundMusic.volume = 0.7; // Increased from 0.4 to 0.7
+    eatSound.volume = 0.8; // Increased from 0.6 to 0.8
     
-    // Try to create a simple fallback beep sound using Web Audio API
-    if (!backgroundMusic.src && window.AudioContext) {
+    // Add error handlers for audio files
+    backgroundMusic.addEventListener('error', () => {
+      console.log('Background music file not found, using Web Audio fallback');
       createFallbackMusic();
-    }
+    });
+    
+    eatSound.addEventListener('error', () => {
+      console.log('Eat sound file not found');
+    });
+    
+    // Test if audio files are loaded
+    backgroundMusic.addEventListener('canplaythrough', () => {
+      console.log('Background music loaded successfully');
+    });
+    
+    eatSound.addEventListener('canplaythrough', () => {
+      console.log('Eat sound loaded successfully');
+    });
     
     musicInitialized = true;
   }
