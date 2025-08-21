@@ -49,9 +49,11 @@
     .next-canvas, .hold-canvas { border: 1px solid #383838; border-radius: 8px; background: #0a0a0a; display: block; margin: 0 auto; }
     
     .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0; }
-    .control-btn { background: #1a1a1f; border: 1px solid #2a3346; color: var(--fg); border-radius: 8px; padding: 12px 8px; cursor: pointer; font-size: 12px; font-weight: 600; text-align: center; touch-action: manipulation; user-select: none; }
+    .control-btn { background: #1a1a1f; border: 1px solid #2a3346; color: var(--fg); border-radius: 8px; padding: 14px 10px; cursor: pointer; font-size: 16px; font-weight: 600; text-align: center; touch-action: manipulation; user-select: none; line-height: 1.2; }
     .control-btn:active { transform: scale(0.95); background: #2a2a2f; }
     .control-btn.wide { grid-column: span 2; }
+    .control-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+    .control-text { font-size: 12px; font-weight: 500; opacity: 0.8; }
     
     .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; background: rgba(0,0,0,0.7); border-radius: 14px; }
     .overlay.hidden { display: none; }
@@ -145,18 +147,42 @@
     </div>
 
     <div class="controls">
-      <button class="control-btn" data-action="rotate">↻<br>Rotate</button>
-      <button class="control-btn" data-action="hold">⌐<br>Hold</button>
-      <button class="control-btn" data-action="drop">⇩<br>Drop</button>
-      <button class="control-btn" data-action="left">←<br>Left</button>
-      <button class="control-btn" data-action="down">↓<br>Down</button>
-      <button class="control-btn" data-action="right">→<br>Right</button>
-      <button class="control-btn wide" data-action="pause">⏯ Pause</button>
-      <button class="control-btn" data-action="restart">🔄 Restart</button>
+      <button class="control-btn" data-action="rotate">
+        <span class="control-icon">↑</span>
+        <span class="control-text">Rotate</span>
+      </button>
+      <button class="control-btn" data-action="hold">
+        <span class="control-icon">⌐</span>
+        <span class="control-text">Hold</span>
+      </button>
+      <button class="control-btn" data-action="drop">
+        <span class="control-icon">⎵</span>
+        <span class="control-text">Hard Drop</span>
+      </button>
+      <button class="control-btn" data-action="left">
+        <span class="control-icon">←</span>
+        <span class="control-text">Left</span>
+      </button>
+      <button class="control-btn" data-action="down">
+        <span class="control-icon">↓</span>
+        <span class="control-text">Down</span>
+      </button>
+      <button class="control-btn" data-action="right">
+        <span class="control-icon">→</span>
+        <span class="control-text">Right</span>
+      </button>
+      <button class="control-btn wide" data-action="pause">
+        <span class="control-icon">⏯</span>
+        <span class="control-text">Pause</span>
+      </button>
+      <button class="control-btn" data-action="restart">
+        <span class="control-icon">🔄</span>
+        <span class="control-text">Restart</span>
+      </button>
     </div>
 
     <footer>
-      Controls: Arrow Keys / WASD • Rotate: ↑/W • Drop: Space • Hold: C • Pause: P • Music: M
+      Controls: Move ←→ / A/D • Rotate ↑/W • Soft Drop ↓/S • Hard Drop Space • Hold C • Pause P • Music M
     </footer>
   </div>
 
@@ -269,6 +295,7 @@
     let score = 0;
     let level = 1;
     let lines = 0;
+    let drops = 0;
     let gameState = 'welcome'; // 'welcome', 'playing', 'paused', 'gameOver'
     let dropTime = 0;
     let dropInterval = 1000; // ms
@@ -276,6 +303,8 @@
     let musicEnabled = false;
     let musicInitialized = false;
     let statistics = { I: 0, O: 0, T: 0, S: 0, Z: 0, J: 0, L: 0 };
+    let pieceBag = [];
+    let nextBag = [];
 
     // ====== INITIALIZATION ======
     function initGame() {
@@ -299,9 +328,29 @@
     }
 
     // ====== TETROMINO GENERATION ======
-    function getRandomTetromino() {
+    function createPieceBag() {
       const types = Object.keys(TETROMINOES);
-      const type = types[Math.floor(Math.random() * types.length)];
+      const bag = [...types];
+      
+      // Fisher-Yates shuffle
+      for (let i = bag.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [bag[i], bag[j]] = [bag[j], bag[i]];
+      }
+      
+      return bag;
+    }
+
+    function getRandomTetromino() {
+      // If current bag is empty, refill it
+      if (pieceBag.length === 0) {
+        pieceBag = createPieceBag();
+        console.log('New piece bag created:', pieceBag.join(', '));
+      }
+      
+      // Take next piece from bag
+      const type = pieceBag.shift();
+      
       return {
         type: type,
         shape: TETROMINOES[type].shape,
@@ -420,6 +469,12 @@
         }
       }
       
+      // Increment drop counter and check for speed increase
+      drops++;
+      if (drops % 10 === 0) {
+        increaseSpeed();
+      }
+      
       // Check for line clears
       clearLines();
       
@@ -468,6 +523,12 @@
     function updateDropInterval() {
       // Speed increase formula (similar to NES Tetris)
       dropInterval = Math.max(50, 1000 - (level - 1) * 50);
+    }
+
+    function increaseSpeed() {
+      // Increase speed slightly every 10 drops (reduce interval by 5%)
+      dropInterval = Math.max(50, dropInterval * 0.95);
+      console.log(`Speed increased! Drop interval: ${dropInterval}ms (${drops} pieces dropped)`);
     }
 
     // ====== HOLD SYSTEM ======
@@ -700,8 +761,11 @@
       score = 0;
       level = 1;
       lines = 0;
+      drops = 0;
       dropTime = 0;
       statistics = { I: 0, O: 0, T: 0, S: 0, Z: 0, J: 0, L: 0 };
+      pieceBag = [];
+      nextBag = [];
       
       // Reset UI
       scoreEl.textContent = '0';
