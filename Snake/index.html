@@ -100,6 +100,7 @@
         <button id="btnMusic" class="btn" title="Toggle Music (M)">🎵 Music</button>
         <button id="btnPause" class="btn" title="Pause/Resume (P)">Pause</button>
         <button id="btnRestart" class="btn" title="Restart (R)">Restart</button>
+        <button id="btnTestSound" class="btn" title="Test Sound">🔊 Test</button>
       </div>
     </header>
 
@@ -127,13 +128,13 @@
 
   <!-- Background Music -->
   <audio id="backgroundMusic" loop preload="auto">
-    <source src="./Sound/Action 1 (Loop).ogg" type="audio/ogg">
+    <source src="../Sound/Action 1 (Loop).ogg?v=2" type="audio/ogg">
     <!-- Fallback to generated audio if file not found -->
   </audio>
   
   <!-- Sound Effects -->
   <audio id="eatSound" preload="auto">
-    <source src="./Sound/chiptune-jingle-1.ogg" type="audio/ogg">
+    <source src="../Sound/chiptune-jingle-1.ogg?v=2" type="audio/ogg">
   </audio>  <script>
   // ====== Config ======
   const GRID = 24;           // grid cells per side
@@ -170,6 +171,7 @@
   const btnPause = document.getElementById('btnPause');
   const btnRestart = document.getElementById('btnRestart');
   const btnMusic = document.getElementById('btnMusic');
+  const btnTestSound = document.getElementById('btnTestSound');
   const backgroundMusic = document.getElementById('backgroundMusic');
   const eatSound = document.getElementById('eatSound');
   const board = document.getElementById('board');
@@ -243,19 +245,19 @@
   // ====== Sound Effects ======
   function playEatSound() {
     try {
+      console.log('Playing eat sound...');
       eatSound.currentTime = 0; // Reset to beginning
       const playPromise = eatSound.play();
       
       if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.log('Eat sound play failed:', error);
-          // Create a simple beep as fallback
-          createEatBeep();
+        playPromise.then(() => {
+          console.log('Eat sound played successfully');
+        }).catch(error => {
+          console.log('Error playing eat sound:', error);
         });
       }
     } catch (error) {
-      console.log('Error playing eat sound:', error);
-      createEatBeep();
+      console.log('Error with eat sound:', error);
     }
   }
 
@@ -386,13 +388,14 @@
     initializeMusic();
     
     try {
+      console.log('Attempting to play background music...');
       // Try HTML5 audio first
       backgroundMusic.currentTime = 0;
       const playPromise = backgroundMusic.play();
       
       if (playPromise !== undefined) {
         playPromise.then(() => {
-          console.log('HTML5 audio playing');
+          console.log('Background music playing successfully');
         }).catch(error => {
           console.log('HTML5 audio failed, trying Web Audio:', error);
           // Fallback to Web Audio
@@ -557,6 +560,10 @@
   btnPause.onclick = togglePause;
   btnRestart.onclick = reset;
   btnMusic.onclick = toggleMusic;
+  btnTestSound.onclick = () => {
+    console.log('Testing sound effects...');
+    playEatSound();
+  };
 
   // Canvas click to start
   canvas.addEventListener('click', (e) => {
