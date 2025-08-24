@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayRetroArcade - Premium Classic Games Collection</title>
+  <meta name="description" content="Experience the best retro games with modern polish. Play Snake, Tetris, Space Invaders and more - all free, no downloads required!">
+  <link rel="icon" href="./Public/logo.png" type="image/png">
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --card: #18181c;
+      --muted: #9aa0a6;
+      --text: #e8eaed;
+      --accent: #4fc3f7;
+      --accent-hover: #29b6f6;
+      --line: #2a2a30;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --error: #f44336;
+      --gradient-primary: linear-gradient(135deg, #4fc3f7, #29b6f6, #03a9f4);
+      --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      --shadow-elevated: 0 20px 40px rgba(0,0,0,0.4);
+      --blur-glass: blur(10px);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { 
+      background: linear-gradient(135deg, #0b0b0d 0%, #1a1a1f 50%, #0f0f14 100%); 
+      color: var(--text); 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Animated background particles */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(79, 195, 247, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(79, 195, 247, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(79, 195, 247, 0.03) 0%, transparent 50%);
+      animation: floatParticles 20s ease-in-out infinite;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    @keyframes floatParticles {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      33% { transform: translateY(-20px) rotate(2deg); }
+      66% { transform: translateY(10px) rotate(-1deg); }
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+    
+    .header { 
+      display: flex; 
+      align-items: center; 
+      gap: 24px; 
+      margin-bottom: 48px; 
+      text-align: left;
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: var(--blur-glass);
+      border: 1px solid rgba(79, 195, 247, 0.1);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: var(--shadow-elevated);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(79, 195, 247, 0.05), transparent);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    
+    .logo { 
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      display: block;
+      image-rendering: crisp-edges;
+      filter: drop-shadow(0 4px 12px rgba(79, 195, 247, 0.4));
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1;
+      position: relative;
+    }
+    .logo:hover { 
+      transform: scale(1.1) rotate(5deg); 
+      filter: drop-shadow(0 8px 20px rgba(79, 195, 247, 0.6));
+    }
+    
+    .header-content {
+      z-index: 1;
+      position: relative;
+    }
+    
+    .header h1 { 
+      margin: 0; 
+      font-size: 36px; 
+      font-weight: 800; 
+      line-height: 1.2; 
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .subtitle { 
+      color: var(--muted); 
+      font-size: 18px; 
+      margin-top: 12px; 
+      max-width: 600px;
+      font-weight: 300;
+      line-height: 1.5;
+    }
+
+    .stats-banner {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      background: rgba(79, 195, 247, 0.1);
+      border: 1px solid rgba(79, 195, 247, 0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .toolbar { 
+      display: grid; 
+      grid-template-columns: 1fr auto auto; 
+      gap: 16px; 
+      align-items: center; 
+      margin: 32px 0; 
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: var(--blur-glass);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    
+    .input, .select { 
+      background: rgba(255,255,255,0.08); 
+      color: var(--text); 
+      border: 1px solid rgba(79, 195, 247, 0.2); 
+      padding: 16px 20px; 
+      border-radius: 12px; 
+      font-size: 15px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+    .input:focus, .select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.1);
+      background: rgba(255,255,255,0.12);
+    }
+    .input::placeholder { color: var(--muted); }
+    .select { min-width: 180px; cursor: pointer; }
+
+    .section-title { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      margin: 56px 0 32px; 
+    }
+    .section-title h2 { 
+      margin: 0; 
+      font-size: 32px; 
+      font-weight: 700;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+    }
+
+    .section-title h2::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: var(--gradient-primary);
+      border-radius: 2px;
+    }
+
+    .featured-section {
+      background: linear-gradient(135deg, rgba(79, 195, 247, 0.1), rgba(79, 195, 247, 0.05));
+      border: 1px solid rgba(79, 195, 247, 0.2);
+      border-radius: 24px;
+      padding: 40px;
+      margin: 48px 0;
+      backdrop-filter: var(--blur-glass);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .featured-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(79, 195, 247, 0.05), transparent 70%);
+      pointer-events: none;
+    }
+
+    .featured-section h2 {
+      margin: 0 0 32px;
+      font-size: 36px;
+      text-align: center;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      z-index: 1;
+    }
+
+    .grid { 
+      display: grid; 
+      gap: 28px; 
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+    .grid.cols-4 { grid-template-columns: repeat(1, 1fr); }
+    @media (min-width: 640px) { .grid.cols-4 { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 900px) { .grid.cols-4 { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1200px) { .grid.cols-4 { grid-template-columns: repeat(4, 1fr); } }
+
+    .card { 
+      background: var(--gradient-card); 
+      border: 1px solid rgba(79, 195, 247, 0.1); 
+      border-radius: 24px; 
+      overflow: hidden; 
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+      cursor: pointer;
+      backdrop-filter: var(--blur-glass);
+      position: relative;
+    }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(79, 195, 247, 0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    
+    .card:hover { 
+      transform: translateY(-12px) scale(1.03);
+      box-shadow: 
+        var(--shadow-elevated),
+        0 0 0 1px rgba(79, 195, 247, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border-color: var(--accent);
+    }
+    
+    .card:hover::before { opacity: 1; }
+    
+    .card-body { padding: 28px; position: relative; z-index: 1; }
+    .cover { 
+      aspect-ratio: 16/9; 
+      display: grid; 
+      place-items: center; 
+      font-size: 64px; 
+      background: linear-gradient(145deg, #1e293b, #0f172a); 
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .cover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent 30%, rgba(79, 195, 247, 0.3) 50%, transparent 70%);
+      opacity: 0;
+      transition: all 0.6s ease;
+      transform: translateX(-100%);
+    }
+    
+    .card:hover .cover::before { 
+      opacity: 1; 
+      transform: translateX(100%);
+    }
+
+    .title-row { 
+      display: flex; 
+      align-items: flex-start; 
+      justify-content: space-between; 
+      gap: 16px; 
+      margin-bottom: 16px; 
+    }
+    .game-title { 
+      margin: 0; 
+      font-size: 20px; 
+      font-weight: 600; 
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .description { 
+      margin: 0 0 20px; 
+      font-size: 15px; 
+      color: var(--muted); 
+      line-height: 1.5; 
+    }
+    .badge { 
+      background: var(--gradient-primary); 
+      color: #000; 
+      border-radius: 10px; 
+      padding: 6px 12px; 
+      font-size: 12px; 
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(79, 195, 247, 0.3);
+    }
+
+    .meta { 
+      margin: 20px 0; 
+      display: flex; 
+      gap: 16px; 
+      font-size: 13px; 
+      color: var(--muted); 
+      align-items: center; 
+      flex-wrap: wrap;
+    }
+    .meta span { 
+      display: flex; 
+      align-items: center; 
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    .tags { 
+      margin: 20px 0; 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 10px; 
+    }
+    .tag { 
+      border: 1px solid rgba(79, 195, 247, 0.3); 
+      border-radius: 8px; 
+      padding: 6px 12px; 
+      font-size: 12px; 
+      color: var(--accent); 
+      background: rgba(79, 195, 247, 0.1); 
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .tag:hover {
+      background: rgba(79, 195, 247, 0.2);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .play-button { 
+      background: var(--gradient-primary); 
+      color: #000; 
+      border: none; 
+      border-radius: 14px; 
+      padding: 16px 24px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 100%;
+      margin-top: 20px;
+      font-size: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .play-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .play-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(79, 195, 247, 0.5);
+    }
+    
+    .play-button:hover::before {
+      left: 100%;
+    }
+    
+    .play-button:active {
+      transform: translateY(-1px);
+    }
+
+    .empty-state { 
+      text-align: center; 
+      padding: 80px 24px; 
+      color: var(--muted); 
+      background: rgba(255, 255, 255, 0.03);
+      border: 2px dashed rgba(79, 195, 247, 0.2);
+      border-radius: 20px;
+      margin: 32px 0;
+    }
+    .empty-state h3 { 
+      margin: 0 0 16px; 
+      font-size: 28px; 
+      color: var(--text); 
+    }
+
+    .footer { 
+      margin-top: 80px; 
+      padding: 48px 0; 
+      text-align: center; 
+      color: var(--muted); 
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: var(--blur-glass);
+    }
+    .footer p { 
+      margin: 8px 0; 
+      font-size: 15px; 
+    }
+
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+      .container { padding: 20px 16px; }
+      .header { 
+        flex-direction: column; 
+        gap: 20px; 
+        text-align: center;
+        padding: 24px;
+      }
+      .header h1 { font-size: 28px; }
+      .subtitle { font-size: 16px; }
+      .stats-banner { justify-content: center; }
+      .toolbar { 
+        grid-template-columns: 1fr; 
+        gap: 16px;
+        padding: 20px;
+      }
+      .section-title h2 { font-size: 28px; }
+      .featured-section { padding: 28px 20px; }
+    }
+
+    @media (max-width: 480px) {
+      .logo { width: 70px; height: 70px; }
+      .header h1 { font-size: 24px; }
+      .card-body { padding: 20px; }
+      .cover { font-size: 48px; }
+      .featured-section h2 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <img src="./Public/logo.png" alt="PlayRetroArcade Logo" class="logo">
+      <div class="header-content">
+        <h1>PlayRetroArcade</h1>
+        <p class="subtitle">Experience premium retro gaming with modern polish. Classic games, zero downloads, infinite fun!</p>
+        <div class="stats-banner">
+          <div class="stat-item">
+            <span class="stat-number">3</span>
+            <div class="stat-label">Premium Games</div>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">∞</span>
+            <div class="stat-label">Hours of Fun</div>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">0</span>
+            <div class="stat-label">Downloads</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <input type="text" id="searchInput" class="input" placeholder="🔍 Search games...">
+      <select id="genreFilter" class="select">
+        <option value="">All Genres</option>
+        <option value="Arcade">Arcade</option>
+        <option value="Puzzle">Puzzle</option>
+        <option value="Action">Action</option>
+        <option value="Sports">Sports</option>
+      </select>
+      <select id="sortBy" class="select">
+        <option value="rating">⭐ Top Rated</option>
+        <option value="plays">🔥 Most Played</option>
+        <option value="updated">🆕 Recently Updated</option>
+        <option value="name">📝 Alphabetical</option>
+      </select>
+    </div>
+
+    <div class="featured-section">
+      <h2>🌟 Featured Games</h2>
+      <div id="featuredGames" class="grid cols-4"></div>
+    </div>
+
+    <div class="section-title">
+      <h2>🎮 All Games</h2>
+      <span id="gameCount" style="color: var(--muted); font-size: 16px;">3 games available</span>
+    </div>
+
+    <div id="gameGrid" class="grid cols-4"></div>
+
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <h3>🎯 No Games Found</h3>
+      <p>Try adjusting your search or filter criteria to discover amazing games!</p>
+    </div>
+
+    <div class="footer">
+      <p><strong>PlayRetroArcade</strong> - Premium retro gaming experience</p>
+      <p>Built with ❤️ for classic game enthusiasts • All games are free and require no installation</p>
+    </div>
+  </div>
+
+  <script>
+    // Enhanced game catalog with more detailed information
+    const GAMES = [
+      {
+        id: "snake-classic",
+        title: "Snake Classic",
+        description: "Navigate the snake to eat food and grow longer. Don't hit the walls or yourself! Features modern graphics and smooth controls.",
+        genres: ["Arcade", "Puzzle"],
+        players: "1",
+        rating: 4.8,
+        plays: 12045,
+        updatedAt: "2025-08-21",
+        route: "./Snake/index.html",
+        emoji: "🐍",
+        featured: true,
+        tags: ["Classic", "Addictive", "High Score"]
+      },
+      {
+        id: "tetris",
+        title: "Tetris",
+        description: "Stack falling blocks to clear lines in this timeless puzzle classic. Enhanced with modern features and fair piece distribution.",
+        genres: ["Arcade", "Puzzle"],
+        players: "1",
+        rating: 4.9,
+        plays: 24550,
+        updatedAt: "2025-08-21",
+        route: "./Tetris/index.html",
+        emoji: "🟦",
+        featured: true,
+        tags: ["Puzzle", "Strategy", "Endless"]
+      },
+      {
+        id: "space-invaders",
+        title: "Space Invaders",
+        description: "Defend Earth from waves of descending alien invaders. Fast-paced action with progressive difficulty and retro charm.",
+        genres: ["Arcade", "Action"],
+        players: "1",
+        rating: 4.7,
+        plays: 16780,
+        updatedAt: "2025-08-21",
+        route: "./SpaceInvaders/index.html",
+        emoji: "👾",
+        featured: true,
+        tags: ["Action", "Shooting", "Waves"]
+      }
+    ];
+
+    // Enhanced rendering with improved animations and effects
+    function renderGames(games, containerId) {
+      const container = document.getElementById(containerId);
+      if (!games.length) {
+        container.innerHTML = '';
+        document.getElementById('emptyState').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('emptyState').style.display = 'none';
+      
+      container.innerHTML = games.map(game => `
+        <div class="card" onclick="playGame('${game.route}', '${game.title}')">
+          <div class="cover">
+            ${game.emoji}
+          </div>
+          <div class="card-body">
+            <div class="title-row">
+              <h3 class="game-title">${game.title}</h3>
+              ${game.featured ? '<span class="badge">Featured</span>' : ''}
+            </div>
+            <p class="description">${game.description}</p>
+            <div class="meta">
+              <span>👥 ${game.players} Player</span>
+              <span>⭐ ${game.rating}</span>
+              <span>🎮 ${game.plays.toLocaleString()}</span>
+            </div>
+            <div class="tags">
+              ${game.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+            </div>
+            <button class="play-button">
+              🚀 Play Now
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function playGame(route, title) {
+      // Add recently played tracking
+      const recentGames = JSON.parse(localStorage.getItem('recentGames') || '[]');
+      const gameIndex = recentGames.findIndex(g => g.route === route);
+      
+      if (gameIndex > -1) {
+        recentGames.splice(gameIndex, 1);
+      }
+      
+      recentGames.unshift({ route, title, playedAt: new Date().toISOString() });
+      localStorage.setItem('recentGames', JSON.stringify(recentGames.slice(0, 5)));
+      
+      // Navigate to game
+      window.location.href = route;
+    }
+
+    function filterAndSortGames() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const genreFilter = document.getElementById('genreFilter').value;
+      const sortBy = document.getElementById('sortBy').value;
+
+      let filteredGames = GAMES.filter(game => {
+        const matchesSearch = game.title.toLowerCase().includes(searchTerm) || 
+                            game.description.toLowerCase().includes(searchTerm) ||
+                            game.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+        const matchesGenre = !genreFilter || game.genres.includes(genreFilter);
+        return matchesSearch && matchesGenre;
+      });
+
+      // Sort games
+      filteredGames.sort((a, b) => {
+        switch(sortBy) {
+          case 'rating': return b.rating - a.rating;
+          case 'plays': return b.plays - a.plays;
+          case 'updated': return new Date(b.updatedAt) - new Date(a.updatedAt);
+          case 'name': return a.title.localeCompare(b.title);
+          default: return 0;
+        }
+      });
+
+      return filteredGames;
+    }
+
+    function updateDisplay() {
+      const filteredGames = filterAndSortGames();
+      const featuredGames = filteredGames.filter(game => game.featured);
+      
+      renderGames(featuredGames, 'featuredGames');
+      renderGames(filteredGames, 'gameGrid');
+      
+      document.getElementById('gameCount').textContent = `${filteredGames.length} game${filteredGames.length !== 1 ? 's' : ''} available`;
+    }
+
+    // Enhanced event listeners
+    document.getElementById('searchInput').addEventListener('input', updateDisplay);
+    document.getElementById('genreFilter').addEventListener('change', updateDisplay);
+    document.getElementById('sortBy').addEventListener('change', updateDisplay);
+
+    // Initialize display
+    updateDisplay();
+
+    // Add smooth scroll behavior
+    document.documentElement.style.scrollBehavior = 'smooth';
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && !e.target.matches('input, textarea, select')) {
+        e.preventDefault();
+        document.getElementById('searchInput').focus();
+      }
+    });
+
+    // Performance optimization: Intersection Observer for animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    // Observe cards for entrance animations
+    document.addEventListener('DOMContentLoaded', () => {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+      });
+    });
+  </script>
+</body>
+</html>

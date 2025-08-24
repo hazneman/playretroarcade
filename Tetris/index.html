@@ -69,7 +69,7 @@
     
     header { 
       display: flex; 
-      justify-content: space-between; 
+      justify-content: center; 
       align-items: center; 
       gap: 16px; 
       margin: 0 0 32px; 
@@ -280,6 +280,73 @@
       position: relative;
     }
     
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 12px 0;
+      padding: 8px 12px;
+      background: rgba(79, 195, 247, 0.05);
+      border: 1px solid rgba(79, 195, 247, 0.1);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .stat-item:hover {
+      background: rgba(79, 195, 247, 0.1);
+      border-color: rgba(79, 195, 247, 0.2);
+    }
+    
+    .stat-label {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    
+    .stat-value {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 16px;
+    }
+    
+    .piece-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 8px 0;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(79, 195, 247, 0.05);
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    
+    .piece-stat:hover {
+      background: rgba(79, 195, 247, 0.05);
+    }
+    
+    .btn { 
+      cursor: pointer; 
+      border: 1px solid rgba(79, 195, 247, 0.2); 
+      background: var(--gradient-card); 
+      color: var(--text); 
+      padding: 10px 16px; 
+      border-radius: 12px; 
+      font-size: 14px; 
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: var(--blur-glass);
+      display: block;
+      width: 100%;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .btn:hover { 
+      border-color: var(--accent); 
+      background: rgba(79, 195, 247, 0.1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(79, 195, 247, 0.2);
+    }
+    
     .next-canvas, .hold-canvas { 
       border: 2px solid rgba(79, 195, 247, 0.2); 
       border-radius: 12px; 
@@ -456,38 +523,67 @@
 <body>
   <div class="wrap">
     <header>
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <a href="../index.html" class="home-btn">← Home</a>
-        <img src="../Public/logo.png" alt="Logo" class="logo">
-        <h1>Tetris — Play Retro Arcade</h1>
-      </div>
-      <div class="stats">
-        <span class="pill">Score: <strong id="score">0</strong></span>
-        <span class="pill">Level: <strong id="level">1</strong></span>
-        <span class="pill">Lines: <strong id="lines">0</strong></span>
-        <span class="pill">Best: <strong id="best">0</strong></span>
-        <button id="btnMusic" class="btn" title="Toggle Music (M)">🎵 Music</button>
-        <button id="btnPause" class="btn" title="Pause/Resume (P)">Pause</button>
-        <button id="btnRestart" class="btn" title="Restart (R)">Restart</button>
-      </div>
+      <a href="../index.html" class="home-btn">← Home</a>
+      <img src="../Public/logo.png" alt="Logo" class="logo">
+      <h1>Tetris — Play Retro Arcade</h1>
     </header>
 
     <div class="game-container">
       <div class="side-panel">
         <div class="panel-section">
+          <h3 class="panel-title">Score</h3>
+          <div class="stat-item">
+            <span class="stat-label">Current</span>
+            <span class="stat-value" id="score">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Level</span>
+            <span class="stat-value" id="level">1</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Lines</span>
+            <span class="stat-value" id="lines">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Best</span>
+            <span class="stat-value" id="best">0</span>
+          </div>
+        </div>
+        
+        <div class="panel-section">
           <h3 class="panel-title">Hold</h3>
           <canvas id="holdCanvas" class="hold-canvas" width="80" height="80"></canvas>
         </div>
+        
         <div class="panel-section">
           <h3 class="panel-title">Statistics</h3>
-          <div style="font-size: 12px; line-height: 1.6;">
-            <div>I: <span id="stat-I">0</span></div>
-            <div>O: <span id="stat-O">0</span></div>
-            <div>T: <span id="stat-T">0</span></div>
-            <div>S: <span id="stat-S">0</span></div>
-            <div>Z: <span id="stat-Z">0</span></div>
-            <div>J: <span id="stat-J">0</span></div>
-            <div>L: <span id="stat-L">0</span></div>
+          <div class="piece-stat">
+            <span>I:</span>
+            <span id="stat-I">0</span>
+          </div>
+          <div class="piece-stat">
+            <span>O:</span>
+            <span id="stat-O">0</span>
+          </div>
+          <div class="piece-stat">
+            <span>T:</span>
+            <span id="stat-T">0</span>
+          </div>
+          <div class="piece-stat">
+            <span>S:</span>
+            <span id="stat-S">0</span>
+          </div>
+          <div class="piece-stat">
+            <span>Z:</span>
+            <span id="stat-Z">0</span>
+          </div>
+          <div class="piece-stat">
+            <span>J:</span>
+            <span id="stat-J">0</span>
+          </div>
+          <div class="piece-stat">
+            <span>L:</span>
+            <span id="stat-L">0</span>
           </div>
         </div>
       </div>
@@ -507,15 +603,24 @@
           <h3 class="panel-title">Next</h3>
           <canvas id="nextCanvas" class="next-canvas" width="80" height="80"></canvas>
         </div>
+        
         <div class="panel-section">
           <h3 class="panel-title">Controls</h3>
-          <div style="font-size: 12px; line-height: 1.4; color: #b9c2d3;">
+          <button id="btnPause" class="btn" title="Pause/Resume (P)">⏯ Pause</button>
+          <button id="btnRestart" class="btn" title="Restart (R)">🔄 Restart</button>
+          <button id="btnMusic" class="btn" title="Toggle Music (M)">🎵 Music</button>
+        </div>
+        
+        <div class="panel-section">
+          <h3 class="panel-title">How to Play</h3>
+          <div style="font-size: 12px; line-height: 1.4; color: var(--muted); z-index: 1; position: relative;">
             <div><strong>Move:</strong> ←→ / A/D</div>
             <div><strong>Rotate:</strong> ↑ / W</div>
-            <div><strong>Drop:</strong> ↓ / S</div>
+            <div><strong>Soft Drop:</strong> ↓ / S</div>
             <div><strong>Hard Drop:</strong> Space</div>
             <div><strong>Hold:</strong> C / Shift</div>
-            <div><strong>Pause:</strong> P</div>
+            <div><strong>Pause:</strong> P key</div>
+            <div><strong>Music:</strong> M key</div>
           </div>
         </div>
       </div>
