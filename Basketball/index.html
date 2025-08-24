@@ -510,10 +510,10 @@
     <div class="side-panel">
       <div class="panel-section">
         <div class="panel-title">How to Play</div>
+        <div class="pill">⬅️➡️ Move Player</div>
         <div class="pill">🖱️ Click to Aim</div>
         <div class="pill">🎯 Hold for Power</div>
         <div class="pill">🚀 Release to Shoot</div>
-        <div class="pill">🎯 Hit the Rim!</div>
       </div>
       
       <div class="panel-section">
@@ -521,6 +521,15 @@
         <button class="btn" onclick="togglePause()">⏸️ Pause</button>
         <button class="btn" onclick="resetGame()">🔄 Reset</button>
         <button class="btn" onclick="goHome()">🏠 Home</button>
+      </div>
+      
+      <div class="panel-section">
+        <div class="panel-title">Quick Positions</div>
+        <div style="color: var(--muted); font-size: 13px; line-height: 1.5;">
+          <div><strong>1-5:</strong> Court positions</div>
+          <div><strong>Arrow Keys:</strong> Move around</div>
+          <div><strong>Mouse:</strong> Aim & shoot</div>
+        </div>
       </div>
       
       <div class="panel-section">
@@ -560,25 +569,40 @@
     let bestStreak = 0;
     let gameStartTime = 0;
     
+    // Player Character
+    let player = {
+      x: 400,
+      y: 480,
+      width: 30,
+      height: 50,
+      targetX: 400,
+      moving: false,
+      shootingPose: false,
+      dribbling: true,
+      animFrame: 0
+    };
+    
     // Basketball Physics
     let ball = {
       x: 400,
-      y: 550,
+      y: 460,
       vx: 0,
       vy: 0,
-      radius: 15,
-      onGround: true,
-      bounces: 0
+      radius: 12,
+      inHand: true,
+      bounces: 0,
+      trail: []
     };
     
     let basket = {
       x: 400,
-      y: 150,
-      width: 60,
-      height: 8,
-      backboardX: 460,
-      backboardWidth: 8,
-      backboardHeight: 80
+      y: 120,
+      width: 50,
+      height: 6,
+      backboardX: 450,
+      backboardWidth: 6,
+      backboardHeight: 70,
+      netPoints: []
     };
     
     let powerMeter = {
@@ -588,7 +612,19 @@
     };
     
     let mouse = { x: 0, y: 0, down: false };
-    let aimLine = { show: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+    let shootingArc = { show: false, points: [] };
+    
+    // Court positions where player can shoot from
+    const shootingPositions = [
+      { x: 200, y: 480, name: "Left Wing" },
+      { x: 300, y: 500, name: "Left Corner" },
+      { x: 400, y: 520, name: "Free Throw" },
+      { x: 500, y: 500, name: "Right Corner" },
+      { x: 600, y: 480, name: "Right Wing" },
+      { x: 400, y: 460, name: "Top of Key" },
+      { x: 350, y: 480, name: "Left Elbow" },
+      { x: 450, y: 480, name: "Right Elbow" }
+    ];
     
     // Game Constants
     const GRAVITY = 0.5;
@@ -689,15 +725,18 @@
     }
     
     function resetBall() {
-      ball.x = 400;
-      ball.y = 550;
+      ball.x = player.x;
+      ball.y = player.y - 20;
       ball.vx = 0;
       ball.vy = 0;
-      ball.onGround = true;
+      ball.inHand = true;
       ball.bounces = 0;
+      ball.trail = [];
       powerMeter.charging = false;
       powerMeter.power = 0;
-      aimLine.show = false;
+      shootingArc.show = false;
+      player.shootingPose = false;
+      player.dribbling = true;
       document.getElementById('powerMeter').style.display = 'none';
     }
     
@@ -750,8 +789,41 @@
     }
     
     // Physics and Game Logic
+    function updatePlayer() {
+      // Animate player movement to target position
+      if (Math.abs(player.x - player.targetX) > 3) {
+        player.moving = true;
+        player.dribbling = true;
+        const speed = 4;
+        if (player.x < player.targetX) {
+          player.x += speed;
+        } else {
+          player.x -= speed;
+        }
+        
+        // Update ball position while moving
+        if (ball.inHand) {
+          ball.x = player.x;
+          ball.y = player.y - 15 + Math.sin(Date.now() * 0.01) * 3; // Dribbling animation
+        }
+      } else {
+        player.moving = false;
+        if (ball.inHand && !player.shootingPose) {
+          ball.x = player.x;
+          ball.y = player.y - 20;
+        }
+      }
+      
+      // Animation frame counter
+      player.animFrame = (player.animFrame + 1) % 60;
+    }
+    
     function updateBall() {
-      if (ball.onGround) return;
+      if (ball.inHand) return;
+      
+      // Add trail effect
+      ball.trail.push({ x: ball.x, y: ball.y });
+      if (ball.trail.length > 8) ball.trail.shift();
       
       // Apply gravity
       ball.vy += GRAVITY;
@@ -760,8 +832,8 @@
       ball.x += ball.vx;
       ball.y += ball.vy;
       
-      // Apply friction
-      ball.vx *= FRICTION;
+      // Apply air resistance
+      ball.vx *= 0.999;
       
       // Check boundaries
       if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
@@ -772,17 +844,17 @@
       }
       
       // Ground collision
-      if (ball.y + ball.radius > canvas.height - 20) {
-        ball.y = canvas.height - 20 - ball.radius;
+      if (ball.y + ball.radius > canvas.height - 40) {
+        ball.y = canvas.height - 40 - ball.radius;
         ball.vy = -ball.vy * BOUNCE_DAMPING;
         ball.vx *= FRICTION;
         playBounceSound();
         ball.bounces++;
         
         if (Math.abs(ball.vy) < 2 && Math.abs(ball.vx) < 1) {
-          ball.onGround = true;
-          ball.vy = 0;
-          setTimeout(resetBall, 1000);
+          setTimeout(() => {
+            if (!ball.inHand) resetBall();
+          }, 1500);
         }
       }
       
@@ -816,20 +888,28 @@
         const centerDistance = Math.abs(ball.x - basket.x);
         const speedFactor = Math.abs(ball.vx) + Math.abs(ball.vy);
         
-        if (centerDistance < 10 && speedFactor < 8) {
+        if (centerDistance < 8 && speedFactor < 10) {
           points = 3;
-          message = "PERFECT!";
+          message = "SWISH!";
           color = "#f7931e";
-        } else if (centerDistance < 20 && speedFactor < 12) {
+        } else if (centerDistance < 15 && speedFactor < 15) {
           points = 2;
-          message = "GREAT!";
+          message = "NICE!";
           color = "#ff6b35";
+        }
+        
+        // Distance bonus
+        const distance = Math.sqrt(Math.pow(player.x - basket.x, 2) + Math.pow(player.y - basket.y, 2));
+        if (distance > 300) {
+          points += 1;
+          message = "LONG SHOT! " + message;
         }
         
         // Streak bonus
         streak++;
         if (streak >= 5) {
           points += Math.floor(streak / 5);
+          message = `${streak} STREAK! ` + message;
         }
         
         score += points;
@@ -845,59 +925,164 @@
         }
         
         updateUI();
-        resetBall();
+        setTimeout(resetBall, 800);
       }
     }
     
     // Rendering
     function drawCourt() {
-      // Court background
-      ctx.fillStyle = '#8b4513';
-      ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+      // Court background - wooden floor
+      const gradient = ctx.createLinearGradient(0, canvas.height - 100, 0, canvas.height);
+      gradient.addColorStop(0, '#deb887');
+      gradient.addColorStop(1, '#8b7355');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
       
       // Court lines
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 3;
+      
+      // Free throw circle
       ctx.beginPath();
-      ctx.moveTo(0, canvas.height - 20);
-      ctx.lineTo(canvas.width, canvas.height - 20);
+      ctx.arc(400, 400, 80, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Three point arc
+      ctx.beginPath();
+      ctx.arc(basket.x, canvas.height - 20, 200, Math.PI, 0);
       ctx.stroke();
       
       // Free throw line
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(200, canvas.height - 20);
-      ctx.lineTo(600, canvas.height - 20);
+      ctx.moveTo(320, 400);
+      ctx.lineTo(480, 400);
       ctx.stroke();
+      
+      // Lane lines
+      ctx.beginPath();
+      ctx.moveTo(350, 400);
+      ctx.lineTo(350, canvas.height - 20);
+      ctx.moveTo(450, 400);
+      ctx.lineTo(450, canvas.height - 20);
+      ctx.stroke();
+      
+      // Draw shooting positions
+      ctx.fillStyle = 'rgba(255, 107, 53, 0.3)';
+      shootingPositions.forEach(pos => {
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
+        ctx.fill();
+      });
     }
     
     function drawBasket() {
       // Backboard
-      ctx.fillStyle = '#e5e7eb';
+      ctx.fillStyle = '#f8f9fa';
       ctx.fillRect(basket.backboardX, basket.y - basket.backboardHeight, basket.backboardWidth, basket.backboardHeight);
+      
+      // Backboard outline
+      ctx.strokeStyle = '#333333';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(basket.backboardX, basket.y - basket.backboardHeight, basket.backboardWidth, basket.backboardHeight);
       
       // Rim
       ctx.strokeStyle = '#dc2626';
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 5;
       ctx.beginPath();
       ctx.moveTo(basket.x - basket.width/2, basket.y);
       ctx.lineTo(basket.x + basket.width/2, basket.y);
       ctx.stroke();
       
-      // Net
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      // Rim support
+      ctx.strokeStyle = '#666666';
       ctx.lineWidth = 2;
-      for (let i = 0; i < 6; i++) {
-        const x = basket.x - basket.width/2 + (basket.width / 5) * i;
+      ctx.beginPath();
+      ctx.moveTo(basket.x, basket.y);
+      ctx.lineTo(basket.backboardX, basket.y);
+      ctx.stroke();
+      
+      // Net
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 8; i++) {
+        const x = basket.x - basket.width/2 + (basket.width / 7) * i;
+        const sway = Math.sin(Date.now() * 0.005 + i * 0.5) * 2;
         ctx.beginPath();
         ctx.moveTo(x, basket.y);
-        ctx.quadraticCurveTo(x + Math.sin(Date.now() * 0.01 + i) * 2, basket.y + 20, x + 5, basket.y + 25);
+        ctx.quadraticCurveTo(x + sway, basket.y + 15, x + sway * 0.5, basket.y + 25);
         ctx.stroke();
       }
     }
     
+    function drawPlayer() {
+      const x = player.x;
+      const y = player.y;
+      
+      // Player shadow
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.beginPath();
+      ctx.ellipse(x, y + player.height + 5, player.width/2, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Body
+      ctx.fillStyle = '#ff6b35'; // Jersey color
+      ctx.fillRect(x - player.width/2, y, player.width, player.height * 0.6);
+      
+      // Head
+      ctx.fillStyle = '#fdbcb4'; // Skin color
+      ctx.beginPath();
+      ctx.arc(x, y - 10, 12, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Arms
+      const armOffset = player.shootingPose ? 15 : (player.moving ? Math.sin(player.animFrame * 0.3) * 8 : 5);
+      ctx.fillStyle = '#fdbcb4';
+      ctx.fillRect(x - player.width/2 - 8, y + 5, 8, 25);
+      ctx.fillRect(x + player.width/2, y + 5, 8, 25);
+      
+      // Legs
+      ctx.fillStyle = '#1e3a8a'; // Shorts color
+      const legOffset = player.moving ? Math.sin(player.animFrame * 0.4) * 5 : 0;
+      ctx.fillRect(x - 8 + legOffset, y + player.height * 0.6, 6, player.height * 0.4);
+      ctx.fillRect(x + 2 - legOffset, y + player.height * 0.6, 6, player.height * 0.4);
+      
+      // Shoes
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(x - 10, y + player.height, 8, 6);
+      ctx.fillRect(x + 2, y + player.height, 8, 6);
+      
+      // Jersey number
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('23', x, y + 20);
+    }
+    
     function drawBall() {
+      // Ball trail
+      ctx.strokeStyle = 'rgba(210, 105, 30, 0.3)';
+      ctx.lineWidth = ball.radius;
+      ctx.lineCap = 'round';
+      for (let i = 0; i < ball.trail.length - 1; i++) {
+        const alpha = (i / ball.trail.length) * 0.3;
+        ctx.strokeStyle = `rgba(210, 105, 30, ${alpha})`;
+        ctx.beginPath();
+        ctx.moveTo(ball.trail[i].x, ball.trail[i].y);
+        ctx.lineTo(ball.trail[i + 1].x, ball.trail[i + 1].y);
+        ctx.stroke();
+      }
+      
+      // Ball shadow on ground
+      if (!ball.inHand) {
+        const shadowY = canvas.height - 40;
+        const shadowSize = Math.max(5, 15 - (ball.y - shadowY) * 0.02);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.beginPath();
+        ctx.ellipse(ball.x, shadowY, shadowSize, shadowSize * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      // Main ball
       ctx.fillStyle = '#d2691e';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
@@ -907,64 +1092,57 @@
       ctx.strokeStyle = '#8b4513';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(ball.x, ball.y, ball.radius - 2, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, ball.radius - 1, 0, Math.PI * 2);
       ctx.stroke();
       
       // Basketball seams
       ctx.beginPath();
-      ctx.moveTo(ball.x - ball.radius + 2, ball.y);
-      ctx.lineTo(ball.x + ball.radius - 2, ball.y);
-      ctx.moveTo(ball.x, ball.y - ball.radius + 2);
-      ctx.lineTo(ball.x, ball.y + ball.radius - 2);
+      ctx.moveTo(ball.x - ball.radius + 3, ball.y);
+      ctx.lineTo(ball.x + ball.radius - 3, ball.y);
+      ctx.moveTo(ball.x, ball.y - ball.radius + 3);
+      ctx.lineTo(ball.x, ball.y + ball.radius - 3);
       ctx.stroke();
     }
     
-    function drawAimLine() {
-      if (!aimLine.show || !ball.onGround) return;
+    function drawShootingArc() {
+      if (!shootingArc.show || !ball.inHand) return;
       
       ctx.strokeStyle = 'rgba(255, 107, 53, 0.6)';
       ctx.lineWidth = 3;
-      ctx.setLineDash([5, 5]);
+      ctx.setLineDash([8, 8]);
       ctx.beginPath();
-      ctx.moveTo(aimLine.startX, aimLine.startY);
-      ctx.lineTo(aimLine.endX, aimLine.endY);
+      
+      for (let i = 0; i < shootingArc.points.length - 1; i++) {
+        const point = shootingArc.points[i];
+        if (i === 0) {
+          ctx.moveTo(point.x, point.y);
+        } else {
+          ctx.lineTo(point.x, point.y);
+        }
+      }
       ctx.stroke();
       ctx.setLineDash([]);
-      
-      // Arrow head
-      const angle = Math.atan2(aimLine.endY - aimLine.startY, aimLine.endX - aimLine.startX);
-      const arrowLength = 10;
-      ctx.beginPath();
-      ctx.moveTo(aimLine.endX, aimLine.endY);
-      ctx.lineTo(aimLine.endX - arrowLength * Math.cos(angle - Math.PI/6), 
-                 aimLine.endY - arrowLength * Math.sin(angle - Math.PI/6));
-      ctx.moveTo(aimLine.endX, aimLine.endY);
-      ctx.lineTo(aimLine.endX - arrowLength * Math.cos(angle + Math.PI/6), 
-                 aimLine.endY - arrowLength * Math.sin(angle + Math.PI/6));
-      ctx.stroke();
     }
     
     function render() {
-      // Clear canvas
-      ctx.fillStyle = 'linear-gradient(135deg, #2d1810, #1a0f08)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Create gradient background
+      // Clear canvas with sky gradient
       const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      gradient.addColorStop(0, '#4a90a4');
-      gradient.addColorStop(1, '#2d1810');
+      gradient.addColorStop(0, '#87ceeb');
+      gradient.addColorStop(0.7, '#e0f6ff');
+      gradient.addColorStop(1, '#f0f8ff');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       drawCourt();
       drawBasket();
+      drawPlayer();
       drawBall();
-      drawAimLine();
+      drawShootingArc();
     }
     
     // Event Handlers
     function handleMouseDown(e) {
-      if (gameState !== 'playing' || !ball.onGround) return;
+      if (gameState !== 'playing' || !ball.inHand) return;
       
       const rect = canvas.getBoundingClientRect();
       mouse.x = e.clientX - rect.left;
@@ -973,11 +1151,11 @@
       
       powerMeter.charging = true;
       powerMeter.power = 0;
+      player.shootingPose = true;
+      player.dribbling = false;
       document.getElementById('powerMeter').style.display = 'block';
       
-      aimLine.show = true;
-      aimLine.startX = ball.x;
-      aimLine.startY = ball.y;
+      calculateShootingArc();
     }
     
     function handleMouseMove(e) {
@@ -985,46 +1163,125 @@
       mouse.x = e.clientX - rect.left;
       mouse.y = e.clientY - rect.top;
       
-      if (aimLine.show && ball.onGround) {
-        aimLine.endX = mouse.x;
-        aimLine.endY = mouse.y;
+      if (mouse.down && ball.inHand) {
+        calculateShootingArc();
+      }
+    }
+    
+    function calculateShootingArc() {
+      shootingArc.show = true;
+      shootingArc.points = [];
+      
+      const dx = mouse.x - ball.x;
+      const dy = mouse.y - ball.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance > 20) {
+        const power = Math.min(powerMeter.power / 100, 1);
+        const vx = (dx / distance) * power * 12;
+        const vy = (dy / distance) * power * 12;
+        
+        // Simulate trajectory
+        let simX = ball.x;
+        let simY = ball.y;
+        let simVx = vx;
+        let simVy = vy;
+        
+        for (let i = 0; i < 60; i++) {
+          shootingArc.points.push({ x: simX, y: simY });
+          simVy += GRAVITY;
+          simX += simVx;
+          simY += simVy;
+          
+          if (simY > canvas.height - 40) break;
+        }
       }
     }
     
     function handleMouseUp(e) {
-      if (!mouse.down || !ball.onGround || gameState !== 'playing') return;
+      if (!mouse.down || !ball.inHand || gameState !== 'playing') return;
       
       mouse.down = false;
-      aimLine.show = false;
+      shootingArc.show = false;
       document.getElementById('powerMeter').style.display = 'none';
       
-      // Calculate shot velocity
       const dx = mouse.x - ball.x;
       const dy = mouse.y - ball.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
       const power = powerMeter.power / 100;
       
-      if (distance > 10) {
-        ball.vx = (dx / distance) * power * 15;
-        ball.vy = (dy / distance) * power * 15;
-        ball.onGround = false;
+      if (distance > 20) {
+        ball.vx = (dx / distance) * power * 12;
+        ball.vy = (dy / distance) * power * 12;
+        ball.inHand = false;
         ball.bounces = 0;
+        ball.trail = [];
         
         shotsAttempted++;
         
-        // Reset streak if this is a new shot
-        if (ball.bounces === 0) {
-          const shotDistance = Math.sqrt(Math.pow(basket.x - ball.x, 2) + Math.pow(basket.y - ball.y, 2));
-          if (shotDistance > 200) { // Long shot
-            streak = 0; // Reset streak for missed long shots  
+        // Check if shot missed badly
+        setTimeout(() => {
+          if (ball.inHand === false) {
+            const distanceToBasket = Math.sqrt(Math.pow(ball.x - basket.x, 2) + Math.pow(ball.y - basket.y, 2));
+            if (distanceToBasket > 100) {
+              streak = 0;
+              updateUI();
+            }
           }
-        }
+        }, 2000);
         
         updateUI();
       }
       
       powerMeter.charging = false;
       powerMeter.power = 0;
+      player.shootingPose = false;
+    }
+    
+    function handleKeyDown(e) {
+      if (gameState !== 'playing' || !ball.inHand) return;
+      
+      // Move player to different shooting positions
+      let newPosition = null;
+      
+      switch(e.key.toLowerCase()) {
+        case 'a':
+        case 'arrowleft':
+          newPosition = shootingPositions.find(p => p.x < player.x);
+          break;
+        case 'd':
+        case 'arrowright':
+          newPosition = shootingPositions.find(p => p.x > player.x);
+          break;
+        case 'w':
+        case 'arrowup':
+          newPosition = shootingPositions.find(p => p.y < player.y);
+          break;
+        case 's':
+        case 'arrowdown':
+          newPosition = shootingPositions.find(p => p.y > player.y);
+          break;
+        case '1':
+          newPosition = shootingPositions[0];
+          break;
+        case '2':
+          newPosition = shootingPositions[1];
+          break;
+        case '3':
+          newPosition = shootingPositions[2];
+          break;
+        case '4':
+          newPosition = shootingPositions[3];
+          break;
+        case '5':
+          newPosition = shootingPositions[4];
+          break;
+      }
+      
+      if (newPosition) {
+        player.targetX = newPosition.x;
+        player.y = newPosition.y;
+      }
     }
     
     // Touch Events for Mobile
@@ -1057,6 +1314,7 @@
     // Game Loop
     function gameLoop() {
       if (gameState === 'playing') {
+        updatePlayer();
         updateBall();
         
         // Update power meter
@@ -1093,6 +1351,8 @@
           startGame('timed');
         }
       }
+      
+      handleKeyDown(e);
     });
     
     // Initialize game
