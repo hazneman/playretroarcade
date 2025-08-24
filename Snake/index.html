@@ -58,11 +58,11 @@
       66% { transform: translateY(10px) rotate(-1deg); }
     }
 
-    .wrap { max-width: 800px; margin: 0 auto; padding: 20px; }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px; }
     
     header { 
       display: flex; 
-      justify-content: space-between; 
+      justify-content: center; 
       align-items: center; 
       gap: 16px; 
       margin: 0 0 32px; 
@@ -104,7 +104,13 @@
       position: relative;
     }
     
-    .stats { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; z-index: 1; position: relative; }
+    .game-container { 
+      display: grid; 
+      grid-template-columns: 1fr auto 1fr; 
+      gap: 28px; 
+      align-items: start; 
+      margin: 32px 0; 
+    }
     
     .home-btn { 
       background: var(--gradient-primary); 
@@ -123,6 +129,7 @@
       position: relative;
       overflow: hidden;
       z-index: 1;
+      margin-right: 16px;
     }
     
     .home-btn::before {
@@ -153,10 +160,86 @@
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1;
       position: relative;
+      margin-right: 16px;
     }
     .logo:hover { 
       transform: scale(1.1) rotate(5deg); 
       filter: drop-shadow(0 8px 20px rgba(79, 195, 247, 0.5));
+    }
+    
+    .side-panel { min-width: 160px; }
+    
+    .panel-section { 
+      background: var(--gradient-card); 
+      border: 1px solid rgba(79, 195, 247, 0.1); 
+      border-radius: 16px; 
+      padding: 20px; 
+      margin-bottom: 20px;
+      backdrop-filter: var(--blur-glass);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .panel-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(79, 195, 247, 0.05), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    
+    .panel-section:hover {
+      border-color: rgba(79, 195, 247, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    
+    .panel-section:hover::before { opacity: 1; }
+    
+    .panel-title { 
+      font-size: 16px; 
+      font-weight: 600; 
+      margin: 0 0 16px; 
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      z-index: 1;
+      position: relative;
+    }
+    
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 12px 0;
+      padding: 8px 12px;
+      background: rgba(79, 195, 247, 0.05);
+      border: 1px solid rgba(79, 195, 247, 0.1);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .stat-item:hover {
+      background: rgba(79, 195, 247, 0.1);
+      border-color: rgba(79, 195, 247, 0.2);
+    }
+    
+    .stat-label {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    
+    .stat-value {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 16px;
     }
     
     .pill { 
@@ -169,6 +252,10 @@
       font-weight: 500;
       backdrop-filter: var(--blur-glass);
       transition: all 0.3s ease;
+      display: block;
+      width: 100%;
+      margin-bottom: 12px;
+      text-align: center;
     }
     .pill:hover {
       background: rgba(79, 195, 247, 0.15);
@@ -187,6 +274,10 @@
       font-weight: 500;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       backdrop-filter: var(--blur-glass);
+      display: block;
+      width: 100%;
+      margin-bottom: 8px;
+      text-align: center;
     }
     .btn:hover { 
       border-color: var(--accent); 
@@ -205,7 +296,8 @@
       aspect-ratio: 1/1;
       padding: 20px;
       transition: all 0.3s ease;
-      margin: 20px 0;
+      max-width: 600px;
+      margin: 0 auto;
     }
     .board:hover {
       border-color: var(--accent);
@@ -357,29 +449,32 @@
     
     @media (max-width: 768px) {
       .wrap { padding: 16px; }
+      .game-container { grid-template-columns: 1fr; gap: 20px; }
+      .side-panel { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 20px; 
+      }
       header { 
         flex-direction: column; 
         gap: 16px; 
         align-items: stretch;
         padding: 20px;
       }
-      header > div:first-child { 
-        justify-content: center; 
-        flex-wrap: wrap; 
-        gap: 12px;
-      }
-      .stats { justify-content: center; }
       h1 { font-size: 20px; text-align: center; }
-      .board { margin: 16px 0; padding: 16px; }
+      .board { padding: 16px; margin: 16px 0; }
+      .controls { margin-top: 16px; }
     }
     
     @media (max-width: 480px) { 
       .stats { gap: 8px; }
       .pill { padding: 8px 12px; font-size: 12px; }
       .btn { padding: 8px 12px; font-size: 12px; }
-      .logo { width: 48px; height: 48px; }
+      .logo { width: 48px; height: 48px; margin-right: 12px; }
       .ctrl { width: 64px; height: 48px; font-size: 18px; }
       .pause { width: 84px; }
+      .side-panel { grid-template-columns: 1fr; gap: 16px; }
+      .panel-section { padding: 16px; }
     }
   </style>
 
@@ -400,27 +495,64 @@
 <body>
   <div class="wrap">
     <header>
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <a href="../index.html" class="home-btn">← Home</a>
-        <img src="../Public/logo.png" alt="Logo" class="logo">
-        <h1>Snake — Play Retro Arcade</h1>
-      </div>
-      <div class="stats">
-        <span class="pill">Score: <strong id="score">0</strong></span>
-        <span class="pill">Best: <strong id="best">0</strong></span>
-        <button id="btnMusic" class="btn" title="Toggle Music (M)">🎵 Music</button>
-        <button id="btnPause" class="btn" title="Pause/Resume (P)">Pause</button>
-        <button id="btnRestart" class="btn" title="Restart (R)">Restart</button>
-        <button id="btnTestSound" class="btn" title="Test Sound">🔊 Test</button>
-      </div>
+      <a href="../index.html" class="home-btn">← Home</a>
+      <img src="../Public/logo.png" alt="Logo" class="logo">
+      <h1>Snake — Play Retro Arcade</h1>
     </header>
 
-    <div class="board" id="board">
-      <canvas id="game" width="480" height="480" aria-label="Snake game canvas"></canvas>
-      <div class="overlay" id="overlay" hidden>
-        <div class="card">
-          <h2 id="overlayTitle">Paused</h2>
-          <p>Press <kbd>R</kbd> to restart or <kbd>P</kbd> to continue.</p>
+    <div class="game-container">
+      <div class="side-panel">
+        <div class="panel-section">
+          <h3 class="panel-title">Score</h3>
+          <div class="stat-item">
+            <span class="stat-label">Current</span>
+            <span class="stat-value" id="score">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Best</span>
+            <span class="stat-value" id="best">0</span>
+          </div>
+        </div>
+        
+        <div class="panel-section">
+          <h3 class="panel-title">Game Info</h3>
+          <div style="font-size: 14px; line-height: 1.6; color: var(--muted); z-index: 1; position: relative;">
+            <div style="margin-bottom: 8px;"><strong>Length:</strong> <span id="snakeLength">1</span></div>
+            <div style="margin-bottom: 8px;"><strong>Food Eaten:</strong> <span id="foodEaten">0</span></div>
+            <div><strong>Game Time:</strong> <span id="gameTime">0:00</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="board" id="board">
+        <canvas id="game" width="480" height="480" aria-label="Snake game canvas"></canvas>
+        <div class="overlay" id="overlay" hidden>
+          <div class="card">
+            <h2 id="overlayTitle">Paused</h2>
+            <p>Press <kbd>R</kbd> to restart or <kbd>P</kbd> to continue.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-panel">
+        <div class="panel-section">
+          <h3 class="panel-title">Controls</h3>
+          <button id="btnPause" class="btn" title="Pause/Resume (P)">⏯ Pause</button>
+          <button id="btnRestart" class="btn" title="Restart (R)">🔄 Restart</button>
+          <button id="btnMusic" class="btn" title="Toggle Music (M)">🎵 Music</button>
+          <button id="btnTestSound" class="btn" title="Test Sound">🔊 Test</button>
+        </div>
+        
+        <div class="panel-section">
+          <h3 class="panel-title">How to Play</h3>
+          <div style="font-size: 12px; line-height: 1.4; color: var(--muted); z-index: 1; position: relative;">
+            <div><strong>Move:</strong> Arrow Keys / WASD</div>
+            <div><strong>Mobile:</strong> Touch controls below</div>
+            <div><strong>Goal:</strong> Eat food to grow</div>
+            <div><strong>Avoid:</strong> Walls and yourself</div>
+            <div><strong>Pause:</strong> P key</div>
+            <div><strong>Music:</strong> M key</div>
+          </div>
         </div>
       </div>
     </div>
@@ -434,7 +566,7 @@
       <button class="ctrl down"  data-dir="down">▼</button>
     </div>
 
-    <footer>Controls: Arrow Keys / WASD / Swipe • Pause: P • Restart: R • Music: M • 🔊 Sound Effects</footer>
+    <footer>Experience the classic Snake game with modern graphics and smooth controls • Challenge yourself to beat your high score!</footer>
   </div>
 
   <!-- Background Music -->
@@ -477,6 +609,9 @@
   const ctx = canvas.getContext('2d');
   const scoreEl = document.getElementById('score');
   const bestEl  = document.getElementById('best');
+  const snakeLengthEl = document.getElementById('snakeLength');
+  const foodEatenEl = document.getElementById('foodEaten');
+  const gameTimeEl = document.getElementById('gameTime');
   const overlay = document.getElementById('overlay');
   const overlayTitle = document.getElementById('overlayTitle');
   const btnPause = document.getElementById('btnPause');
@@ -493,17 +628,35 @@
   let animationTime = 0;
   let musicEnabled = false;
   let musicInitialized = false;
+  let gameStartTime = 0;
+  let foodEatenCount = 0;
 
   function reset() {
     snake = [{x:12, y:12, colors: null},{x:11,y:12, colors: null},{x:10,y:12, colors: null}];
     dir = {x:1,y:0}; nextDir = {...dir};
     score = 0; scoreEl.textContent = score;
+    foodEatenCount = 0;
+    gameStartTime = Date.now();
+    updateGameInfo();
     dead = false; playing = true; gameState = 'playing'; 
     hideOverlay();
     console.log('Reset called, overlay should be hidden, game state:', gameState);
     spawnFood(); draw(0);
     if (musicEnabled) {
       playBackgroundMusic();
+    }
+  }
+
+  function updateGameInfo() {
+    snakeLengthEl.textContent = snake.length;
+    foodEatenEl.textContent = foodEatenCount;
+    
+    // Update game time
+    if (gameStartTime && gameState === 'playing') {
+      const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+      gameTimeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
   }
 
@@ -949,6 +1102,8 @@
       snake.unshift({x: head.x, y: head.y, colors: food.colors});
       score += food.points; // Use dynamic points from food type
       scoreEl.textContent = score; setBest(score); 
+      foodEatenCount++;
+      updateGameInfo();
       
       // Play eating sound effect
       playEatSound();
@@ -1187,6 +1342,12 @@
   function loop(ts){
     animationTime = ts; // Update animation time
     if(playing && !dead && ts-last>step){ last=ts; update(); }
+    
+    // Update game time every second
+    if (gameState === 'playing' && Math.floor(ts / 1000) !== Math.floor((ts - 16) / 1000)) {
+      updateGameInfo();
+    }
+    
     draw();
     requestAnimationFrame(loop);
   }
