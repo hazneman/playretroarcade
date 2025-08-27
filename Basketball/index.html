@@ -591,7 +591,8 @@
       radius: 12,
       inHand: true,
       bounces: 0,
-      trail: []
+      trail: [],
+      scored: false
     };
     
     let basket = {
@@ -627,10 +628,10 @@
     ];
     
     // Game Constants
-    const GRAVITY = 0.5;
+    const GRAVITY = 0.4;
     const BOUNCE_DAMPING = 0.7;
     const FRICTION = 0.98;
-    const POWER_CHARGE_SPEED = 2;
+    const POWER_CHARGE_SPEED = 3;
     
     // Audio Context for Sound Effects
     let audioContext = null;
@@ -732,6 +733,7 @@
       ball.inHand = true;
       ball.bounces = 0;
       ball.trail = [];
+      ball.scored = false;
       powerMeter.charging = false;
       powerMeter.power = 0;
       shootingArc.show = false;
@@ -873,12 +875,21 @@
     }
     
     function checkBasketScore() {
-      // Check if ball passes through the basket
-      if (ball.x > basket.x - basket.width/2 && 
-          ball.x < basket.x + basket.width/2 && 
-          ball.y > basket.y - 5 && 
-          ball.y < basket.y + 15 && 
-          ball.vy > 0) {
+      // Wider basket area for more forgiving scoring
+      const basketLeft = basket.x - basket.width/2 - 5;
+      const basketRight = basket.x + basket.width/2 + 5;
+      const basketTop = basket.y - 10;
+      const basketBottom = basket.y + 20;
+      
+      // Check if ball passes through the basket and is moving downward
+      if (ball.x > basketLeft && 
+          ball.x < basketRight && 
+          ball.y > basketTop && 
+          ball.y < basketBottom && 
+          ball.vy > 0 &&
+          !ball.scored) {
+        
+        ball.scored = true;
         
         // Score based on accuracy and ball trajectory
         let points = 1;
@@ -888,11 +899,11 @@
         const centerDistance = Math.abs(ball.x - basket.x);
         const speedFactor = Math.abs(ball.vx) + Math.abs(ball.vy);
         
-        if (centerDistance < 8 && speedFactor < 10) {
+        if (centerDistance < 10 && speedFactor < 12) {
           points = 3;
           message = "SWISH!";
           color = "#f7931e";
-        } else if (centerDistance < 15 && speedFactor < 15) {
+        } else if (centerDistance < 20 && speedFactor < 18) {
           points = 2;
           message = "NICE!";
           color = "#ff6b35";
@@ -900,7 +911,7 @@
         
         // Distance bonus
         const distance = Math.sqrt(Math.pow(player.x - basket.x, 2) + Math.pow(player.y - basket.y, 2));
-        if (distance > 300) {
+        if (distance > 250) {
           points += 1;
           message = "LONG SHOT! " + message;
         }
@@ -925,7 +936,9 @@
         }
         
         updateUI();
-        setTimeout(resetBall, 800);
+        setTimeout(resetBall, 1000);
+      }
+    }
       }
     }
     
@@ -1177,9 +1190,15 @@
       const distance = Math.sqrt(dx * dx + dy * dy);
       
       if (distance > 20) {
-        const power = Math.min(powerMeter.power / 100, 1);
-        const vx = (dx / distance) * power * 12;
-        const vy = (dy / distance) * power * 12;
+        // More powerful and accurate physics
+        const power = Math.min(powerMeter.power / 50, 2);
+        let vx = (dx / distance) * power * 15;
+        let vy = (dy / distance) * power * 15;
+        
+        // Guarantee upward minimum velocity
+        if (vy > -3) {
+          vy = -3 - (power * 8);
+        }
         
         // Simulate trajectory
         let simX = ball.x;
@@ -1187,7 +1206,7 @@
         let simVx = vx;
         let simVy = vy;
         
-        for (let i = 0; i < 60; i++) {
+        for (let i = 0; i < 120; i++) {
           shootingArc.points.push({ x: simX, y: simY });
           simVy += GRAVITY;
           simX += simVx;
@@ -1208,11 +1227,19 @@
       const dx = mouse.x - ball.x;
       const dy = mouse.y - ball.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      const power = powerMeter.power / 100;
+      const power = Math.min(powerMeter.power / 50, 2);
       
       if (distance > 20) {
-        ball.vx = (dx / distance) * power * 12;
-        ball.vy = (dy / distance) * power * 12;
+        let vx = (dx / distance) * power * 15;
+        let vy = (dy / distance) * power * 15;
+        
+        // Guarantee upward minimum velocity
+        if (vy > -3) {
+          vy = -3 - (power * 8);
+        }
+        
+        ball.vx = vx;
+        ball.vy = vy;
         ball.inHand = false;
         ball.bounces = 0;
         ball.trail = [];
@@ -1221,14 +1248,16 @@
         
         // Check if shot missed badly
         setTimeout(() => {
-          if (ball.inHand === false) {
+          if (ball.inHand === false && ball.y > canvas.height - 100) {
             const distanceToBasket = Math.sqrt(Math.pow(ball.x - basket.x, 2) + Math.pow(ball.y - basket.y, 2));
-            if (distanceToBasket > 100) {
+            if (distanceToBasket > 80) {
               streak = 0;
+              playMissSound();
+              showShotIndicator("MISS!", "#ef4444");
               updateUI();
             }
           }
-        }, 2000);
+        }, 3000);
         
         updateUI();
       }
