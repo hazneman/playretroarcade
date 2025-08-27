@@ -603,7 +603,13 @@
       backboardX: 450,
       backboardWidth: 6,
       backboardHeight: 70,
-      netPoints: []
+      netPoints: [],
+      // Animation properties for reactions
+      rimShake: 0,
+      rimShakeDecay: 0.9,
+      netSwayIntensity: 0,
+      netSwayDecay: 0.92,
+      lastScoredTime: 0
     };
     
     let powerMeter = {
@@ -884,6 +890,22 @@
       checkBasketScore();
     }
     
+    function updateBasket() {
+      // Decay rim shake animation
+      if (basket.rimShake > 0.1) {
+        basket.rimShake *= basket.rimShakeDecay;
+      } else {
+        basket.rimShake = 0;
+      }
+      
+      // Decay net sway animation
+      if (basket.netSwayIntensity > 0.1) {
+        basket.netSwayIntensity *= basket.netSwayDecay;
+      } else {
+        basket.netSwayIntensity = 0;
+      }
+    }
+    
     function checkBasketScore() {
       // Wider basket area for more forgiving scoring
       const basketLeft = basket.x - basket.width/2 - 5;
@@ -900,6 +922,11 @@
           !ball.scored) {
         
         ball.scored = true;
+        
+        // Trigger hoop reaction animation
+        basket.rimShake = 8 + (speedFactor * 0.5); // Shake intensity based on ball speed
+        basket.netSwayIntensity = 15 + (speedFactor * 0.8);
+        basket.lastScoredTime = Date.now();
         
         // Score based on accuracy and ball trajectory
         let points = 1;
@@ -997,6 +1024,10 @@
     }
     
     function drawBasket() {
+      // Calculate shake offset for rim reaction
+      const shakeX = (Math.random() - 0.5) * basket.rimShake;
+      const shakeY = (Math.random() - 0.5) * basket.rimShake * 0.5;
+      
       // Backboard
       ctx.fillStyle = '#f8f9fa';
       ctx.fillRect(basket.backboardX, basket.y - basket.backboardHeight, basket.backboardWidth, basket.backboardHeight);
@@ -1006,52 +1037,56 @@
       ctx.lineWidth = 2;
       ctx.strokeRect(basket.backboardX, basket.y - basket.backboardHeight, basket.backboardWidth, basket.backboardHeight);
       
-      // Rim shadow/depth
+      // Rim shadow/depth (with shake)
       ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
       ctx.beginPath();
-      ctx.ellipse(basket.x, basket.y + 3, basket.width/2, basket.width/6, 0, 0, Math.PI * 2);
+      ctx.ellipse(basket.x + shakeX, basket.y + 3 + shakeY, basket.width/2, basket.width/6, 0, 0, Math.PI * 2);
       ctx.fill();
       
-      // Rim (front-facing circular view)
+      // Rim (front-facing circular view with shake)
       ctx.strokeStyle = '#dc2626';
       ctx.lineWidth = 6;
       ctx.beginPath();
-      ctx.ellipse(basket.x, basket.y, basket.width/2, basket.width/6, 0, 0, Math.PI * 2);
+      ctx.ellipse(basket.x + shakeX, basket.y + shakeY, basket.width/2, basket.width/6, 0, 0, Math.PI * 2);
       ctx.stroke();
       
-      // Inner rim (for depth)
+      // Inner rim (for depth with shake)
       ctx.strokeStyle = '#b91c1c';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.ellipse(basket.x, basket.y, basket.width/2 - 3, basket.width/6 - 1, 0, 0, Math.PI * 2);
+      ctx.ellipse(basket.x + shakeX, basket.y + shakeY, basket.width/2 - 3, basket.width/6 - 1, 0, 0, Math.PI * 2);
       ctx.stroke();
       
-      // Rim support brackets
+      // Rim support brackets (with shake)
       ctx.strokeStyle = '#666666';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(basket.x - basket.width/3, basket.y);
+      ctx.moveTo(basket.x - basket.width/3 + shakeX, basket.y + shakeY);
       ctx.lineTo(basket.backboardX, basket.y - 5);
-      ctx.moveTo(basket.x + basket.width/3, basket.y);
+      ctx.moveTo(basket.x + basket.width/3 + shakeX, basket.y + shakeY);
       ctx.lineTo(basket.backboardX, basket.y + 5);
       ctx.stroke();
       
-      // Net (hanging from circular rim)
+      // Net (hanging from circular rim with enhanced sway)
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
       ctx.lineWidth = 2;
       for (let i = 0; i < 12; i++) {
         const angle = (i / 12) * Math.PI * 2;
-        const rimX = basket.x + Math.cos(angle) * (basket.width/2 - 2);
-        const rimY = basket.y + Math.sin(angle) * (basket.width/6 - 1);
-        const sway = Math.sin(Date.now() * 0.005 + i * 0.5) * 3;
+        const rimX = basket.x + Math.cos(angle) * (basket.width/2 - 2) + shakeX;
+        const rimY = basket.y + Math.sin(angle) * (basket.width/6 - 1) + shakeY;
+        
+        // Enhanced sway with reaction animation
+        const baseSway = Math.sin(Date.now() * 0.005 + i * 0.5) * 3;
+        const reactionSway = Math.sin(Date.now() * 0.02 + i) * basket.netSwayIntensity;
+        const totalSway = baseSway + reactionSway;
         
         ctx.beginPath();
         ctx.moveTo(rimX, rimY);
         ctx.quadraticCurveTo(
-          rimX + sway, 
-          rimY + 20, 
-          rimX + sway * 0.3, 
-          rimY + 30
+          rimX + totalSway, 
+          rimY + 20 + Math.abs(totalSway) * 0.5, 
+          rimX + totalSway * 0.3, 
+          rimY + 30 + Math.abs(totalSway) * 0.8
         );
         ctx.stroke();
       }
@@ -1403,6 +1438,7 @@
       if (gameState === 'playing') {
         updatePlayer();
         updateBall();
+        updateBasket();
         
         // Update power meter
         if (powerMeter.charging) {
