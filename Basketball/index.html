@@ -1265,6 +1265,19 @@
       player.shootingPose = false;
     }
     
+    function handleMouseLeave(e) {
+      // Reset mouse state when cursor leaves canvas
+      if (mouse.down && ball.inHand) {
+        mouse.down = false;
+        shootingArc.show = false;
+        powerMeter.charging = false;
+        powerMeter.power = 0;
+        player.shootingPose = false;
+        player.dribbling = true;
+        document.getElementById('powerMeter').style.display = 'none';
+      }
+    }
+    
     function handleKeyDown(e) {
       if (gameState !== 'playing' || !ball.inHand) return;
       
@@ -1360,6 +1373,11 @@
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('mouseleave', handleMouseLeave);
+    
+    // Global mouseup to catch releases outside canvas
+    document.addEventListener('mouseup', handleMouseUp);
+    
     canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
     canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
     canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
