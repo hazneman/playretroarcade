@@ -883,8 +883,9 @@
       const rimDy = ball.y - basket.y;
       const distanceFromRim = Math.sqrt(rimDx * rimDx + rimDy * rimDy);
       
-      if (distanceFromRim < 30 && Math.abs(rimDy) < 10 && Math.abs(ball.vy) < 1 && Math.abs(ball.vx) < 1) {
-        console.log("Ball detected sitting on rim, immediate reset...");
+      // Much more aggressive detection for balls near rim
+      if (distanceFromRim < 40 && Math.abs(ball.vy) < 2 && Math.abs(ball.vx) < 2) {
+        console.log("Ball detected near rim with low velocity, immediate reset...");
         resetBall();
         return;
       }
@@ -957,7 +958,7 @@
         ball.bounces++;
       }
       
-      // Rim collision detection (prevent ball from getting stuck)
+      // Aggressive rim collision detection (prevent ANY sticking)
       const rimCenterX = basket.x;
       const rimCenterY = basket.y;
       const rimRadiusX = basket.width / 2;
@@ -966,48 +967,40 @@
       // Check distance from ball to rim center
       const dx = ball.x - rimCenterX;
       const dy = ball.y - rimCenterY;
+      const distanceFromRimCenter = Math.sqrt(dx * dx + dy * dy);
       
-      // Calculate if ball is close to rim (expanded detection area)
-      const rimDistance = Math.sqrt((dx * dx) / (rimRadiusX * rimRadiusX) + (dy * dy) / (rimRadiusY * rimRadiusY));
-      
-      // If ball is very close to rim area (including sitting on top)
-      if (rimDistance < 1.5 && Math.abs(dy) < 15) { // Expanded detection zone
+      // Very aggressive rim collision - any contact with rim area
+      if (distanceFromRimCenter < (rimRadiusX + ball.radius + 5)) {
         
-        // Special case: ball sitting on or very close to rim
-        if (Math.abs(dy) < 8 && Math.abs(ball.vy) < 3 && Math.abs(ball.vx) < 3) {
-          // Ball is essentially resting on rim - force it off
-          console.log("Ball sitting on rim, forcing off...");
+        // Check if this could be a legitimate scoring shot
+        const isLegitimateShot = (ball.y < basket.y - 5 && ball.vy > 3 && Math.abs(dx) < rimRadiusX - 5);
+        
+        if (!isLegitimateShot) {
+          // Force ball away from rim immediately
+          console.log("Ball near rim, forcing away to prevent sticking...");
           
-          // Push ball away from rim center with some randomness
-          const pushAngle = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.5;
-          const pushForce = 8 + Math.random() * 4;
+          // Calculate escape angle
+          let escapeAngle = Math.atan2(dy, dx);
           
-          ball.vx = Math.cos(pushAngle) * pushForce;
-          ball.vy = Math.sin(pushAngle) * pushForce - 2; // Add some downward force
+          // If ball is too close to center, pick a random escape direction
+          if (distanceFromRimCenter < 10) {
+            escapeAngle = Math.random() * Math.PI * 2;
+          }
           
-          // Move ball away from rim
-          ball.x = rimCenterX + Math.cos(pushAngle) * (rimRadiusX + ball.radius + 5);
-          ball.y = rimCenterY + Math.sin(pushAngle) * (rimRadiusY + ball.radius + 5);
+          // Strong ejection force
+          const ejectForce = 6 + Math.random() * 4;
+          ball.vx = Math.cos(escapeAngle) * ejectForce;
+          ball.vy = Math.sin(escapeAngle) * ejectForce;
           
-          playBounceSound();
-          ball.bounces++;
-        }
-        // Normal rim collision
-        else if (ball.y > basket.y - 10 || ball.vy <= 0) {
-          // Ball hit rim from side or bottom - bounce it off
-          const angle = Math.atan2(dy, dx);
-          const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+          // If ejecting upward, add downward component to prevent floating
+          if (ball.vy < 0) {
+            ball.vy = Math.abs(ball.vy); // Make it go down instead
+          }
           
-          ball.vx = Math.cos(angle) * speed * BOUNCE_DAMPING * 0.9;
-          ball.vy = Math.sin(angle) * speed * BOUNCE_DAMPING * 0.9;
-          
-          // Ensure minimum bounce velocity to prevent sticking
-          if (Math.abs(ball.vx) < 2) ball.vx = (ball.vx >= 0 ? 2 : -2);
-          if (Math.abs(ball.vy) < 2) ball.vy = (ball.vy >= 0 ? 2 : -2);
-          
-          // Push ball away from rim center
-          ball.x = rimCenterX + Math.cos(angle) * (rimRadiusX + ball.radius + 3);
-          ball.y = rimCenterY + Math.sin(angle) * (rimRadiusY + ball.radius + 3);
+          // Move ball to safe distance from rim
+          const safeDistance = rimRadiusX + ball.radius + 10;
+          ball.x = rimCenterX + Math.cos(escapeAngle) * safeDistance;
+          ball.y = rimCenterY + Math.sin(escapeAngle) * safeDistance;
           
           playBounceSound();
           ball.bounces++;
