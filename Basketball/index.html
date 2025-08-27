@@ -856,7 +856,14 @@
         if (Math.abs(ball.vy) < 2 && Math.abs(ball.vx) < 1) {
           setTimeout(() => {
             if (!ball.inHand) resetBall();
-          }, 1500);
+          }, 500); // Reduced from 1500ms to 500ms for faster gameplay
+        }
+        
+        // Also reset if ball has been bouncing for too long without scoring
+        if (ball.bounces > 3 && !ball.scored) {
+          setTimeout(() => {
+            if (!ball.inHand) resetBall();
+          }, 800);
         }
       }
       
@@ -1188,29 +1195,38 @@
       const distance = Math.sqrt(dx * dx + dy * dy);
       
       if (distance > 20) {
-        // More powerful and accurate physics
+        // Calculate shooting direction and power
         const power = Math.min(powerMeter.power / 50, 2);
-        let vx = (dx / distance) * power * 15;
-        let vy = (dy / distance) * power * 15;
+        const angle = Math.atan2(dy, dx);
         
-        // Guarantee upward minimum velocity
-        if (vy > -3) {
-          vy = -3 - (power * 8);
+        // Create a proper basketball arc - always shoot upward initially
+        let baseVelocity = 12 + (power * 8);
+        let shootAngle = angle;
+        
+        // Force upward angle if shooting too flat
+        if (shootAngle > -0.5) {
+          shootAngle = -0.5 - (power * 0.3);
         }
         
-        // Simulate trajectory
+        let vx = Math.cos(shootAngle) * baseVelocity;
+        let vy = Math.sin(shootAngle) * baseVelocity;
+        
+        // Simulate realistic basketball trajectory
         let simX = ball.x;
         let simY = ball.y;
         let simVx = vx;
         let simVy = vy;
+        const gravity = 0.6; // Stronger gravity for realistic arc
         
-        for (let i = 0; i < 120; i++) {
+        for (let i = 0; i < 100; i++) {
           shootingArc.points.push({ x: simX, y: simY });
-          simVy += GRAVITY;
+          
+          simVy += gravity; // Apply gravity
           simX += simVx;
           simY += simVy;
           
-          if (simY > canvas.height - 40) break;
+          // Stop if ball hits ground or goes off screen
+          if (simY > canvas.height - 40 || simX < 0 || simX > canvas.width) break;
         }
       }
     }
@@ -1228,16 +1244,20 @@
       const power = Math.min(powerMeter.power / 50, 2);
       
       if (distance > 20) {
-        let vx = (dx / distance) * power * 15;
-        let vy = (dy / distance) * power * 15;
+        // Use same physics as the shooting arc
+        const angle = Math.atan2(dy, dx);
         
-        // Guarantee upward minimum velocity
-        if (vy > -3) {
-          vy = -3 - (power * 8);
+        // Create a proper basketball arc - always shoot upward initially
+        let baseVelocity = 12 + (power * 8);
+        let shootAngle = angle;
+        
+        // Force upward angle if shooting too flat
+        if (shootAngle > -0.5) {
+          shootAngle = -0.5 - (power * 0.3);
         }
         
-        ball.vx = vx;
-        ball.vy = vy;
+        ball.vx = Math.cos(shootAngle) * baseVelocity;
+        ball.vy = Math.sin(shootAngle) * baseVelocity;
         ball.inHand = false;
         ball.bounces = 0;
         ball.trail = [];
