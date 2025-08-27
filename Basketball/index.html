@@ -853,17 +853,20 @@
         playBounceSound();
         ball.bounces++;
         
-        if (Math.abs(ball.vy) < 2 && Math.abs(ball.vx) < 1) {
+        // Reset ball immediately after first ground hit (unless it scored)
+        if (ball.bounces === 1 && !ball.scored) {
           setTimeout(() => {
-            if (!ball.inHand) resetBall();
-          }, 500); // Reduced from 1500ms to 500ms for faster gameplay
+            if (!ball.inHand && !ball.scored) {
+              resetBall();
+            }
+          }, 800); // Give a moment to see the bounce, then reset
         }
         
-        // Also reset if ball has been bouncing for too long without scoring
-        if (ball.bounces > 3 && !ball.scored) {
+        // Backup reset for balls that bounce multiple times
+        if (Math.abs(ball.vy) < 2 && Math.abs(ball.vx) < 1) {
           setTimeout(() => {
-            if (!ball.inHand) resetBall();
-          }, 800);
+            if (!ball.inHand && !ball.scored) resetBall();
+          }, 500);
         }
       }
       
@@ -1195,17 +1198,18 @@
       const distance = Math.sqrt(dx * dx + dy * dy);
       
       if (distance > 20) {
-        // Calculate shooting direction and power
+        // Calculate shooting direction and power based on distance
         const power = Math.min(powerMeter.power / 50, 2);
         const angle = Math.atan2(dy, dx);
         
-        // Create a proper basketball arc - always shoot upward initially
-        let baseVelocity = 12 + (power * 8);
+        // Scale velocity based on distance for more responsive arc
+        let baseVelocity = Math.max(8, Math.min(20, distance * 0.08 + power * 6));
         let shootAngle = angle;
         
-        // Force upward angle if shooting too flat
-        if (shootAngle > -0.5) {
-          shootAngle = -0.5 - (power * 0.3);
+        // Force upward angle if shooting too flat, but allow shorter arcs
+        const minAngle = -0.3 - (distance * 0.001);
+        if (shootAngle > minAngle) {
+          shootAngle = minAngle - (power * 0.2);
         }
         
         let vx = Math.cos(shootAngle) * baseVelocity;
@@ -1247,13 +1251,14 @@
         // Use same physics as the shooting arc
         const angle = Math.atan2(dy, dx);
         
-        // Create a proper basketball arc - always shoot upward initially
-        let baseVelocity = 12 + (power * 8);
+        // Scale velocity based on distance for more responsive shooting
+        let baseVelocity = Math.max(8, Math.min(20, distance * 0.08 + power * 6));
         let shootAngle = angle;
         
-        // Force upward angle if shooting too flat
-        if (shootAngle > -0.5) {
-          shootAngle = -0.5 - (power * 0.3);
+        // Force upward angle if shooting too flat, but allow shorter arcs
+        const minAngle = -0.3 - (distance * 0.001);
+        if (shootAngle > minAngle) {
+          shootAngle = minAngle - (power * 0.2);
         }
         
         ball.vx = Math.cos(shootAngle) * baseVelocity;
