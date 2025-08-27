@@ -829,6 +829,30 @@
     function updateBall() {
       if (ball.inHand) return;
       
+      // Check if ball is stuck (not moving much for too long)
+      if (!ball.lastPosition) {
+        ball.lastPosition = { x: ball.x, y: ball.y, time: Date.now() };
+      }
+      
+      const currentTime = Date.now();
+      const timeSinceLastCheck = currentTime - ball.lastPosition.time;
+      
+      if (timeSinceLastCheck > 1000) { // Check every second
+        const distanceMoved = Math.sqrt(
+          Math.pow(ball.x - ball.lastPosition.x, 2) + 
+          Math.pow(ball.y - ball.lastPosition.y, 2)
+        );
+        
+        // If ball hasn't moved much in 1 second and hasn't scored, reset it
+        if (distanceMoved < 10 && !ball.scored && !ball.inHand) {
+          console.log("Ball appears stuck, resetting...");
+          resetBall();
+          return;
+        }
+        
+        ball.lastPosition = { x: ball.x, y: ball.y, time: currentTime };
+      }
+      
       // Add trail effect
       ball.trail.push({ x: ball.x, y: ball.y });
       if (ball.trail.length > 8) ball.trail.shift();
@@ -884,6 +908,41 @@
         ball.vx = -Math.abs(ball.vx) * BOUNCE_DAMPING;
         playBounceSound();
         ball.bounces++;
+      }
+      
+      // Rim collision detection (prevent ball from getting stuck)
+      const rimCenterX = basket.x;
+      const rimCenterY = basket.y;
+      const rimRadiusX = basket.width / 2;
+      const rimRadiusY = basket.width / 6;
+      
+      // Check if ball is near the rim
+      const dx = ball.x - rimCenterX;
+      const dy = ball.y - rimCenterY;
+      const distanceX = Math.abs(dx);
+      const distanceY = Math.abs(dy);
+      
+      // Elliptical rim collision (front-facing hoop)
+      if (((dx * dx) / (rimRadiusX * rimRadiusX) + (dy * dy) / (rimRadiusY * rimRadiusY)) <= 1) {
+        // Ball is inside the rim area
+        if (ball.y < basket.y && ball.vy > 0) {
+          // Ball is above rim and moving down - allow it to pass through (potential score)
+          // Don't interfere with scoring
+        } else {
+          // Ball hit the rim from side or bottom - bounce it off
+          const angle = Math.atan2(dy, dx);
+          const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+          
+          ball.vx = Math.cos(angle) * speed * BOUNCE_DAMPING * 0.8;
+          ball.vy = Math.sin(angle) * speed * BOUNCE_DAMPING * 0.8;
+          
+          // Push ball away from rim center
+          ball.x = rimCenterX + Math.cos(angle) * (rimRadiusX + ball.radius + 2);
+          ball.y = rimCenterY + Math.sin(angle) * (rimRadiusY + ball.radius + 2);
+          
+          playBounceSound();
+          ball.bounces++;
+        }
       }
       
       // Basket collision detection
