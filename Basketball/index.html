@@ -740,6 +740,9 @@
       ball.bounces = 0;
       ball.trail = [];
       ball.scored = false;
+      ball.lastPosition = null;
+      ball.stuckCheckCount = 0;
+      ball.timeOutOfHand = null;
       powerMeter.charging = false;
       powerMeter.power = 0;
       shootingArc.show = false;
@@ -789,7 +792,14 @@
     }
     
     function resetGame() {
-      showStartScreen();
+      if (gameState === 'playing') {
+        // If in middle of game, just reset the ball and continue
+        resetBall();
+        updateUI();
+      } else {
+        // Otherwise show start screen
+        showStartScreen();
+      }
     }
     
     function goHome() {
@@ -832,25 +842,51 @@
       // Check if ball is stuck (not moving much for too long)
       if (!ball.lastPosition) {
         ball.lastPosition = { x: ball.x, y: ball.y, time: Date.now() };
+        ball.stuckCheckCount = 0;
       }
       
       const currentTime = Date.now();
       const timeSinceLastCheck = currentTime - ball.lastPosition.time;
       
-      if (timeSinceLastCheck > 1000) { // Check every second
+      if (timeSinceLastCheck > 500) { // Check every 0.5 seconds for faster detection
         const distanceMoved = Math.sqrt(
           Math.pow(ball.x - ball.lastPosition.x, 2) + 
           Math.pow(ball.y - ball.lastPosition.y, 2)
         );
         
-        // If ball hasn't moved much in 1 second and hasn't scored, reset it
-        if (distanceMoved < 10 && !ball.scored && !ball.inHand) {
+        // If ball hasn't moved much, increment stuck counter
+        if (distanceMoved < 5) { // More sensitive threshold
+          ball.stuckCheckCount = (ball.stuckCheckCount || 0) + 1;
+        } else {
+          ball.stuckCheckCount = 0; // Reset counter if ball is moving
+        }
+        
+        // If ball has been stuck for 3 consecutive checks (1.5 seconds), reset it
+        if (ball.stuckCheckCount >= 3 && !ball.scored && !ball.inHand) {
           console.log("Ball appears stuck, resetting...");
           resetBall();
           return;
         }
         
         ball.lastPosition = { x: ball.x, y: ball.y, time: currentTime };
+      }
+      
+      // Additional safety: Reset if ball is way off screen or in impossible position
+      if (ball.x < -100 || ball.x > canvas.width + 100 || ball.y < -100 || ball.y > canvas.height + 100) {
+        console.log("Ball went off screen, resetting...");
+        resetBall();
+        return;
+      }
+      
+      // Safety: Reset if ball has been out of hand for too long without scoring
+      if (!ball.timeOutOfHand) {
+        ball.timeOutOfHand = Date.now();
+      }
+      
+      if (Date.now() - ball.timeOutOfHand > 10000 && !ball.scored) { // 10 seconds max
+        console.log("Ball has been active too long, resetting...");
+        resetBall();
+        return;
       }
       
       // Add trail effect
