@@ -971,37 +971,21 @@
       
       // Very aggressive rim collision - any contact with rim area
       if (distanceFromRimCenter < (rimRadiusX + ball.radius + 5)) {
-        
-        // Check if this could be a legitimate scoring shot
-        const isLegitimateShot = (ball.y < basket.y - 5 && ball.vy > 3 && Math.abs(dx) < rimRadiusX - 5);
-        
-        if (!isLegitimateShot) {
-          // Force ball away from rim immediately
-          console.log("Ball near rim, forcing away to prevent sticking...");
-          
+        // If ball is above the rim and moving downward, let it pass through
+        if (ball.y < basket.y - 5 && ball.vy > 0) {
+          // Do nothing, allow ball to go into hoop
+        } else {
+          // Otherwise, bounce ball away from rim
           // Calculate escape angle
           let escapeAngle = Math.atan2(dy, dx);
-          
-          // If ball is too close to center, pick a random escape direction
           if (distanceFromRimCenter < 10) {
             escapeAngle = Math.random() * Math.PI * 2;
           }
-          
-          // Strong ejection force
           const ejectForce = 6 + Math.random() * 4;
           ball.vx = Math.cos(escapeAngle) * ejectForce;
-          ball.vy = Math.sin(escapeAngle) * ejectForce;
-          
-          // If ejecting upward, add downward component to prevent floating
-          if (ball.vy < 0) {
-            ball.vy = Math.abs(ball.vy); // Make it go down instead
-          }
-          
-          // Move ball to safe distance from rim
-          const safeDistance = rimRadiusX + ball.radius + 10;
-          ball.x = rimCenterX + Math.cos(escapeAngle) * safeDistance;
-          ball.y = rimCenterY + Math.sin(escapeAngle) * safeDistance;
-          
+          ball.vy = Math.abs(Math.sin(escapeAngle) * ejectForce); // Always eject downward
+          ball.x = rimCenterX + Math.cos(escapeAngle) * (rimRadiusX + ball.radius + 10);
+          ball.y = rimCenterY + Math.sin(escapeAngle) * (rimRadiusY + ball.radius + 10);
           playBounceSound();
           ball.bounces++;
         }
