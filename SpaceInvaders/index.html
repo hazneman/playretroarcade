@@ -134,6 +134,7 @@
       align-items: flex-start;
       gap: 24px;
       margin-top: 20px;
+      position: relative;
     }
 
     .game-canvas {
@@ -193,16 +194,16 @@
     }
 
     .overlay {
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 800px; /* Match canvas width */
+      height: 600px; /* Match canvas height */
       background: rgba(0, 0, 0, 0.9);
       display: flex;
       justify-content: center;
       align-items: center;
-      z-index: 1000;
+      z-index: 10;
       backdrop-filter: blur(10px);
     }
 
@@ -258,17 +259,17 @@
 
     /* Story System Styles */
     .story-overlay {
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 800px; /* Match canvas width */
+      height: 600px; /* Match canvas height */
       background: rgba(0, 0, 0, 0.95);
       backdrop-filter: blur(10px);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 10;
       opacity: 0;
       transition: opacity 0.3s ease;
     }
@@ -434,6 +435,17 @@
     <div class="game-container">
       <canvas id="gameCanvas" class="game-canvas" width="800" height="600"></canvas>
       
+      <!-- Game Overlay - Moved inside the game container next to canvas -->
+      <div id="overlay" class="overlay">
+        <div class="card">
+          <h2 id="overlayTitle">Space Invaders</h2>
+          <p id="overlayText">Defend Earth from waves of alien invaders!<br><br>Use arrow keys or A/D to move your ship.<br>Press SPACE to shoot lasers at the invaders.<br><br>Press SPACE to start the game!</p>
+          <div style="text-align: center; padding: 20px; font-size: 24px; color: #4fc3f7; font-weight: bold;">
+            PRESS SPACE TO START
+          </div>
+        </div>
+      </div>
+      
       <div class="game-info">
         <div class="info-panel">
           <div class="info-title">🎮 Controls</div>
@@ -458,39 +470,28 @@
         <div class="info-panel">
           <div class="info-title">🚀 Game Actions</div>
           <div class="game-buttons">
-            <button class="btn" onclick="startGame()">Start Game</button>
-            <button class="btn" onclick="togglePause()">Pause/Resume</button>
-            <button class="btn" onclick="restartGame()">Restart</button>
-            <button class="btn" id="musicBtn" onclick="toggleMusic()">🎵 Music On</button>
-            <button class="btn" id="sfxBtn" onclick="toggleSfx()">🔊 SFX On</button>
+            <button class="btn" id="startGameBtn">Start Game</button>
+            <button class="btn" id="togglePauseBtn">Pause/Resume</button>
+            <button class="btn" id="restartGameBtn">Restart</button>
+            <button class="btn" id="musicBtn">🎵 Music On</button>
+            <button class="btn" id="sfxBtn">🔊 SFX On</button>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Game Overlay -->
-    <div id="overlay" class="overlay">
-      <div class="card">
-        <h2 id="overlayTitle">Space Invaders</h2>
-        <p id="overlayText">Defend Earth from waves of alien invaders!<br><br>Use arrow keys or A/D to move your ship.<br>Press SPACE to shoot lasers at the invaders.<br><br>Press SPACE to start the game!</p>
-        <div style="text-align: center; padding: 20px; font-size: 24px; color: #4fc3f7; font-weight: bold;">
-          PRESS SPACE TO START
-        </div>
-      </div>
-    </div>
-
-    <!-- Story Overlay -->
-    <div id="storyOverlay" class="story-overlay">
-      <div class="story-card">
-        <div class="story-header">
-          <h2 id="storyTitle">Earth Under Siege</h2>
-          <div id="storySubtitle" class="story-subtitle">Chapter 1: First Contact</div>
-        </div>
-        <div class="story-content">
-          <p id="storyText">The year is 2087. Massive alien motherships have appeared in Earth's orbit. You are Commander Nova, Earth's last hope. Your mission: Defend humanity at all costs.</p>
-        </div>
-        <div class="story-actions">
-          <button class="btn story-btn" onclick="hideStoryOverlay()">Continue Mission →</button>
+      
+      <!-- Story Overlay -->
+      <div id="storyOverlay" class="story-overlay">
+        <div class="story-card">
+          <div class="story-header">
+            <h2 id="storyTitle">Earth Under Siege</h2>
+            <div id="storySubtitle" class="story-subtitle">Chapter 1: First Contact</div>
+          </div>
+          <div class="story-content">
+            <p id="storyText">The year is 2087. Massive alien motherships have appeared in Earth's orbit. You are Commander Nova, Earth's last hope. Your mission: Defend humanity at all costs.</p>
+          </div>
+          <div class="story-actions">
+            <button class="btn story-btn" onclick="hideStoryOverlay()">Continue Mission →</button>
+          </div>
         </div>
       </div>
     </div>
@@ -517,9 +518,17 @@
     const overlayTitle = document.getElementById('overlayTitle');
     const overlayText = document.getElementById('overlayText');
 
+    // Declare essential variables early for button functions
+    let gameState = 'welcome'; // 'welcome', 'playing', 'paused', 'gameOver'
+    let musicEnabled = true; // Music enabled by default
+    let sfxEnabled = true;
+    let score = 0;
+    let wave = 1;
+    let lives = 3;
+
     // Define startGame function early so it's available for onclick
     console.log('Defining startGame function...');
-    window.startGame = function() {
+    function startGame() {
       console.log('startGame() called successfully - starting game!');
       
       // Initialize game state
@@ -565,6 +574,50 @@
     };
     console.log('startGame function defined!');
 
+    // Define other functions early so they're available for onclick handlers
+    function togglePause() {
+      if (gameState === 'playing') {
+        gameState = 'paused';
+        showOverlay('Game Paused', 'Press P to resume or click Pause/Resume button');
+      } else if (gameState === 'paused') {
+        gameState = 'playing';
+        hideOverlay();
+      }
+    };
+
+    function restartGame() {
+      startGame();
+    };
+
+    function toggleMusic() {
+      musicEnabled = !musicEnabled;
+      if (musicEnabled && gameState === 'playing') {
+        startBackgroundMusic();
+      } else {
+        stopBackgroundMusic();
+      }
+      updateMusicButton();
+    };
+
+    function toggleSfx() {
+      sfxEnabled = !sfxEnabled;
+      updateSfxButton();
+    };
+
+    function updateMusicButton() {
+      const btn = document.getElementById('musicBtn');
+      if (btn) {
+        btn.textContent = musicEnabled ? '🎵 Music On' : '🔇 Music Off';
+      }
+    };
+
+    function updateSfxButton() {
+      const btn = document.getElementById('sfxBtn');
+      if (btn) {
+        btn.textContent = sfxEnabled ? '🔊 SFX On' : '🔈 SFX Off';
+      }
+    };
+
     // Game Configuration
     const CANVAS_WIDTH = 800;
     const CANVAS_HEIGHT = 600;
@@ -578,10 +631,6 @@
     const ALIEN_SPACING_Y = 45;
 
     // Game State
-    let gameState = 'welcome'; // 'welcome', 'playing', 'paused', 'gameOver'
-    let score = 0;
-    let wave = 1;
-    let lives = 3;
     let highScore = parseInt(localStorage.getItem('spaceInvadersHighScore')) || 0;
     let lastTime = 0;
 
@@ -695,8 +744,6 @@
     // Audio System
     let audioContext;
     let masterGain;
-    let musicEnabled = false;
-    let sfxEnabled = true;
 
     // Initialize audio system
     function initAudio() {
@@ -806,79 +853,37 @@
     let musicGain;
     let musicInterval;
 
+    // Background music element
+    let backgroundMusic;
+    
     function startBackgroundMusic() {
-      if (!audioContext || !musicEnabled) return;
+      if (!musicEnabled) return;
       
       stopBackgroundMusic();
       
-      musicGain = audioContext.createGain();
-      musicGain.connect(masterGain);
-      musicGain.gain.value = 0.05; // Very quiet background music
-
-      let noteIndex = 0;
-      const melody = [262, 294, 330, 349, 392, 440, 494, 523]; // C major scale
-
-      musicInterval = setInterval(() => {
-        if (!musicEnabled) return;
-
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        
-        osc.connect(gain);
-        gain.connect(musicGain);
-        
-        osc.frequency.value = melody[noteIndex % melody.length];
-        osc.type = 'sine';
-        
-        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
-        
-        osc.start();
-        osc.stop(audioContext.currentTime + 0.8);
-        
-        noteIndex++;
-      }, 1000);
+      // Create audio element if it doesn't exist
+      if (!backgroundMusic) {
+        backgroundMusic = new Audio('../Sound/Action 1 (Loop).ogg');
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = 0.3;
+      }
+      
+      // Play the music
+      backgroundMusic.play().catch(err => {
+        console.warn('Could not play background music:', err.message);
+      });
+      
+      console.log('Background music started');
     }
 
     function stopBackgroundMusic() {
-      if (musicInterval) {
-        clearInterval(musicInterval);
-        musicInterval = null;
-      }
-      if (musicGain) {
-        musicGain.disconnect();
-        musicGain = null;
+      if (backgroundMusic) {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+        console.log('Background music stopped');
       }
     }
 
-    function toggleMusic() {
-      musicEnabled = !musicEnabled;
-      if (musicEnabled && gameState === 'playing') {
-        startBackgroundMusic();
-      } else {
-        stopBackgroundMusic();
-      }
-      updateMusicButton();
-    }
-
-    function toggleSfx() {
-      sfxEnabled = !sfxEnabled;
-      updateSfxButton();
-    }
-
-    function updateMusicButton() {
-      const btn = document.getElementById('musicBtn');
-      if (btn) {
-        btn.textContent = musicEnabled ? '🎵 Music On' : '🔇 Music Off';
-      }
-    }
-
-    function updateSfxButton() {
-      const btn = document.getElementById('sfxBtn');
-      if (btn) {
-        btn.textContent = sfxEnabled ? '🔊 SFX On' : '🔈 SFX Off';
-      }
-    }
     let stars = [];
 
     // Input handling
@@ -1040,9 +1045,9 @@
     }
 
     function checkStoryProgress() {
-      // Show new chapter every 3 waves
-      if (wave > 0 && wave <= 9 && (wave - 1) % 1 === 0) {
-        const chapterIndex = Math.min(wave - 1, storyChapters.length - 1);
+      // Show new chapter every 3 waves (waves 1, 4, 7, etc.)
+      if (wave > 0 && wave <= 9 && (wave - 1) % 3 === 0) {
+        const chapterIndex = Math.min(Math.floor((wave - 1) / 3), storyChapters.length - 1);
         if (chapterIndex !== currentStoryChapter) {
           setTimeout(() => showStoryChapter(chapterIndex), 1000);
         }
@@ -1072,20 +1077,6 @@
     }
 
     // Game functions
-    function togglePause() {
-      if (gameState === 'playing') {
-        gameState = 'paused';
-        showOverlay('Game Paused', 'Press P to resume or click Pause/Resume button');
-      } else if (gameState === 'paused') {
-        gameState = 'playing';
-        hideOverlay();
-      }
-    }
-
-    function restartGame() {
-      startGame();
-    }
-
     function gameOver() {
       gameState = 'gameOver';
       stopBackgroundMusic();
@@ -1107,8 +1098,8 @@
       playSound('waveComplete');
       createAliens();
       
-      // Check story progression
-      checkStoryProgress();
+      // Check story progression (temporarily disabled for testing)
+      // checkStoryProgress();
       
       // Show wave announcement
       const announcement = document.createElement('div');
@@ -1595,6 +1586,35 @@
     window.toggleMusic = toggleMusic;
     window.toggleSfx = toggleSfx;
     window.hideStoryOverlay = hideStoryOverlay;
+
+    // Add event listeners for game action buttons
+    document.getElementById('startGameBtn').addEventListener('click', startGame);
+    document.getElementById('togglePauseBtn').addEventListener('click', togglePause);
+    document.getElementById('restartGameBtn').addEventListener('click', restartGame);
+    document.getElementById('musicBtn').addEventListener('click', toggleMusic);
+    document.getElementById('sfxBtn').addEventListener('click', toggleSfx);
+
+    // Preload audio files
+    function preloadSounds() {
+      // Preload background music
+      const preloadMusic = new Audio('../Sound/Action 1 (Loop).ogg');
+      preloadMusic.preload = 'auto';
+      preloadMusic.volume = 0; // Silent preload
+      preloadMusic.play().then(() => {
+        preloadMusic.pause();
+        preloadMusic.currentTime = 0;
+        console.log('Music preloaded successfully');
+      }).catch(e => console.log('Music preload not allowed yet, will try during user interaction'));
+    }
+    
+    preloadSounds();
+    
+    // Initial UI update
+    updateUI();
+    showWelcomeMessage();
+    
+    // Update the music button to show the correct initial state
+    updateMusicButton();
   </script>
 </body>
 </html>
