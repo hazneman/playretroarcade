@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Test</title>
+</head>
+<body>
+    <h1>Simple Button Test</h1>
+    <button onclick="alert('Button works!')">Test Button</button>
+    <button onclick="testFunction()">Function Button</button>
+    
+    <script>
+        console.log('Script is running!');
+        
+        function testFunction() {
+            alert('Function button works!');
+        }
+        
+        window.testFunction = testFunction;
+    </script>
+</body>
+</html>

@@ -472,8 +472,10 @@
     <div id="overlay" class="overlay">
       <div class="card">
         <h2 id="overlayTitle">Space Invaders</h2>
-        <p id="overlayText">Defend Earth from waves of alien invaders!<br><br>Use arrow keys or A/D to move your ship.<br>Press SPACE to shoot lasers at the invaders.<br><br>Click "Start Game" when you're ready!</p>
-        <button class="btn" onclick="startGame()">🚀 Start Game</button>
+        <p id="overlayText">Defend Earth from waves of alien invaders!<br><br>Use arrow keys or A/D to move your ship.<br>Press SPACE to shoot lasers at the invaders.<br><br>Press SPACE to start the game!</p>
+        <div style="text-align: center; padding: 20px; font-size: 24px; color: #4fc3f7; font-weight: bold;">
+          PRESS SPACE TO START
+        </div>
       </div>
     </div>
 
@@ -495,18 +497,73 @@
   </div>
 
   <script>
+    console.log('JavaScript is loading...');
+    console.log('Page loaded, checking DOM elements...');
+    
     // Game Canvas and Context
     const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+    console.log('Canvas found:', canvas);
+    const ctx = canvas ? canvas.getContext('2d') : null;
+    console.log('Context:', ctx);
     
-    // UI Elements
+    // UI Elements - with error checking
     const scoreEl = document.getElementById('score');
+    console.log('Score element:', scoreEl);
     const waveEl = document.getElementById('wave');
     const livesEl = document.getElementById('lives');
     const highScoreEl = document.getElementById('highScore');
     const overlay = document.getElementById('overlay');
+    console.log('Overlay element:', overlay);
     const overlayTitle = document.getElementById('overlayTitle');
     const overlayText = document.getElementById('overlayText');
+
+    // Define startGame function early so it's available for onclick
+    console.log('Defining startGame function...');
+    window.startGame = function() {
+      console.log('startGame() called successfully - starting game!');
+      
+      // Initialize game state
+      gameState = 'playing';
+      score = 0;
+      wave = 1;
+      lives = 3;
+      
+      // Reset player position
+      if (typeof player !== 'undefined') {
+        player.x = CANVAS_WIDTH / 2 - PLAYER_WIDTH / 2;
+        player.y = CANVAS_HEIGHT - PLAYER_HEIGHT - 30;
+      }
+      
+      // Hide overlay and start game
+      if (overlay) {
+        overlay.style.display = 'none';
+      }
+      
+      // Clear any existing game objects
+      if (typeof playerBullets !== 'undefined') {
+        playerBullets = [];
+        alienBullets = [];
+        explosions = [];
+      }
+      
+      // Create aliens and start
+      if (typeof createAliens === 'function') {
+        createAliens();
+      }
+      
+      // Update UI
+      if (typeof updateUI === 'function') {
+        updateUI();
+      }
+      
+      // Start background music if enabled
+      if (typeof musicEnabled !== 'undefined' && musicEnabled && typeof startBackgroundMusic === 'function') {
+        startBackgroundMusic();
+      }
+      
+      console.log('Game started successfully!');
+    };
+    console.log('startGame function defined!');
 
     // Game Configuration
     const CANVAS_WIDTH = 800;
@@ -834,11 +891,14 @@
         togglePause();
       }
       
-      if (gameState === 'welcome' && e.key === ' ') {
+      // Start game with spacebar when in welcome state
+      if (e.key === ' ' && gameState === 'welcome') {
         e.preventDefault();
-        startGame();
+        window.startGame();
+        return;
       }
       
+      // Prevent spacebar from scrolling the page
       if (e.key === ' ') {
         e.preventDefault();
       }
@@ -906,13 +966,13 @@
       subtitleEl.textContent = subtitle;
 
       overlay.style.display = 'flex';
-      gameRunning = false;
+      gameState = 'paused';
     }
 
     function hideStoryOverlay() {
       const overlay = document.getElementById('storyOverlay');
       overlay.style.display = 'none';
-      gameRunning = true;
+      gameState = 'playing';
     }
 
     function showMotivationalMessage(type) {
@@ -1012,40 +1072,6 @@
     }
 
     // Game functions
-    function startGame() {
-      resumeAudio();
-      gameState = 'playing';
-      score = 0;
-      wave = 1;
-      lives = 3;
-      
-      player.x = CANVAS_WIDTH / 2 - PLAYER_WIDTH / 2;
-      player.y = CANVAS_HEIGHT - PLAYER_HEIGHT - 30;
-      
-      createAliens();
-      playerBullets = [];
-      alienBullets = [];
-      explosions = [];
-      alienDirection = 1;
-      alienMoveTimer = 0;
-      alienShootTimer = 0;
-      
-      // Reset story progress
-      currentStoryChapter = 0;
-      killStreak = 0;
-      gameMessages = [];
-      
-      updateUI();
-      hideOverlay();
-      
-      // Show first story chapter
-      setTimeout(() => showStoryChapter(0), 500);
-      
-      if (musicEnabled) {
-        startBackgroundMusic();
-      }
-    }
-
     function togglePause() {
       if (gameState === 'playing') {
         gameState = 'paused';
@@ -1141,9 +1167,7 @@
 
     // Update game logic
     function update(deltaTime) {
-      if (gameState !== 'playing') return;
-
-      // Update stars
+      // Update stars even when not playing for background animation
       for (let star of stars) {
         star.y += star.speed;
         if (star.y > CANVAS_HEIGHT) {
@@ -1151,6 +1175,12 @@
           star.x = Math.random() * CANVAS_WIDTH;
         }
       }
+
+      // Update game messages
+      updateGameMessages();
+
+      // Only update game logic when playing
+      if (gameState !== 'playing') return;
 
       // Player movement
       if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
@@ -1311,9 +1341,6 @@
           explosions.splice(i, 1);
         }
       }
-      
-      // Update game messages
-      updateGameMessages();
     }
 
     // Render game
@@ -1330,7 +1357,12 @@
       }
       ctx.globalAlpha = 1;
 
-      if (gameState !== 'playing') return;
+      // Only draw game elements when playing
+      if (gameState !== 'playing') {
+        // Still draw game messages even when not playing
+        drawGameMessages();
+        return;
+      }
 
       // Draw player
       // Main ship body (dark blue/gray)
@@ -1556,6 +1588,13 @@
 
     // Start the game
     init();
+
+    // Make functions globally accessible for onclick handlers
+    window.togglePause = togglePause;
+    window.restartGame = restartGame;
+    window.toggleMusic = toggleMusic;
+    window.toggleSfx = toggleSfx;
+    window.hideStoryOverlay = hideStoryOverlay;
   </script>
 </body>
 </html>
