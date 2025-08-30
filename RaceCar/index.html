@@ -541,11 +541,14 @@
       
       <div id="gameOverScreen" class="overlay" style="display: none;">
         <div class="card">
-          <h2>Race Finished!</h2>
+          <h2>🏁 Race Complete!</h2>
           <p id="raceCompletionMsg">Race completed!</p>
-          <p id="finalPosition">Position: 1st</p>
-          <p id="finalTime">Best Lap: 01:23.45</p>
-          <button class="game-mode-btn" onclick="showStartScreen()">Race Again</button>
+          <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+            <p id="finalPosition" style="margin: 5px 0; font-size: 18px;"><strong>Position: 1st</strong></p>
+            <p id="finalTime" style="margin: 5px 0; font-size: 16px;">Best Lap: 01:23.45</p>
+            <p id="totalLapsCompleted" style="margin: 5px 0; font-size: 16px;">Laps: 5/5</p>
+          </div>
+          <button class="game-mode-btn" onclick="showStartScreen()">🏁 Race Again</button>
         </div>
       </div>
       
@@ -880,19 +883,26 @@
       gameState = 'finished';
       playerCar.speed = 0; // Stop the car
       
+      console.log(`*** RACE ENDED ***`);
+      console.log(`Game Mode: ${gameMode}`);
+      console.log(`Laps Completed: ${currentLap}/${totalLaps}`);
+      console.log(`Best Lap Time: ${bestLapTime === Infinity ? 'N/A' : formatTime(bestLapTime)}`);
+      console.log(`Final Position: ${position}`);
+      
       // Prepare end race display
       let completionMsg = "";
       if (gameMode === 'time-trial') {
-        completionMsg = `Time Trial: All ${totalLaps} laps completed!`;
+        completionMsg = `🏁 Time Trial Complete!\nFinished all ${totalLaps} laps!`;
       } else if (gameMode === 'championship') {
-        completionMsg = `Championship: All ${totalLaps} laps completed!`;
+        completionMsg = `🏆 Championship Complete!\nFinished all ${totalLaps} laps!`;
       } else {
-        completionMsg = `Free Drive: All ${totalLaps} laps completed!`;
+        completionMsg = `🎯 Free Drive Complete!\nFinished all ${totalLaps} laps!`;
       }
       
       document.getElementById('raceCompletionMsg').textContent = completionMsg;
-      document.getElementById('finalPosition').textContent = `Position: ${getPositionSuffix(position)}`;
-      document.getElementById('finalTime').textContent = `Best Lap: ${bestLapTime === Infinity ? '--:--' : formatTime(bestLapTime)}`;
+      document.getElementById('finalPosition').innerHTML = `<strong>Final Position: ${getPositionSuffix(position)}</strong>`;
+      document.getElementById('finalTime').textContent = `Best Lap Time: ${bestLapTime === Infinity ? 'No time recorded' : formatTime(bestLapTime)}`;
+      document.getElementById('totalLapsCompleted').textContent = `Laps Completed: ${currentLap}/${totalLaps}`;
       
       // Show game over screen and hide game UI
       document.getElementById('gameOverScreen').style.display = 'flex';
@@ -900,10 +910,7 @@
       document.getElementById('speedometer').style.display = 'none';
       document.getElementById('minimap').style.display = 'none';
       
-      console.log("Race ended - Game state: " + gameState);
-      console.log("Game mode: " + gameMode + ", Total laps: " + totalLaps);
-      console.log("Final position: " + position);
-      console.log("Best lap time: " + (bestLapTime === Infinity ? '--:--' : formatTime(bestLapTime)));
+      console.log("*** RACE END SCREEN DISPLAYED ***");
     }
     
     function showStartScreen() {
@@ -1012,7 +1019,7 @@
       // Debug checkpoint states every 2 seconds
       if (!window.lastCheckpointDebug || Date.now() - window.lastCheckpointDebug > 2000) {
         let nextCheckpointName = checkpoints[nextCheckpointIndex] ? checkpoints[nextCheckpointIndex].name : "None";
-        console.log(`CHECKPOINT STATUS: Next=${nextCheckpointIndex} (${nextCheckpointName}), HasStarted: ${hasStartedFirstLap}, Lap: ${currentLap}/${totalLaps}`);
+        console.log(`*** RACE STATUS: Lap ${currentLap}/${totalLaps}, Next=${nextCheckpointIndex} (${nextCheckpointName}), GameMode: ${gameMode}, GameState: ${gameState}`);
         checkpoints.forEach((cp, i) => {
           if (i === nextCheckpointIndex) console.log(`  → ${i}: ${cp.name} (NEXT)`);
           else if (cp.passed) console.log(`  ✓ ${i}: ${cp.name}`);
@@ -1144,16 +1151,14 @@
                   }
                   playLapSound();
                   
-                  // Check if race should end (completed all laps)
+                  // Check if this was the final lap (race should end now)
                   if (currentLap >= totalLaps) {
-                    console.log(`Race finished: ${currentLap}/${totalLaps} laps completed, GameMode: ${gameMode}`);
-                    endRace();
-                    return;
-                  }
-                  
-                  // Extra safety check: don't let lap number exceed totalLaps+1
-                  if (currentLap > totalLaps) {
-                    console.log(`*** WARNING: Lap exceeds limit. Forcing race end.`);
+                    console.log(`*** RACE COMPLETED! Finished ${currentLap}/${totalLaps} laps in ${gameMode} mode`);
+                    
+                    // Update final statistics before ending
+                    const totalTime = Date.now() - lapStartTime + (currentLap - 1) * 60000; // Rough estimate
+                    console.log(`Final race statistics: Best lap: ${bestLapTime === Infinity ? 'N/A' : formatTime(bestLapTime)}`);
+                    
                     endRace();
                     return;
                   }
