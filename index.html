@@ -257,10 +257,11 @@
 
     .grid { 
       display: grid; 
-      gap: 28px; 
+      gap: 24px; 
       margin-bottom: 32px;
       position: relative;
       z-index: 1;
+      align-items: stretch;
     }
     .grid.cols-4 { grid-template-columns: repeat(1, 1fr); }
     @media (min-width: 640px) { .grid.cols-4 { grid-template-columns: repeat(2, 1fr); } }
@@ -276,6 +277,9 @@
       cursor: pointer;
       backdrop-filter: var(--blur-glass);
       position: relative;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
     
     .card::before {
@@ -302,7 +306,14 @@
     
     .card:hover::before { opacity: 1; }
     
-    .card-body { padding: 28px; position: relative; z-index: 1; }
+    .card-body { 
+      padding: 28px; 
+      position: relative; 
+      z-index: 1; 
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
     .cover { 
       aspect-ratio: 16/9; 
       display: grid; 
@@ -350,6 +361,8 @@
       font-size: 15px; 
       color: var(--muted); 
       line-height: 1.5; 
+      flex-grow: 1;
+      min-height: 3em;
     }
     .badge { 
       background: var(--gradient-primary); 
@@ -386,6 +399,8 @@
       display: flex; 
       flex-wrap: wrap; 
       gap: 10px; 
+      min-height: 40px;
+      align-items: flex-start;
     }
     .tag { 
       border: 1px solid rgba(79, 195, 247, 0.3); 
@@ -413,7 +428,7 @@
       cursor: pointer; 
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       width: 100%;
-      margin-top: 20px;
+      margin-top: auto;
       font-size: 16px;
       position: relative;
       overflow: hidden;
