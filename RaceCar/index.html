@@ -631,6 +631,7 @@
     let damage = 0;
     let fuel = 100;
     let hasStartedFirstLap = false;
+    let finishLineCooldown = 0; // Prevent multiple lap completions when staying at finish line
     
     // Player Car
     let playerCar = {
@@ -1105,17 +1106,17 @@
           // Show checkpoint name
           showLapIndicator(`${checkpoint.name}`, '#ffeb3b');
           
-          // If this is the finish line and we've passed it
-          if (checkpoint.isFinishLine) {
-            // Count checkpoints to see if we've passed at least 50% of them
-            const passedCount = checkpoints.filter(cp => cp.passed).length;
-            const totalCheckpoints = checkpoints.length;
-            const percentPassed = (passedCount / totalCheckpoints) * 100;
+          // If this is the finish line and we've passed it (and cooldown is over)
+          if (checkpoint.isFinishLine && finishLineCooldown <= 0) {
+            // Count checkpoints to see if we've passed at least 50% of them (excluding finish line itself)
+            const passedCount = checkpoints.filter((cp, idx) => cp.passed && idx !== 0).length;
+            const totalCheckpoints = checkpoints.length - 1; // Exclude finish line from total
+            const percentPassed = totalCheckpoints > 0 ? (passedCount / totalCheckpoints) * 100 : 100;
             
             console.log(`*** AT FINISH LINE - Passed ${passedCount}/${totalCheckpoints} checkpoints (${percentPassed.toFixed(1)}%)`);
             console.log(`*** HasStartedFirstLap: ${hasStartedFirstLap}, CurrentLap: ${currentLap}, TotalLaps: ${totalLaps}, GameMode: ${gameMode}`);
             
-            // If at least 50% of checkpoints have been passed, or this is the first start
+            // If at least 50% of track checkpoints have been passed, or this is the first start
             if (percentPassed >= 50 || !hasStartedFirstLap) {
               console.log(`*** LAP COMPLETION TRIGGERED - PercentPassed: ${percentPassed}%, HasStarted: ${hasStartedFirstLap}`);
               
@@ -1145,10 +1146,14 @@
                 currentLap++;
                 console.log(`*** STARTING NEW LAP ${currentLap}/${totalLaps}`);
                 
-                // Reset all checkpoints for the new lap EXCEPT the finish line
+                // Reset all checkpoints for the new lap
                 checkpoints.forEach((cp, idx) => {
                   cp.passed = false;
                 });
+                
+                // Set cooldown to prevent immediate re-triggering (60 frames = 1 second at 60fps)
+                finishLineCooldown = 60;
+                
                 console.log(`*** CHECKPOINTS RESET FOR NEW LAP`);
                 
                 // Show new lap indicator
@@ -1158,6 +1163,7 @@
               } else {
                 // This is the first time crossing start line - just mark as started
                 hasStartedFirstLap = true;
+                finishLineCooldown = 60; // Set cooldown for race start too
                 console.log(`*** RACE STARTED - lap ${currentLap}/${totalLaps}`);
                 showLapIndicator(`LAP ${currentLap} START`, '#ffffff');
               }
@@ -1433,6 +1439,11 @@
         updateAICars();
         updateParticles();
         updateUI();
+        
+        // Decrease finish line cooldown
+        if (finishLineCooldown > 0) {
+          finishLineCooldown--;
+        }
       }
       
       render();
