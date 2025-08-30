@@ -677,8 +677,8 @@
       y: 500,
       angle: 0,
       speed: 0,
-      maxSpeed: 8,
-      acceleration: 0.2,
+      maxSpeed: 12, // Increased from 8 to give player competitive advantage
+      acceleration: 0.25, // Slightly improved acceleration
       friction: 0.95,
       turnSpeed: 0,
       maxTurnSpeed: 0.08,
@@ -1080,7 +1080,7 @@
       }
       
       // Apply speed limits
-      const currentMaxSpeed = playerCar.usingNitro ? playerCar.maxSpeed * 1.5 : playerCar.maxSpeed;
+      const currentMaxSpeed = playerCar.usingNitro ? playerCar.maxSpeed * 1.8 : playerCar.maxSpeed; // Increased nitro boost from 1.5x to 1.8x
       if (playerCar.speed > currentMaxSpeed) playerCar.speed = currentMaxSpeed;
       if (playerCar.speed < -currentMaxSpeed * 0.5) playerCar.speed = -currentMaxSpeed * 0.5;
       
