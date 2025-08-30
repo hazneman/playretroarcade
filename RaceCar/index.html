@@ -663,6 +663,7 @@
     // Initialize AI cars
     function initAICars() {
       aiCars = [];
+      console.log('*** Initializing AI cars for mode:', gameMode);
       if (gameMode === 'championship') {
         for (let i = 0; i < 5; i++) {
           aiCars.push({
@@ -682,6 +683,9 @@
             lap: 1
           });
         }
+        console.log('*** Created', aiCars.length, 'AI cars');
+      } else {
+        console.log('*** No AI cars needed for mode:', gameMode);
       }
     }
     
@@ -1029,6 +1033,15 @@
     
     function updateAICars() {
       if (gameState !== 'racing') return;
+      
+      if (aiCars.length === 0) {
+        // Only log occasionally to avoid spam
+        if (!window.lastAIDebug || Date.now() - window.lastAIDebug > 5000) {
+          console.log('*** No AI cars to update in mode:', gameMode);
+          window.lastAIDebug = Date.now();
+        }
+        return;
+      }
       
       aiCars.forEach(car => {
         // Simple AI: head towards next waypoint
@@ -1406,7 +1419,9 @@
       drawTrack();
       
       // Draw AI cars
-      aiCars.forEach(car => drawCar(car, false));
+      if (aiCars.length > 0) {
+        aiCars.forEach(car => drawCar(car, false));
+      }
       
       // Draw player car
       drawCar(playerCar, true);
