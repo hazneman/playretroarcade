@@ -1108,17 +1108,16 @@
           
           // If this is the finish line and we've passed it (and cooldown is over)
           if (checkpoint.isFinishLine && finishLineCooldown <= 0) {
-            // Count checkpoints to see if we've passed at least 50% of them (excluding finish line itself)
-            const passedCount = checkpoints.filter((cp, idx) => cp.passed && idx !== 0).length;
-            const totalCheckpoints = checkpoints.length - 1; // Exclude finish line from total
-            const percentPassed = totalCheckpoints > 0 ? (passedCount / totalCheckpoints) * 100 : 100;
+            // Check if all other checkpoints have been passed (excluding finish line itself)
+            const otherCheckpoints = checkpoints.filter((cp, idx) => idx !== 0); // All except finish line
+            const allOtherCheckpointsPassed = otherCheckpoints.every(cp => cp.passed);
             
-            console.log(`*** AT FINISH LINE - Passed ${passedCount}/${totalCheckpoints} checkpoints (${percentPassed.toFixed(1)}%)`);
+            console.log(`*** AT FINISH LINE - All checkpoints passed: ${allOtherCheckpointsPassed}`);
             console.log(`*** HasStartedFirstLap: ${hasStartedFirstLap}, CurrentLap: ${currentLap}, TotalLaps: ${totalLaps}, GameMode: ${gameMode}`);
             
-            // If at least 50% of track checkpoints have been passed, or this is the first start
-            if (percentPassed >= 50 || !hasStartedFirstLap) {
-              console.log(`*** LAP COMPLETION TRIGGERED - PercentPassed: ${percentPassed}%, HasStarted: ${hasStartedFirstLap}`);
+            // If all checkpoints have been passed, or this is the first start
+            if (allOtherCheckpointsPassed || !hasStartedFirstLap) {
+              console.log(`*** LAP COMPLETION TRIGGERED - All checkpoints passed: ${allOtherCheckpointsPassed}, HasStarted: ${hasStartedFirstLap}`);
               
               if (hasStartedFirstLap) { // Only count as lap completion if we've actually started
                 console.log(`*** COMPLETING LAP ${currentLap}`);
@@ -1171,9 +1170,9 @@
               lapStartTime = Date.now();
               
             } else {
-              // If not enough checkpoints were passed, this might be a shortcut attempt
-              console.log(`*** NOT ENOUGH CHECKPOINTS - Need 50%+, have ${percentPassed.toFixed(1)}%`);
-              showLapIndicator(`Need more checkpoints! ${passedCount}/${totalCheckpoints}`, '#ff4444');
+              // If not all checkpoints were passed, player tried to shortcut
+              console.log(`*** NOT ALL CHECKPOINTS PASSED - Need to complete full lap`);
+              showLapIndicator(`Complete all checkpoints!`, '#ff4444');
             }
           }
         }
