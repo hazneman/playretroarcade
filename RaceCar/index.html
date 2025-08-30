@@ -546,6 +546,7 @@
           <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
             <p id="finalPosition" style="margin: 5px 0; font-size: 18px;"><strong>Position: 1st</strong></p>
             <p id="finalTime" style="margin: 5px 0; font-size: 16px;">Best Lap: 01:23.45</p>
+            <p id="totalRaceTime" style="margin: 5px 0; font-size: 16px;">Total Time: 05:32.15</p>
             <p id="totalLapsCompleted" style="margin: 5px 0; font-size: 16px;">Laps: 5/5</p>
           </div>
           <button class="game-mode-btn" onclick="showStartScreen()">🏁 Race Again</button>
@@ -629,6 +630,7 @@
     let currentLap = 1;
     let totalLaps = 3;
     let raceTime = 0;
+    let raceStartTime = 0; // Track when the entire race started
     let bestLapTime = Infinity;
     let lapStartTime = 0;
     let position = 1;
@@ -831,6 +833,7 @@
       }
       
       raceTime = 0;
+      raceStartTime = Date.now(); // Track when the race starts
       bestLapTime = Infinity;
       lapStartTime = Date.now();
       position = 1;
@@ -892,10 +895,14 @@
       // Hide the lap indicator to avoid overlap with results screen
       hideLapIndicator();
       
+      // Calculate total race time
+      const totalRaceTime = Date.now() - raceStartTime;
+      
       console.log(`*** RACE ENDED ***`);
       console.log(`Game Mode: ${gameMode}`);
       console.log(`Laps Completed: ${currentLap}/${totalLaps}`);
       console.log(`Best Lap Time: ${bestLapTime === Infinity ? 'N/A' : formatTime(bestLapTime)}`);
+      console.log(`Total Race Time: ${formatTime(totalRaceTime)}`);
       console.log(`Final Position: ${position}`);
       
       // Prepare end race display
@@ -911,6 +918,7 @@
       document.getElementById('raceCompletionMsg').textContent = completionMsg;
       document.getElementById('finalPosition').innerHTML = `<strong>Final Position: ${getPositionSuffix(position)}</strong>`;
       document.getElementById('finalTime').textContent = `Best Lap Time: ${bestLapTime === Infinity ? 'No time recorded' : formatTime(bestLapTime)}`;
+      document.getElementById('totalRaceTime').textContent = `Total Race Time: ${formatTime(totalRaceTime)}`;
       document.getElementById('totalLapsCompleted').textContent = `Laps Completed: ${currentLap}/${totalLaps}`;
       
       // Show game over screen and hide game UI
@@ -1200,6 +1208,7 @@
                 } else {
                   // First time crossing the start line - race is starting
                   hasStartedFirstLap = true;
+                  raceStartTime = Date.now(); // Set the actual race start time
                   console.log(`*** RACE STARTED - lap ${currentLap}/${totalLaps}`);
                   showLapIndicator(`LAP ${currentLap} START`, '#ffffff');
                 }
