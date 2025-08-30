@@ -969,19 +969,27 @@
       const dy = ball.y - rimCenterY;
       const distanceFromRimCenter = Math.sqrt(dx * dx + dy * dy);
       
-      // Very aggressive rim collision - any contact with rim area
+      // More forgiving rim collision - allow balls to roll into the hoop
       if (distanceFromRimCenter < (rimRadiusX + ball.radius + 5)) {
-        // If ball is above the rim and moving downward, let it pass through
+        // Case 1: Ball is above the rim and moving downward - let it pass through
         if (ball.y < basket.y - 5 && ball.vy > 0) {
           // Do nothing, allow ball to go into hoop
-        } else {
-          // Otherwise, bounce ball away from rim
+        } 
+        // Case 2: Ball is near the rim center - could be a rim roll that should go in
+        else if (Math.abs(dx) < rimRadiusX * 0.6 && Math.abs(dy) < 10 && ball.vy > 0) {
+          // This is a potential rim roll that should count as a basket
+          // Apply slight guidance toward the basket center to help it fall in
+          ball.vx = ball.vx * 0.9 + (rimCenterX - ball.x) * 0.03;
+          ball.vy = ball.vy * 0.95 + 1; // Maintain downward momentum
+        }
+        // Case 3: Regular rim collision - bounce ball away
+        else {
           // Calculate escape angle
           let escapeAngle = Math.atan2(dy, dx);
           if (distanceFromRimCenter < 10) {
             escapeAngle = Math.random() * Math.PI * 2;
           }
-          const ejectForce = 6 + Math.random() * 4;
+          const ejectForce = 5 + Math.random() * 3; // Slightly reduced force
           ball.vx = Math.cos(escapeAngle) * ejectForce;
           ball.vy = Math.abs(Math.sin(escapeAngle) * ejectForce); // Always eject downward
           ball.x = rimCenterX + Math.cos(escapeAngle) * (rimRadiusX + ball.radius + 10);
@@ -989,6 +997,38 @@
           playBounceSound();
           ball.bounces++;
         }
+      }
+      
+      // Handle balls stuck on the rim - MORE AGGRESSIVE VERSION
+      if (!ball.rimStuckTimer) ball.rimStuckTimer = 0;
+      
+      // Check if ball is near the rim and has low velocity (potentially stuck)
+      const isNearRim = distanceFromRimCenter < (rimRadiusX + ball.radius + 15); // Increased detection radius
+      const isMovingSlow = Math.abs(ball.vx) < 4 && Math.abs(ball.vy) < 4; // More lenient velocity threshold
+      
+      if (isNearRim && isMovingSlow) {
+        ball.rimStuckTimer += 2; // Increment faster
+        
+        // If the ball has been near the rim and moving slowly for several frames, help it in
+        if (ball.rimStuckTimer > 20) { // Reduced wait time
+          // Determine which side of the rim the ball is on to apply appropriate force
+          const ballOnLeftSide = ball.x < rimCenterX;
+          
+          if (Math.abs(ball.x - rimCenterX) < rimRadiusX * 0.7) {
+            // Ball is near the center of the rim - push it down through the basket
+            ball.vx = (rimCenterX - ball.x) * 0.2; // Stronger horizontal guidance
+            ball.vy = 3 + Math.random() * 2; // Stronger downward push
+          } else {
+            // Ball is on the edge of the rim - bounce it off in a natural direction
+            ball.vx = (ballOnLeftSide ? -4 : 4) + Math.random() * 2;
+            ball.vy = -2 - Math.random() * 2; // Small upward bounce
+          }
+          // Visual feedback that anti-stick system activated
+          console.log("Unsticking ball from rim");
+          ball.rimStuckTimer = 0;
+        }
+      } else {
+        ball.rimStuckTimer = 0;
       }
       
       // Basket collision detection
@@ -1012,19 +1052,25 @@
     }
     
     function checkBasketScore() {
-      // Wider basket area for more forgiving scoring
-      const basketLeft = basket.x - basket.width/2 - 5;
-      const basketRight = basket.x + basket.width/2 + 5;
-      const basketTop = basket.y - 10;
-      const basketBottom = basket.y + 20;
+      // Super forgiving basket area for scoring
+      const basketLeft = basket.x - basket.width/2 - 15; // Even wider left boundary
+      const basketRight = basket.x + basket.width/2 + 15; // Even wider right boundary
+      const basketTop = basket.y - 20; // Higher top boundary
+      const basketBottom = basket.y + 40; // Lower bottom boundary
       
-      // Check if ball passes through the basket and is moving downward
-      if (ball.x > basketLeft && 
+      // Check if the ball is hovering on the rim
+      const onRim = Math.abs(ball.y - basket.y) < 15 && 
+                    Math.abs(ball.x - basket.x) < basket.width/2 + 10;
+      
+      // Check if ball passes through the basket area OR is hovering on rim with downward momentum
+      // Extremely forgiving conditions to eliminate rim sticking frustration
+      if ((ball.x > basketLeft && 
           ball.x < basketRight && 
           ball.y > basketTop && 
           ball.y < basketBottom && 
-          ball.vy > 0 &&
-          !ball.scored) {
+          ball.vy > -2 && // Ball can have a slight upward motion (rim bounce) and still count
+          !ball.scored) ||
+          (onRim && ball.vy > -1 && !ball.scored)) {
         
         ball.scored = true;
         
