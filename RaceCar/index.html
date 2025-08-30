@@ -659,6 +659,8 @@
     let checkpoints = [];
     let nextCheckpointIndex = 0; // Track which checkpoint we expect next
     let particles = [];
+    let stuckCheckTime = 0; // Track time spent near a checkpoint
+    let lastNearCheckpoint = -1; // Track which checkpoint we're near
     
     // Initialize AI cars
     function initAICars() {
@@ -859,7 +861,7 @@
           y: waypoint.y,
           name: waypoint.name,
           passed: false,
-          radius: index === 0 ? 80 : 60, // Larger radius for start/finish line
+          radius: index === 0 ? 80 : 75, // Larger radius for easier checkpoint detection
           isFinishLine: index === 0,
           visual: true // Set to true to visualize checkpoints during gameplay
         });
@@ -911,7 +913,6 @@
       document.getElementById('gameOverScreen').style.display = 'flex';
       document.getElementById('raceHUD').style.display = 'none';
       document.getElementById('speedometer').style.display = 'none';
-      document.getElementById('minimap').style.display = 'none';
       
       console.log("*** RACE END SCREEN DISPLAYED ***");
     }
@@ -922,7 +923,6 @@
       document.getElementById('gameOverScreen').style.display = 'none';
       document.getElementById('raceHUD').style.display = 'none';
       document.getElementById('speedometer').style.display = 'none';
-      document.getElementById('minimap').style.display = 'none';
     }
     
     function togglePause() {
@@ -1125,12 +1125,21 @@
         return;
       }
       
+      let nearAnyCheckpoint = false;
+      let currentNearCheckpoint = -1;
+      
       // Check each checkpoint's distance from player
       for (let i = 0; i < checkpoints.length; i++) {
         const checkpoint = checkpoints[i];
         const dx = playerCar.x - checkpoint.x;
         const dy = playerCar.y - checkpoint.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Check if we're near a checkpoint (within detection range + 30 pixels buffer)
+        if (distance < (checkpoint.radius + 30)) {
+          nearAnyCheckpoint = true;
+          currentNearCheckpoint = i;
+        }
         
         // For the start/finish line, provide extra debug info
         if (i === 0 && distance < 100) {
@@ -1230,6 +1239,28 @@
             console.log(`*** NEXT CHECKPOINT: ${nextCheckpointIndex}`);
           }
         }
+      }
+      
+      // Anti-stuck mechanism: Track if player is stuck near a checkpoint
+      if (nearAnyCheckpoint && currentNearCheckpoint === nextCheckpointIndex) {
+        if (lastNearCheckpoint === currentNearCheckpoint) {
+          stuckCheckTime++;
+          // If stuck for more than 5 seconds (300 frames at 60fps), auto-advance
+          if (stuckCheckTime > 300) {
+            console.log(`*** AUTO-ADVANCING: Player stuck at checkpoint ${currentNearCheckpoint} for too long`);
+            showLapIndicator(`Checkpoint Auto-Passed!`, '#ffa500');
+            checkpoints[currentNearCheckpoint].passed = true;
+            nextCheckpointIndex = (currentNearCheckpoint + 1) % checkpoints.length;
+            stuckCheckTime = 0;
+            lastNearCheckpoint = -1;
+          }
+        } else {
+          stuckCheckTime = 0;
+          lastNearCheckpoint = currentNearCheckpoint;
+        }
+      } else {
+        stuckCheckTime = 0;
+        lastNearCheckpoint = -1;
       }
     }
     
@@ -1367,12 +1398,25 @@
       ctx.translate(car.x, car.y);
       ctx.rotate(car.angle);
       
+      if (isPlayer) {
+        // Enhanced player car with glow effect
+        ctx.shadowColor = '#ff1744';
+        ctx.shadowBlur = 15;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        
+        // Player car outline glow
+        ctx.strokeStyle = '#ff1744';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(-car.width/2 - 2, -car.height/2 - 2, car.width + 4, car.height + 4);
+      }
+      
       // Car shadow
       ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
       ctx.fillRect(-car.width/2 + 2, -car.height/2 + 2, car.width, car.height);
       
       // Car body
-      ctx.fillStyle = isPlayer ? '#d32f2f' : (car.color || '#1976d2');
+      ctx.fillStyle = isPlayer ? '#ff1744' : (car.color || '#1976d2');
       ctx.fillRect(-car.width/2, -car.height/2, car.width, car.height);
       
       // Car details
@@ -1380,8 +1424,19 @@
       ctx.fillRect(-car.width/2 + 3, -car.height/2 + 2, car.width - 6, car.height - 4);
       
       // Windshield
-      ctx.fillStyle = 'rgba(135, 206, 235, 0.8)';
+      ctx.fillStyle = isPlayer ? 'rgba(255, 255, 255, 0.9)' : 'rgba(135, 206, 235, 0.8)';
       ctx.fillRect(-car.width/2 + 5, -car.height/2 + 3, car.width - 10, 4);
+      
+      // Enhanced player car features
+      if (isPlayer) {
+        // Racing stripes
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-2, -car.height/2, 4, car.height);
+        
+        // Front indicator
+        ctx.fillStyle = '#ffff00';
+        ctx.fillRect(-car.width/2 + 1, -car.height/2 - 1, car.width - 2, 2);
+      }
       
       // Wheels
       ctx.fillStyle = '#1c1c1c';
