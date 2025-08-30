@@ -542,6 +542,7 @@
       <div id="gameOverScreen" class="overlay" style="display: none;">
         <div class="card">
           <h2>Race Finished!</h2>
+          <p id="raceCompletionMsg">Race completed!</p>
           <p id="finalPosition">Position: 1st</p>
           <p id="finalTime">Best Lap: 01:23.45</p>
           <button class="game-mode-btn" onclick="showStartScreen()">Race Again</button>
@@ -878,6 +879,16 @@
       gameState = 'finished';
       
       // Prepare end race display
+      let completionMsg = "";
+      if (gameMode === 'time-trial') {
+        completionMsg = `Time Trial: All ${totalLaps} laps completed!`;
+      } else if (gameMode === 'championship') {
+        completionMsg = `Championship: All ${totalLaps} laps completed!`;
+      } else {
+        completionMsg = `Free Drive ended.`;
+      }
+      
+      document.getElementById('raceCompletionMsg').textContent = completionMsg;
       document.getElementById('finalPosition').textContent = `Position: ${getPositionSuffix(position)}`;
       document.getElementById('finalTime').textContent = `Best Lap: ${bestLapTime === Infinity ? '--:--' : formatTime(bestLapTime)}`;
       
@@ -888,6 +899,7 @@
       document.getElementById('minimap').style.display = 'none';
       
       console.log("Race ended - Game state: " + gameState);
+      console.log("Game mode: " + gameMode + ", Total laps: " + totalLaps);
       console.log("Final position: " + position);
       console.log("Best lap time: " + (bestLapTime === Infinity ? '--:--' : formatTime(bestLapTime)));
     }
@@ -1134,8 +1146,15 @@
                   
                   // Move to next lap
                   currentLap++;
-                  console.log(`*** STARTING LAP ${currentLap}/${totalLaps}`);
-                  showLapIndicator(`LAP ${currentLap} START`, '#ffffff');
+                  
+                  // Special message if this is the final lap
+                  if (currentLap === totalLaps && gameMode !== 'free-drive') {
+                    console.log(`*** STARTING FINAL LAP ${currentLap}/${totalLaps}`);
+                    showLapIndicator(`FINAL LAP!`, '#ff9800');
+                  } else {
+                    console.log(`*** STARTING LAP ${currentLap}/${totalLaps}`);
+                    showLapIndicator(`LAP ${currentLap} START`, '#ffffff');
+                  }
                   
                   // Reset all checkpoints' passed status for the new lap
                   checkpoints.forEach(cp => {
