@@ -1096,7 +1096,7 @@
           
           // If this is the finish line and we've passed it
           if (checkpoint.isFinishLine) {
-            // Count checkpoints to see if we've passed at least 75% of them
+            // Count checkpoints to see if we've passed at least 50% of them
             const passedCount = checkpoints.filter(cp => cp.passed).length;
             const totalCheckpoints = checkpoints.length;
             const percentPassed = (passedCount / totalCheckpoints) * 100;
@@ -1109,11 +1109,14 @@
               if (hasStartedFirstLap) { // Only count as lap completion if we've actually started
                 // Completed a lap
                 const lapTime = Date.now() - lapStartTime;
-                if (lapTime < bestLapTime) {
+                if (lapTime < bestLapTime && bestLapTime !== Infinity) {
                   bestLapTime = lapTime;
                   showLapIndicator(`NEW BEST! ${formatTime(lapTime)}`, '#4ade80');
                 } else {
-                  showLapIndicator(`LAP ${currentLap} - ${formatTime(lapTime)}`, '#ff1744');
+                  showLapIndicator(`LAP ${currentLap} COMPLETE - ${formatTime(lapTime)}`, '#ff1744');
+                  if (bestLapTime === Infinity) {
+                    bestLapTime = lapTime;
+                  }
                 }
                 playLapSound();
                 
@@ -1127,19 +1130,24 @@
                 // Start new lap
                 currentLap++;
                 console.log(`Starting lap ${currentLap}/${totalLaps}`);
+                
+                // Reset all checkpoints for the new lap EXCEPT the finish line
+                checkpoints.forEach((cp, idx) => {
+                  cp.passed = false;
+                });
+                
+                // Show new lap indicator
+                if (gameMode !== 'free-drive') {
+                  showLapIndicator(`LAP ${currentLap} START`, '#ffffff');
+                }
               } else {
                 // This is the first time crossing start line - just mark as started
                 hasStartedFirstLap = true;
                 console.log(`Race started - lap ${currentLap}/${totalLaps}`);
+                showLapIndicator(`LAP ${currentLap} START`, '#ffffff');
               }
               
               lapStartTime = Date.now();
-              
-              // Reset all checkpoints for the new lap
-              checkpoints.forEach(cp => cp.passed = false);
-              
-              // Mark start/finish as passed for this lap
-              checkpoint.passed = true;
               
             } else {
               // If not enough checkpoints were passed, this might be a shortcut attempt
