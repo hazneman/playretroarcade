@@ -876,7 +876,9 @@
     }
     
     function endRace() {
+      // Stop all race processing
       gameState = 'finished';
+      playerCar.speed = 0; // Stop the car
       
       // Prepare end race display
       let completionMsg = "";
@@ -1099,6 +1101,11 @@
     }
     
     function checkLapProgress() {
+      // Don't process checkpoints if race is not active
+      if (gameState !== 'racing') {
+        return;
+      }
+      
       // Check each checkpoint's distance from player
       for (let i = 0; i < checkpoints.length; i++) {
         const checkpoint = checkpoints[i];
@@ -1139,13 +1146,21 @@
                   
                   // Check if race should end (completed all laps)
                   if (currentLap >= totalLaps) {
-                    console.log(`Race finished: ${currentLap}/${totalLaps} laps completed`);
+                    console.log(`Race finished: ${currentLap}/${totalLaps} laps completed, GameMode: ${gameMode}`);
+                    endRace();
+                    return;
+                  }
+                  
+                  // Extra safety check: don't let lap number exceed totalLaps+1
+                  if (currentLap > totalLaps) {
+                    console.log(`*** WARNING: Lap exceeds limit. Forcing race end.`);
                     endRace();
                     return;
                   }
                   
                   // Move to next lap
-                  currentLap++;
+                  currentLap = Math.min(currentLap + 1, totalLaps + 1); // Ensure we don't exceed totalLaps+1
+                  console.log(`*** Moving to lap ${currentLap}/${totalLaps}`);
                   
                   // Special message if this is the final lap
                   if (currentLap === totalLaps) {
