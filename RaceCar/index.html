@@ -809,6 +809,12 @@
       }, 10);
     }
     
+    function hideLapIndicator() {
+      const indicator = document.getElementById('lapIndicator');
+      indicator.style.opacity = '0';
+      indicator.style.animation = 'none';
+    }
+    
     // Game State Management
     function startGame(mode) {
       gameMode = mode;
@@ -882,6 +888,9 @@
       // Stop all race processing
       gameState = 'finished';
       playerCar.speed = 0; // Stop the car
+      
+      // Hide the lap indicator to avoid overlap with results screen
+      hideLapIndicator();
       
       console.log(`*** RACE ENDED ***`);
       console.log(`Game Mode: ${gameMode}`);
@@ -1142,9 +1151,15 @@
                   const lapTime = Date.now() - lapStartTime;
                   if (lapTime < bestLapTime && bestLapTime !== Infinity) {
                     bestLapTime = lapTime;
-                    showLapIndicator(`NEW BEST! ${formatTime(lapTime)}`, '#4ade80');
+                    // Only show lap indicator if race is continuing
+                    if (currentLap < totalLaps) {
+                      showLapIndicator(`NEW BEST! ${formatTime(lapTime)}`, '#4ade80');
+                    }
                   } else {
-                    showLapIndicator(`LAP ${currentLap} COMPLETE - ${formatTime(lapTime)}`, '#ff1744');
+                    // Only show lap indicator if race is continuing
+                    if (currentLap < totalLaps) {
+                      showLapIndicator(`LAP ${currentLap} COMPLETE - ${formatTime(lapTime)}`, '#ff1744');
+                    }
                     if (bestLapTime === Infinity) {
                       bestLapTime = lapTime;
                     }
