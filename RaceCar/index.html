@@ -410,11 +410,42 @@
       z-index: 101;
     }
     
+    .nitro-bar {
+      position: absolute;
+      top: 150px;
+      left: 20px;
+      width: 150px;
+      height: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid rgba(255, 23, 68, 0.3);
+      border-radius: 10px;
+      display: none;
+      z-index: 100;
+    }
+    
+    .nitro-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff1744, #ffeb3b);
+      border-radius: 8px;
+      transition: width 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .nitro-label {
+      position: absolute;
+      top: 25px;
+      left: 0;
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--accent);
+      white-space: nowrap;
+    }
 
     
     .race-hud {
       position: absolute;
-      top: 160px;
+      top: 185px;
       left: 20px;
       background: var(--gradient-card);
       border-radius: 12px;
@@ -523,7 +554,16 @@
           <h2>🏎️ Race Car Championship</h2>
           <p>Choose your race mode and burn rubber!</p>
           <button class="game-mode-btn" onclick="startGame('time-trial')">⏱️ Time Trial</button>
-          <button class="game-mode-btn" onclick="startGame('championship')">🏆 Championship</button>
+          <div style="margin: 10px 0;">
+            <button class="game-mode-btn" onclick="toggleChampionshipLevels()">🏆 Championship</button>
+            <div id="championshipLevels" style="display: none; margin-top: 10px;">
+              <button class="game-mode-btn" onclick="startChampionship(1)" style="font-size: 14px; padding: 8px 16px;">Level 1 - Rookie</button>
+              <button class="game-mode-btn" onclick="startChampionship(2)" style="font-size: 14px; padding: 8px 16px;">Level 2 - Amateur</button>
+              <button class="game-mode-btn" onclick="startChampionship(3)" style="font-size: 14px; padding: 8px 16px;">Level 3 - Pro</button>
+              <button class="game-mode-btn" onclick="startChampionship(4)" style="font-size: 14px; padding: 8px 16px;">Level 4 - Expert</button>
+              <button class="game-mode-btn" onclick="startChampionship(5)" style="font-size: 14px; padding: 8px 16px;">Level 5 - Legend</button>
+            </div>
+          </div>
           <button class="game-mode-btn" onclick="startGame('free-drive')">🎯 Free Drive</button>
         </div>
       </div>
@@ -562,6 +602,11 @@
         <div class="speed-display" id="speedometerValue">0</div>
       </div>
       
+      <div class="nitro-bar" id="nitroBar">
+        <div class="nitro-fill" id="nitroFill"></div>
+        <div class="nitro-label">NITRO</div>
+      </div>
+      
       <div class="lap-indicator" id="lapIndicator"></div>
     </div>
     
@@ -596,7 +641,10 @@
         <div class="panel-title">Race Modes</div>
         <div style="color: var(--muted); font-size: 13px; line-height: 1.5;">
           <div><strong>Time Trial:</strong> Beat your best time (5 laps)</div>
-          <div><strong>Championship:</strong> Race against AI (3 laps)</div>
+          <div><strong>Championship:</strong> Race against AI - 5 Difficulty Levels</div>
+          <div style="margin-left: 20px; font-size: 12px; color: var(--muted);">
+            Level 1-2: Slow AI | Level 3: Medium | Level 4-5: Fast AI
+          </div>
           <div><strong>Free Drive:</strong> Practice the track (up to 50 laps)</div>
         </div>
       </div>
@@ -610,6 +658,7 @@
     
     let gameState = 'menu'; // 'menu', 'racing', 'paused', 'finished'
     let gameMode = 'time-trial'; // 'time-trial', 'championship', 'free-drive'
+    let championshipLevel = 1; // 1-5 levels for championship mode
     let currentLap = 1;
     let totalLaps = 3;
     let raceTime = 0;
@@ -665,19 +714,26 @@
     // Initialize AI cars
     function initAICars() {
       aiCars = [];
-      console.log('*** Initializing AI cars for mode:', gameMode);
+      console.log('*** Initializing AI cars for mode:', gameMode, 'level:', championshipLevel);
       if (gameMode === 'championship') {
+        // Scale AI difficulty based on championship level
+        const levelMultiplier = championshipLevel / 5; // 0.2 to 1.0
+        const baseSpeed = 4 + (championshipLevel * 1.5); // 5.5 to 11.5
+        const speedVariation = 1 + (championshipLevel * 0.5); // 1.5 to 3.5
+        const baseAcceleration = 0.1 + (championshipLevel * 0.05); // 0.15 to 0.35
+        const baseTurnSpeed = 0.04 + (championshipLevel * 0.02); // 0.06 to 0.14
+        
         for (let i = 0; i < 5; i++) {
           aiCars.push({
             x: 380 + i * 8,
             y: 520 + i * 20,
             angle: 0,
             speed: 0,
-            maxSpeed: 6 + Math.random() * 2,
-            acceleration: 0.15 + Math.random() * 0.1,
+            maxSpeed: baseSpeed + Math.random() * speedVariation,
+            acceleration: baseAcceleration + Math.random() * 0.05,
             friction: 0.94 + Math.random() * 0.02,
             turnSpeed: 0,
-            maxTurnSpeed: 0.06 + Math.random() * 0.02,
+            maxTurnSpeed: baseTurnSpeed + Math.random() * 0.02,
             width: 30,
             height: 15,
             color: `hsl(${Math.random() * 360}, 70%, 50%)`,
@@ -685,7 +741,8 @@
             lap: 1
           });
         }
-        console.log('*** Created', aiCars.length, 'AI cars');
+        console.log('*** Created', aiCars.length, `AI cars for Level ${championshipLevel}`);
+        console.log(`*** AI Stats - Speed: ${baseSpeed.toFixed(1)}-${(baseSpeed + speedVariation).toFixed(1)}, Accel: ${baseAcceleration.toFixed(2)}, Turn: ${baseTurnSpeed.toFixed(2)}`);
       } else {
         console.log('*** No AI cars needed for mode:', gameMode);
       }
@@ -765,6 +822,33 @@
       
       // Update speedometer
       updateSpeedometer();
+      
+      // Update nitro bar
+      updateNitroBar();
+    }
+    
+    function updateNitroBar() {
+      const nitroPercentage = Math.max(0, Math.min(100, playerCar.nitro));
+      const nitroFill = document.getElementById('nitroFill');
+      if (nitroFill) {
+        nitroFill.style.width = `${nitroPercentage}%`;
+        
+        // Change color based on nitro level
+        if (nitroPercentage > 50) {
+          nitroFill.style.background = 'linear-gradient(90deg, #ff1744, #ffeb3b)';
+        } else if (nitroPercentage > 25) {
+          nitroFill.style.background = 'linear-gradient(90deg, #ff9800, #ffeb3b)';
+        } else {
+          nitroFill.style.background = 'linear-gradient(90deg, #f44336, #ff9800)';
+        }
+        
+        // Add pulsing effect when nitro is being used
+        if (playerCar.usingNitro) {
+          nitroFill.style.boxShadow = '0 0 10px #ff1744';
+        } else {
+          nitroFill.style.boxShadow = 'none';
+        }
+      }
     }
     
     function updateSpeedometer() {
@@ -844,6 +928,7 @@
       document.getElementById('gameOverScreen').style.display = 'none';
       document.getElementById('raceHUD').style.display = 'block';
       document.getElementById('speedometer').style.display = 'flex';
+      document.getElementById('nitroBar').style.display = 'block';
       
       initAudio();
       updateUI();
@@ -898,7 +983,8 @@
       if (gameMode === 'time-trial') {
         completionMsg = `🏁 Time Trial Complete!\nFinished all ${totalLaps} laps!`;
       } else if (gameMode === 'championship') {
-        completionMsg = `🏆 Championship Complete!\nFinished all ${totalLaps} laps!`;
+        const levelNames = ['', 'Rookie', 'Amateur', 'Pro', 'Expert', 'Legend'];
+        completionMsg = `🏆 Championship Level ${championshipLevel} (${levelNames[championshipLevel]}) Complete!\nFinished all ${totalLaps} laps!`;
       } else {
         completionMsg = `🎯 Free Drive Complete!\nFinished all ${totalLaps} laps!`;
       }
@@ -913,6 +999,7 @@
       document.getElementById('gameOverScreen').style.display = 'flex';
       document.getElementById('raceHUD').style.display = 'none';
       document.getElementById('speedometer').style.display = 'none';
+      document.getElementById('nitroBar').style.display = 'none';
       
       console.log("*** RACE END SCREEN DISPLAYED ***");
     }
@@ -923,6 +1010,20 @@
       document.getElementById('gameOverScreen').style.display = 'none';
       document.getElementById('raceHUD').style.display = 'none';
       document.getElementById('speedometer').style.display = 'none';
+      document.getElementById('nitroBar').style.display = 'none';
+      // Hide championship levels
+      document.getElementById('championshipLevels').style.display = 'none';
+    }
+    
+    function toggleChampionshipLevels() {
+      const levelsDiv = document.getElementById('championshipLevels');
+      levelsDiv.style.display = levelsDiv.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    function startChampionship(level) {
+      championshipLevel = level;
+      console.log(`*** Starting Championship Level ${level} ***`);
+      startGame('championship');
     }
     
     function togglePause() {
