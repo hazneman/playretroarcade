@@ -992,6 +992,16 @@
       
       // Check checkpoints
       checkLapProgress();
+      
+      // Debug checkpoint states every 2 seconds
+      if (!window.lastCheckpointDebug || Date.now() - window.lastCheckpointDebug > 2000) {
+        const passedCount = checkpoints.filter(cp => cp.passed).length;
+        console.log(`CHECKPOINT STATUS: ${passedCount}/${checkpoints.length} passed, HasStarted: ${hasStartedFirstLap}, Lap: ${currentLap}/${totalLaps}`);
+        checkpoints.forEach((cp, i) => {
+          if (cp.passed) console.log(`  ✓ ${i}: ${cp.name}`);
+        });
+        window.lastCheckpointDebug = Date.now();
+      }
     }
     
     function updateAICars() {
@@ -1081,15 +1091,16 @@
         const dy = playerCar.y - checkpoint.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        // Debug logging for checkpoint 0 (start/finish line)
+        // Debug logging for start/finish line
         if (i === 0 && distance < 100) {
-          console.log(`Near start/finish line - Distance: ${distance.toFixed(1)}, Passed: ${checkpoint.passed}, HasStarted: ${hasStartedFirstLap}`);
+          const passedCount = checkpoints.filter(cp => cp.passed).length;
+          console.log(`Near start/finish - Distance: ${distance.toFixed(1)}, StartLinePassed: ${checkpoint.passed}, HasStarted: ${hasStartedFirstLap}, PassedCheckpoints: ${passedCount}/${checkpoints.length}`);
         }
         
         // Check if player is passing through this checkpoint
         if (distance < (checkpoint.radius || 50) && !checkpoint.passed) {
           checkpoint.passed = true;
-          console.log("Passed checkpoint:", i, checkpoint.name, "Distance:", distance.toFixed(1));
+          console.log("*** Passed checkpoint:", i, checkpoint.name, "Distance:", distance.toFixed(1));
           
           // Show checkpoint name
           showLapIndicator(`${checkpoint.name}`, '#ffeb3b');
@@ -1101,12 +1112,15 @@
             const totalCheckpoints = checkpoints.length;
             const percentPassed = (passedCount / totalCheckpoints) * 100;
             
-            console.log(`At finish line - Passed ${passedCount}/${totalCheckpoints} checkpoints (${percentPassed.toFixed(1)}%)`);
-            console.log(`HasStartedFirstLap: ${hasStartedFirstLap}, CurrentLap: ${currentLap}, TotalLaps: ${totalLaps}`);
+            console.log(`*** AT FINISH LINE - Passed ${passedCount}/${totalCheckpoints} checkpoints (${percentPassed.toFixed(1)}%)`);
+            console.log(`*** HasStartedFirstLap: ${hasStartedFirstLap}, CurrentLap: ${currentLap}, TotalLaps: ${totalLaps}, GameMode: ${gameMode}`);
             
             // If at least 50% of checkpoints have been passed, or this is the first start
             if (percentPassed >= 50 || !hasStartedFirstLap) {
+              console.log(`*** LAP COMPLETION TRIGGERED - PercentPassed: ${percentPassed}%, HasStarted: ${hasStartedFirstLap}`);
+              
               if (hasStartedFirstLap) { // Only count as lap completion if we've actually started
+                console.log(`*** COMPLETING LAP ${currentLap}`);
                 // Completed a lap
                 const lapTime = Date.now() - lapStartTime;
                 if (lapTime < bestLapTime && bestLapTime !== Infinity) {
@@ -1129,12 +1143,13 @@
                 
                 // Start new lap
                 currentLap++;
-                console.log(`Starting lap ${currentLap}/${totalLaps}`);
+                console.log(`*** STARTING NEW LAP ${currentLap}/${totalLaps}`);
                 
                 // Reset all checkpoints for the new lap EXCEPT the finish line
                 checkpoints.forEach((cp, idx) => {
                   cp.passed = false;
                 });
+                console.log(`*** CHECKPOINTS RESET FOR NEW LAP`);
                 
                 // Show new lap indicator
                 if (gameMode !== 'free-drive') {
@@ -1143,7 +1158,7 @@
               } else {
                 // This is the first time crossing start line - just mark as started
                 hasStartedFirstLap = true;
-                console.log(`Race started - lap ${currentLap}/${totalLaps}`);
+                console.log(`*** RACE STARTED - lap ${currentLap}/${totalLaps}`);
                 showLapIndicator(`LAP ${currentLap} START`, '#ffffff');
               }
               
@@ -1151,7 +1166,7 @@
               
             } else {
               // If not enough checkpoints were passed, this might be a shortcut attempt
-              console.log("Not enough checkpoints passed - possible shortcut attempt");
+              console.log(`*** NOT ENOUGH CHECKPOINTS - Need 50%+, have ${percentPassed.toFixed(1)}%`);
               showLapIndicator(`Need more checkpoints! ${passedCount}/${totalCheckpoints}`, '#ff4444');
             }
           }
