@@ -668,6 +668,7 @@
     // Game state
     let keys = {};
     let checkpoints = [];
+    let nextCheckpointIndex = 0; // Track which checkpoint we expect next
     let particles = [];
     
     // Initialize AI cars
@@ -850,6 +851,7 @@
     function initCheckpoints() {
       // Clear any previous checkpoints
       checkpoints = [];
+      nextCheckpointIndex = 1; // Start expecting the first checkpoint after start/finish line
       
       // Create checkpoints based on waypoints
       trackWaypoints.forEach((waypoint, index) => {
@@ -867,7 +869,6 @@
       // Set the first checkpoint as active
       if (checkpoints.length > 0) {
         checkpoints[0].active = true;
-        nextCheckpoint = 0;
       }
       
       console.log("Checkpoints initialized:", checkpoints);
@@ -996,10 +997,11 @@
       
       // Debug checkpoint states every 2 seconds
       if (!window.lastCheckpointDebug || Date.now() - window.lastCheckpointDebug > 2000) {
-        const passedCount = checkpoints.filter(cp => cp.passed).length;
-        console.log(`CHECKPOINT STATUS: ${passedCount}/${checkpoints.length} passed, HasStarted: ${hasStartedFirstLap}, Lap: ${currentLap}/${totalLaps}`);
+        let nextCheckpointName = checkpoints[nextCheckpointIndex] ? checkpoints[nextCheckpointIndex].name : "None";
+        console.log(`CHECKPOINT STATUS: Next=${nextCheckpointIndex} (${nextCheckpointName}), HasStarted: ${hasStartedFirstLap}, Lap: ${currentLap}/${totalLaps}`);
         checkpoints.forEach((cp, i) => {
-          if (cp.passed) console.log(`  ✓ ${i}: ${cp.name}`);
+          if (i === nextCheckpointIndex) console.log(`  → ${i}: ${cp.name} (NEXT)`);
+          else if (cp.passed) console.log(`  ✓ ${i}: ${cp.name}`);
         });
         window.lastCheckpointDebug = Date.now();
       }
@@ -1085,94 +1087,83 @@
     }
     
     function checkLapProgress() {
-      // Step 1: Check each checkpoint to see if player has passed it
+      // Check each checkpoint's distance from player
       for (let i = 0; i < checkpoints.length; i++) {
         const checkpoint = checkpoints[i];
         const dx = playerCar.x - checkpoint.x;
         const dy = playerCar.y - checkpoint.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        // Debug logging for start/finish line
+        // For the start/finish line, provide extra debug info
         if (i === 0 && distance < 100) {
-          const passedCount = checkpoints.filter(cp => cp.passed).length;
-          console.log(`Near start/finish - Distance: ${distance.toFixed(1)}, StartLinePassed: ${checkpoint.passed}, HasStarted: ${hasStartedFirstLap}, PassedCheckpoints: ${passedCount}/${checkpoints.length}`);
+          console.log(`Near start/finish - Distance: ${distance.toFixed(1)}, NextCheckpoint: ${nextCheckpointIndex}, HasStarted: ${hasStartedFirstLap}, Lap: ${currentLap}`);
         }
         
-        // Check if player is passing through this checkpoint
-        if (distance < (checkpoint.radius || 50) && !checkpoint.passed) {
-          checkpoint.passed = true;
-          console.log("*** Passed checkpoint:", i, checkpoint.name, "Distance:", distance.toFixed(1));
-          
-          // Show checkpoint name
-          showLapIndicator(`${checkpoint.name}`, '#ffeb3b');
-          
-          // If this is the finish line and we've passed it (and cooldown is over)
-          if (checkpoint.isFinishLine && finishLineCooldown <= 0) {
-            // Check if all other checkpoints have been passed (excluding finish line itself)
-            const otherCheckpoints = checkpoints.filter((cp, idx) => idx !== 0); // All except finish line
-            const allOtherCheckpointsPassed = otherCheckpoints.every(cp => cp.passed);
-            
-            console.log(`*** AT FINISH LINE - All checkpoints passed: ${allOtherCheckpointsPassed}`);
-            console.log(`*** HasStartedFirstLap: ${hasStartedFirstLap}, CurrentLap: ${currentLap}, TotalLaps: ${totalLaps}, GameMode: ${gameMode}`);
-            
-            // If all checkpoints have been passed, or this is the first start
-            if (allOtherCheckpointsPassed || !hasStartedFirstLap) {
-              console.log(`*** LAP COMPLETION TRIGGERED - All checkpoints passed: ${allOtherCheckpointsPassed}, HasStarted: ${hasStartedFirstLap}`);
-              
-              if (hasStartedFirstLap) { // Only count as lap completion if we've actually started
-                console.log(`*** COMPLETING LAP ${currentLap}`);
-                // Completed a lap
-                const lapTime = Date.now() - lapStartTime;
-                if (lapTime < bestLapTime && bestLapTime !== Infinity) {
-                  bestLapTime = lapTime;
-                  showLapIndicator(`NEW BEST! ${formatTime(lapTime)}`, '#4ade80');
-                } else {
-                  showLapIndicator(`LAP ${currentLap} COMPLETE - ${formatTime(lapTime)}`, '#ff1744');
-                  if (bestLapTime === Infinity) {
+        // Only detect the checkpoint if it's within range
+        if (distance < (checkpoint.radius || 50)) {
+          // Special case for the finish line
+          if (i === 0) {
+            if (finishLineCooldown <= 0) {
+              // If we're expecting the finish line (passed all other checkpoints)
+              if (nextCheckpointIndex === 0 || !hasStartedFirstLap) {
+                console.log(`*** START/FINISH LINE CROSSED - NextCheckpoint: ${nextCheckpointIndex}, HasStarted: ${hasStartedFirstLap}`);
+                
+                if (hasStartedFirstLap) {
+                  // This is a lap completion!
+                  console.log(`*** LAP ${currentLap} COMPLETED!`);
+                  
+                  // Completed a lap
+                  const lapTime = Date.now() - lapStartTime;
+                  if (lapTime < bestLapTime && bestLapTime !== Infinity) {
                     bestLapTime = lapTime;
+                    showLapIndicator(`NEW BEST! ${formatTime(lapTime)}`, '#4ade80');
+                  } else {
+                    showLapIndicator(`LAP ${currentLap} COMPLETE - ${formatTime(lapTime)}`, '#ff1744');
+                    if (bestLapTime === Infinity) {
+                      bestLapTime = lapTime;
+                    }
                   }
-                }
-                playLapSound();
-                
-                // Check if race should end (completed all laps)
-                if (currentLap >= totalLaps && gameMode !== 'free-drive') {
-                  console.log(`Race finished: ${currentLap}/${totalLaps} laps completed`);
-                  endRace();
-                  return;
-                }
-                
-                // Start new lap
-                currentLap++;
-                console.log(`*** STARTING NEW LAP ${currentLap}/${totalLaps}`);
-                
-                // Reset all checkpoints for the new lap
-                checkpoints.forEach((cp, idx) => {
-                  cp.passed = false;
-                });
-                
-                // Set cooldown to prevent immediate re-triggering (60 frames = 1 second at 60fps)
-                finishLineCooldown = 60;
-                
-                console.log(`*** CHECKPOINTS RESET FOR NEW LAP`);
-                
-                // Show new lap indicator
-                if (gameMode !== 'free-drive') {
+                  playLapSound();
+                  
+                  // Check if race should end (completed all laps)
+                  if (currentLap >= totalLaps && gameMode !== 'free-drive') {
+                    console.log(`Race finished: ${currentLap}/${totalLaps} laps completed`);
+                    endRace();
+                    return;
+                  }
+                  
+                  // Move to next lap
+                  currentLap++;
+                  console.log(`*** STARTING LAP ${currentLap}/${totalLaps}`);
+                  showLapIndicator(`LAP ${currentLap} START`, '#ffffff');
+                } else {
+                  // First time crossing the start line - race is starting
+                  hasStartedFirstLap = true;
+                  console.log(`*** RACE STARTED - lap ${currentLap}/${totalLaps}`);
                   showLapIndicator(`LAP ${currentLap} START`, '#ffffff');
                 }
+                
+                // Reset for next lap
+                nextCheckpointIndex = 1; // Next is first checkpoint
+                lapStartTime = Date.now();
+                finishLineCooldown = 60; // Set cooldown to prevent multiple triggers
               } else {
-                // This is the first time crossing start line - just mark as started
-                hasStartedFirstLap = true;
-                finishLineCooldown = 60; // Set cooldown for race start too
-                console.log(`*** RACE STARTED - lap ${currentLap}/${totalLaps}`);
-                showLapIndicator(`LAP ${currentLap} START`, '#ffffff');
+                // Crossed finish line but didn't complete the sequence
+                console.log(`*** INCORRECT CHECKPOINT - At finish line but expected checkpoint ${nextCheckpointIndex}`);
+                showLapIndicator(`Missed checkpoints!`, '#ff4444');
               }
+            }
+          } 
+          // For other checkpoints, check if it's the next expected one
+          else if (i === nextCheckpointIndex) {
+            if (!checkpoint.passed) { // First time hitting this checkpoint this lap
+              checkpoint.passed = true;
+              console.log(`*** CHECKPOINT ${i} PASSED: ${checkpoint.name}`);
+              showLapIndicator(`${checkpoint.name}`, '#ffeb3b');
               
-              lapStartTime = Date.now();
-              
-            } else {
-              // If not all checkpoints were passed, player tried to shortcut
-              console.log(`*** NOT ALL CHECKPOINTS PASSED - Need to complete full lap`);
-              showLapIndicator(`Complete all checkpoints!`, '#ff4444');
+              // Move to next checkpoint
+              nextCheckpointIndex = (i + 1) % checkpoints.length;
+              console.log(`*** NEXT CHECKPOINT: ${nextCheckpointIndex}`);
             }
           }
         }
