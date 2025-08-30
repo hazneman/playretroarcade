@@ -606,9 +606,9 @@
       <div class="panel-section">
         <div class="panel-title">Race Modes</div>
         <div style="color: var(--muted); font-size: 13px; line-height: 1.5;">
-          <div><strong>Time Trial:</strong> Beat your best time</div>
-          <div><strong>Championship:</strong> Race against AI</div>
-          <div><strong>Free Drive:</strong> Practice the track</div>
+          <div><strong>Time Trial:</strong> Beat your best time (5 laps)</div>
+          <div><strong>Championship:</strong> Race against AI (3 laps)</div>
+          <div><strong>Free Drive:</strong> Practice the track (up to 50 laps)</div>
         </div>
       </div>
     </div>
@@ -814,7 +814,7 @@
       
       // Set total laps based on mode
       if (mode === 'free-drive') {
-        totalLaps = 999; // Virtually unlimited
+        totalLaps = 50; // Allow up to 50 laps in free drive mode
       } else if (mode === 'time-trial') {
         totalLaps = 5; // 5 laps for time trial
       } else if (mode === 'championship') {
@@ -885,7 +885,7 @@
       } else if (gameMode === 'championship') {
         completionMsg = `Championship: All ${totalLaps} laps completed!`;
       } else {
-        completionMsg = `Free Drive ended.`;
+        completionMsg = `Free Drive: All ${totalLaps} laps completed!`;
       }
       
       document.getElementById('raceCompletionMsg').textContent = completionMsg;
@@ -1138,7 +1138,7 @@
                   playLapSound();
                   
                   // Check if race should end (completed all laps)
-                  if (currentLap >= totalLaps && gameMode !== 'free-drive') {
+                  if (currentLap >= totalLaps) {
                     console.log(`Race finished: ${currentLap}/${totalLaps} laps completed`);
                     endRace();
                     return;
@@ -1148,7 +1148,7 @@
                   currentLap++;
                   
                   // Special message if this is the final lap
-                  if (currentLap === totalLaps && gameMode !== 'free-drive') {
+                  if (currentLap === totalLaps) {
                     console.log(`*** STARTING FINAL LAP ${currentLap}/${totalLaps}`);
                     showLapIndicator(`FINAL LAP!`, '#ff9800');
                   } else {
