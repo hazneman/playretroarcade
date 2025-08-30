@@ -681,7 +681,7 @@
       acceleration: 0.25, // Slightly improved acceleration
       friction: 0.95,
       turnSpeed: 0,
-      maxTurnSpeed: 0.08,
+      maxTurnSpeed: 0.12, // Increased from 0.08 for better turning
       width: 30,
       height: 15,
       nitro: 100,
@@ -1061,13 +1061,25 @@
         playerCar.speed -= playerCar.acceleration * 0.8; // Braking is less powerful
       }
       if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
-        if (Math.abs(playerCar.speed) > 0.5) {
-          playerCar.turnSpeed = -playerCar.maxTurnSpeed;
+        // Allow turning at any speed, including when stationary
+        if (Math.abs(playerCar.speed) > 0.1) {
+          // Dynamic turning based on speed - more responsive at higher speeds
+          const speedFactor = Math.min(1.2, Math.abs(playerCar.speed) / 8);
+          playerCar.turnSpeed = -playerCar.maxTurnSpeed * speedFactor;
+        } else {
+          // Slower turning when stationary or very slow
+          playerCar.turnSpeed = -playerCar.maxTurnSpeed * 0.3;
         }
       }
       if (keys['ArrowRight'] || keys['d'] || keys['D']) {
-        if (Math.abs(playerCar.speed) > 0.5) {
-          playerCar.turnSpeed = playerCar.maxTurnSpeed;
+        // Allow turning at any speed, including when stationary
+        if (Math.abs(playerCar.speed) > 0.1) {
+          // Dynamic turning based on speed - more responsive at higher speeds
+          const speedFactor = Math.min(1.2, Math.abs(playerCar.speed) / 8);
+          playerCar.turnSpeed = playerCar.maxTurnSpeed * speedFactor;
+        } else {
+          // Slower turning when stationary or very slow
+          playerCar.turnSpeed = playerCar.maxTurnSpeed * 0.3;
         }
       }
       if (keys[' '] && playerCar.nitro > 0) { // Spacebar for nitro
@@ -1077,6 +1089,11 @@
         addNitroParticles();
       } else {
         playerCar.usingNitro = false;
+      }
+      
+      // Reset turning if no turn keys are pressed
+      if (!(keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['ArrowRight'] || keys['d'] || keys['D'])) {
+        playerCar.turnSpeed *= 0.5; // Quickly reduce turning when no keys pressed
       }
       
       // Apply speed limits
