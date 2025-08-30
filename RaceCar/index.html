@@ -377,7 +377,7 @@
     .speedometer {
       position: absolute;
       top: 20px;
-      right: 200px;
+      left: 20px;
       width: 120px;
       height: 120px;
       background: var(--gradient-card);
@@ -410,22 +410,11 @@
       z-index: 101;
     }
     
-    .minimap {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 180px;
-      height: 120px;
-      background: rgba(0, 0, 0, 0.7);
-      border-radius: 12px;
-      border: 2px solid rgba(255, 23, 68, 0.3);
-      display: none;
-      z-index: 100;
-    }
+
     
     .race-hud {
       position: absolute;
-      top: 20px;
+      top: 160px;
       left: 20px;
       background: var(--gradient-card);
       border-radius: 12px;
@@ -573,10 +562,6 @@
         <div class="speed-display" id="speedometerValue">0</div>
       </div>
       
-      <div class="minimap" id="minimap">
-        <canvas id="minimapCanvas" width="180" height="120"></canvas>
-      </div>
-      
       <div class="lap-indicator" id="lapIndicator"></div>
     </div>
     
@@ -622,8 +607,6 @@
     // Game Variables
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    const minimapCanvas = document.getElementById('minimapCanvas');
-    const minimapCtx = minimapCanvas.getContext('2d');
     
     let gameState = 'menu'; // 'menu', 'racing', 'paused', 'finished'
     let gameMode = 'time-trial'; // 'time-trial', 'championship', 'free-drive'
@@ -855,7 +838,6 @@
       document.getElementById('gameOverScreen').style.display = 'none';
       document.getElementById('raceHUD').style.display = 'block';
       document.getElementById('speedometer').style.display = 'flex';
-      document.getElementById('minimap').style.display = 'block';
       
       initAudio();
       updateUI();
@@ -1417,39 +1399,6 @@
       });
     }
     
-    function drawMinimap() {
-      minimapCtx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
-      
-      // Scale factor for minimap
-      const scaleX = minimapCanvas.width / canvas.width;
-      const scaleY = minimapCanvas.height / canvas.height;
-      
-      // Draw track outline
-      minimapCtx.strokeStyle = '#2c2c2c';
-      minimapCtx.lineWidth = 8;
-      minimapCtx.beginPath();
-      minimapCtx.moveTo(trackWaypoints[0].x * scaleX, trackWaypoints[0].y * scaleY);
-      for (let i = 1; i < trackWaypoints.length; i++) {
-        minimapCtx.lineTo(trackWaypoints[i].x * scaleX, trackWaypoints[i].y * scaleY);
-      }
-      minimapCtx.closePath();
-      minimapCtx.stroke();
-      
-      // Draw player car
-      minimapCtx.fillStyle = '#ff1744';
-      minimapCtx.beginPath();
-      minimapCtx.arc(playerCar.x * scaleX, playerCar.y * scaleY, 3, 0, Math.PI * 2);
-      minimapCtx.fill();
-      
-      // Draw AI cars
-      aiCars.forEach(car => {
-        minimapCtx.fillStyle = car.color || '#1976d2';
-        minimapCtx.beginPath();
-        minimapCtx.arc(car.x * scaleX, car.y * scaleY, 2, 0, Math.PI * 2);
-        minimapCtx.fill();
-      });
-    }
-    
     function render() {
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1463,11 +1412,6 @@
       drawCar(playerCar, true);
       
       drawParticles();
-      
-      // Draw minimap
-      if (gameState === 'racing') {
-        drawMinimap();
-      }
     }
     
     // Event Handlers
