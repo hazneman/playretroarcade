@@ -1136,6 +1136,13 @@
                   currentLap++;
                   console.log(`*** STARTING LAP ${currentLap}/${totalLaps}`);
                   showLapIndicator(`LAP ${currentLap} START`, '#ffffff');
+                  
+                  // Reset all checkpoints' passed status for the new lap
+                  checkpoints.forEach(cp => {
+                    cp.passed = false;
+                  });
+                  console.log("*** RESET ALL CHECKPOINT VISUAL INDICATORS");
+                  
                 } else {
                   // First time crossing the start line - race is starting
                   hasStartedFirstLap = true;
@@ -1156,15 +1163,13 @@
           } 
           // For other checkpoints, check if it's the next expected one
           else if (i === nextCheckpointIndex) {
-            if (!checkpoint.passed) { // First time hitting this checkpoint this lap
-              checkpoint.passed = true;
-              console.log(`*** CHECKPOINT ${i} PASSED: ${checkpoint.name}`);
-              showLapIndicator(`${checkpoint.name}`, '#ffeb3b');
-              
-              // Move to next checkpoint
-              nextCheckpointIndex = (i + 1) % checkpoints.length;
-              console.log(`*** NEXT CHECKPOINT: ${nextCheckpointIndex}`);
-            }
+            console.log(`*** CHECKPOINT ${i} PASSED: ${checkpoint.name}`);
+            showLapIndicator(`${checkpoint.name}`, '#ffeb3b');
+            
+            // Move to next checkpoint
+            nextCheckpointIndex = (i + 1) % checkpoints.length;
+            checkpoint.passed = true; // Mark as passed for visual display
+            console.log(`*** NEXT CHECKPOINT: ${nextCheckpointIndex}`);
           }
         }
       }
