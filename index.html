@@ -12,14 +12,17 @@
       --card: #18181c;
       --muted: #9aa0a6;
       --text: #e8eaed;
-      --accent: #4fc3f7;
-      --accent-hover: #29b6f6;
+      --accent: #00f5ff;
+      --accent-hover: #00ccdd;
       --line: #2a2a30;
       --success: #4caf50;
       --warning: #ff9800;
       --error: #f44336;
-      --gradient-primary: linear-gradient(135deg, #4fc3f7, #29b6f6, #03a9f4);
-      --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      --neon-cyan: #00f5ff;
+      --neon-pink: #ff006e;
+      --neon-yellow: #ffbe0b;
+      --gradient-primary: linear-gradient(135deg, #00f5ff, #0099cc, #0077aa);
+      --gradient-card: linear-gradient(145deg, rgba(0,245,255,0.08), rgba(0,245,255,0.03));
       --shadow-elevated: 0 20px 40px rgba(0,0,0,0.4);
       --blur-glass: blur(10px);
     }
@@ -43,9 +46,9 @@
       width: 100%;
       height: 100%;
       background-image: 
-        radial-gradient(circle at 20% 50%, rgba(79, 195, 247, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(79, 195, 247, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 40% 80%, rgba(79, 195, 247, 0.03) 0%, transparent 50%);
+        radial-gradient(circle at 20% 50%, rgba(0, 245, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 0, 110, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(255, 190, 11, 0.03) 0%, transparent 50%);
       animation: floatParticles 20s ease-in-out infinite;
       pointer-events: none;
       z-index: -1;
@@ -67,12 +70,26 @@
       text-align: left;
       background: rgba(255, 255, 255, 0.03);
       backdrop-filter: var(--blur-glass);
-      border: 1px solid rgba(79, 195, 247, 0.1);
+      border: 1px solid rgba(0, 245, 255, 0.3);
       border-radius: 20px;
       padding: 32px;
       box-shadow: var(--shadow-elevated);
       position: relative;
       overflow: hidden;
+    }
+
+    .header-user-section {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+      background: rgba(13, 17, 23, 0.9);
+      border-radius: 12px;
+      padding: 15px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 245, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 245, 255, 0.2);
+      min-width: 280px;
     }
 
     .header::before {
@@ -82,7 +99,7 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(79, 195, 247, 0.05), transparent);
+      background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.1), transparent);
       animation: shimmer 3s ease-in-out infinite;
     }
 
@@ -97,14 +114,14 @@
       object-fit: contain;
       display: block;
       image-rendering: crisp-edges;
-      filter: drop-shadow(0 4px 12px rgba(79, 195, 247, 0.4));
+      filter: drop-shadow(0 4px 12px rgba(0, 245, 255, 0.6));
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1;
       position: relative;
     }
     .logo:hover { 
       transform: scale(1.1) rotate(5deg); 
-      filter: drop-shadow(0 8px 20px rgba(79, 195, 247, 0.6));
+      filter: drop-shadow(0 8px 20px rgba(0, 245, 255, 0.8));
     }
     
     .header-content {
@@ -141,11 +158,12 @@
     }
 
     .stat-item {
-      background: rgba(79, 195, 247, 0.1);
-      border: 1px solid rgba(79, 195, 247, 0.2);
+      background: rgba(0, 245, 255, 0.1);
+      border: 1px solid rgba(0, 245, 255, 0.3);
       border-radius: 12px;
       padding: 12px 16px;
       text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 245, 255, 0.2);
     }
 
     .stat-number {
@@ -177,7 +195,7 @@
     .input, .select { 
       background: rgba(255,255,255,0.08); 
       color: var(--text); 
-      border: 1px solid rgba(79, 195, 247, 0.2); 
+      border: 1px solid rgba(0, 245, 255, 0.3); 
       padding: 16px 20px; 
       border-radius: 12px; 
       font-size: 15px;
@@ -270,7 +288,7 @@
 
     .card { 
       background: var(--gradient-card); 
-      border: 1px solid rgba(79, 195, 247, 0.1); 
+      border: 1px solid rgba(0, 245, 255, 0.2); 
       border-radius: 24px; 
       overflow: hidden; 
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
@@ -289,7 +307,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(135deg, rgba(79, 195, 247, 0.1), transparent);
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.05));
       opacity: 0;
       transition: opacity 0.3s ease;
       pointer-events: none;
@@ -299,7 +317,8 @@
       transform: translateY(-12px) scale(1.03);
       box-shadow: 
         var(--shadow-elevated),
-        0 0 0 1px rgba(79, 195, 247, 0.3),
+        0 0 0 1px rgba(0, 245, 255, 0.5),
+        0 0 20px rgba(0, 245, 255, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
       border-color: var(--accent);
     }
@@ -331,14 +350,14 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(45deg, transparent 30%, rgba(79, 195, 247, 0.3) 50%, transparent 70%);
+      background: linear-gradient(45deg, transparent 30%, rgba(0, 245, 255, 0.4) 50%, transparent 70%);
       opacity: 0;
       transition: all 0.6s ease;
       transform: translateX(-100%);
     }
     
     .card:hover .cover::before { 
-      opacity: 1; 
+      opacity: 1;
       transform: translateX(100%);
     }
 
@@ -447,7 +466,7 @@
     
     .play-button:hover {
       transform: translateY(-3px);
-      box-shadow: 0 12px 28px rgba(79, 195, 247, 0.5);
+      box-shadow: 0 12px 28px rgba(0, 245, 255, 0.6);
     }
     
     .play-button:hover::before {
@@ -495,6 +514,15 @@
         gap: 20px; 
         text-align: center;
         padding: 24px;
+        padding-top: 80px; /* Make room for user section */
+      }
+      .header-user-section {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        right: 15px;
+        min-width: auto;
+        width: auto;
       }
       .header h1 { font-size: 28px; }
       .subtitle { font-size: 16px; }
@@ -520,6 +548,84 @@
     .player-registration-section {
       margin: 40px 0;
       padding: 0;
+    }
+
+    .header-user-section .player-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .header-user-section .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .header-user-section .input {
+      background: rgba(24, 24, 28, 0.8);
+      border: 1px solid rgba(0, 245, 255, 0.3);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #e8eaed;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .header-user-section .input:focus {
+      outline: none;
+      border-color: #00f5ff;
+      box-shadow: 0 0 0 2px rgba(0, 245, 255, 0.2);
+    }
+
+    .header-user-section .button-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .header-user-section .neon-button {
+      background: linear-gradient(135deg, #00f5ff, #0066cc);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 12px;
+      flex: 1;
+    }
+
+    .header-user-section .neon-button.secondary {
+      background: linear-gradient(135deg, #ff006e, #cc0055);
+    }
+
+    .header-user-section .neon-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 245, 255, 0.4);
+    }
+
+    .header-user-section .neon-button.secondary:hover {
+      box-shadow: 0 6px 20px rgba(255, 0, 110, 0.4);
+    }
+
+    .header-user-section .current-player {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+      color: #00f5ff;
+      font-size: 14px;
+    }
+
+    .header-user-section .neon-button.mini {
+      padding: 6px 12px;
+      font-size: 11px;
+      background: linear-gradient(135deg, #ffbe0b, #e6a500);
+    }
+
+    .header-user-section .neon-button.mini:hover {
+      box-shadow: 0 4px 16px rgba(255, 190, 11, 0.4);
     }
 
     .player-setup {
@@ -588,6 +694,23 @@
 <body>
   <div class="container">
     <header class="header">
+      <div class="header-user-section">
+        <div class="player-form">
+          <div class="form-row">
+            <input type="text" id="playerName" class="input" placeholder="Username" maxlength="20" minlength="3">
+            <input type="email" id="playerEmail" class="input" placeholder="Email" required>
+          </div>
+          <div class="button-group">
+            <button id="savePlayer" class="neon-button">Register</button>
+            <button id="loginPlayer" class="neon-button secondary">Login</button>
+          </div>
+        </div>
+        <div class="current-player" id="currentPlayerInfo" style="display: none;">
+          <span>Playing as: <strong id="currentPlayerName"></strong></span>
+          <button id="logoutPlayer" class="neon-button mini">Logout</button>
+        </div>
+      </div>
+      
       <img src="./Public/logo.png" alt="PlayRetroArcade Logo" class="logo">
       <div class="header-content">
         <h1>PlayRetroArcade</h1>
@@ -625,31 +748,6 @@
         <option value="name">📝 Alphabetical</option>
       </select>
     </div>
-
-    <!-- Player Registration Section - Moved to Top -->
-    <section class="player-registration-section">
-      <div class="section-title">
-        <h2>👤 Player Registration</h2>
-        <span class="section-subtitle">Register to save your scores and compete on the leaderboard</span>
-      </div>
-      
-      <div class="player-setup">
-        <div class="player-form">
-          <div class="form-row">
-            <input type="text" id="playerName" class="input" placeholder="Enter your username (3-20 chars)" maxlength="20" minlength="3">
-            <input type="email" id="playerEmail" class="input" placeholder="Enter your email for verification" required>
-          </div>
-          <div class="player-actions">
-            <button id="savePlayer" class="play-button" style="width: auto; margin: 0; padding: 12px 20px;">🔐 Register Player</button>
-            <button id="loginPlayer" class="play-button secondary" style="width: auto; margin: 0; padding: 12px 20px;">📧 Login</button>
-          </div>
-        </div>
-        <div class="current-player" id="currentPlayerInfo" style="display: none;">
-          <span>Playing as: <strong id="currentPlayerName"></strong></span>
-          <button id="logoutPlayer" class="play-button secondary" style="width: auto; margin: 0; padding: 8px 16px; font-size: 14px;">Logout</button>
-        </div>
-      </div>
-    </section>
 
     <div class="featured-section">
       <h2>🌟 Featured Games</h2>
