@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PlayRetroArcade - Premium Classic Games Collection</title>
-  <meta name="description" content="Experience the best retro games with modern polish. Play Snake, Tetris, Space Invaders, Basketball Shootout, Race Car Championship and more - all free, no downloads required!">
+  <meta name="description" content="Experience the best retro games with modern polish. Play Snake, Tetris, Space Invaders, Basketball Shootout, Race Car Championship, Neon Maze Runner and more - all free, no downloads required!">
   <link rel="icon" href="./Public/logo.png" type="image/png">
   <style>
     :root {
@@ -503,9 +503,11 @@
     .title-row { 
       display: flex; 
       align-items: flex-start; 
-      justify-content: space-between; 
+      justify-content: flex-start; 
       gap: 16px; 
-      margin-bottom: 16px; 
+      margin-bottom: 16px;
+      margin-top: 8px;
+      padding-right: 70px; /* Space for badge */
     }
     .game-title { 
       margin: 0; 
@@ -533,15 +535,23 @@
     .badge { 
       background: var(--gradient-primary); 
       color: var(--bg-dark); 
-      border-radius: 12px; 
-      padding: 8px 16px; 
-      font-size: 13px; 
+      border-radius: 20px; 
+      padding: 6px 12px; 
+      font-size: 11px; 
       font-weight: 700;
       white-space: nowrap;
       box-shadow: 0 4px 15px rgba(0, 245, 255, 0.4);
       text-transform: uppercase;
       letter-spacing: 1px;
       animation: badgePulse 3s ease-in-out infinite;
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 10;
+      transform: scale(0.85);
+      max-width: calc(100% - 24px);
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     @keyframes badgePulse {
@@ -732,7 +742,7 @@
       background: linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(255, 0, 110, 0.08));
       border: 2px solid rgba(0, 245, 255, 0.3);
       border-radius: 30px;
-      padding: 40px;
+      padding: 50px 40px;
       backdrop-filter: var(--blur-glass);
       position: relative;
       overflow: hidden;
@@ -740,30 +750,72 @@
     }
 
     .leaderboard-controls {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 20px;
-      align-items: center;
-      margin-bottom: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 30px;
+      flex-wrap: wrap;
     }
 
     .player-setup {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      align-items: stretch;
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.1));
+      border: 1px solid rgba(0, 245, 255, 0.3);
+      border-radius: 20px;
+      padding: 25px;
+      backdrop-filter: blur(10px);
+      flex: 1;
+      min-width: 300px;
+      max-width: 500px;
     }
 
     .player-form {
       display: flex;
       flex-direction: column;
+      gap: 15px;
+    }
+
+    .form-row {
+      display: flex;
       gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .form-row input {
+      flex: 1;
+      min-width: 200px;
+      padding: 14px 18px;
+      background: rgba(13, 17, 23, 0.8);
+      border: 2px solid rgba(0, 245, 255, 0.3);
+      border-radius: 12px;
+      color: var(--text-bright);
+      font-size: 15px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .form-row input:focus {
+      outline: none;
+      border-color: var(--primary-neon);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+      background: rgba(13, 17, 23, 0.9);
+    }
+
+    .form-row input::placeholder {
+      color: var(--text-muted);
     }
 
     .player-actions {
       display: flex;
       gap: 12px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .current-player {
@@ -773,13 +825,119 @@
       background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(74, 222, 128, 0.05));
       border: 2px solid rgba(74, 222, 128, 0.3);
       border-radius: 12px;
-      padding: 12px 16px;
+      padding: 15px 20px;
       backdrop-filter: blur(10px);
+      margin-top: 10px;
     }
 
     .current-player strong {
       color: var(--accent-green);
       text-shadow: 0 0 10px currentColor;
+    }
+
+    .filter-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 250px;
+    }
+
+    .filter-section label {
+      color: var(--text-bright);
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .play-button.secondary {
+      background: var(--gradient-secondary) !important;
+      color: var(--text-bright) !important;
+    }
+
+    .play-button.primary {
+      background: var(--gradient-primary) !important;
+      color: var(--bg-dark) !important;
+      font-weight: 700;
+    }
+
+    /* My Scores Section */
+    .my-scores-section {
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(255, 0, 110, 0.05));
+      border: 1px solid rgba(0, 245, 255, 0.2);
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(10px);
+    }
+
+    .my-scores-header h4 {
+      color: var(--primary-neon);
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      text-align: center;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .my-scores-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .my-score-item {
+      display: grid;
+      grid-template-columns: 50px 1fr 120px 100px;
+      align-items: center;
+      padding: 15px 20px;
+      background: rgba(13, 17, 23, 0.6);
+      border: 1px solid rgba(0, 245, 255, 0.1);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .my-score-item:hover {
+      background: rgba(0, 245, 255, 0.1);
+      border-color: rgba(0, 245, 255, 0.3);
+      transform: translateX(5px);
+    }
+
+    .score-rank {
+      font-weight: 700;
+      color: var(--accent-yellow);
+      font-size: 1.1rem;
+    }
+
+    .score-game {
+      color: var(--text-bright);
+      font-weight: 600;
+    }
+
+    .score-points {
+      color: var(--primary-neon);
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .score-date {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-align: right;
+    }
+
+    .no-scores {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .no-scores p {
+      font-size: 1.1rem;
     }
 
     .play-button.secondary {
@@ -1033,27 +1191,34 @@
       </div>
       
       <div class="leaderboard-controls">
-        <select id="gameFilter" class="select">
-          <option value="overall">🌟 Overall Rankings</option>
-          <option value="snake-classic">🐍 Snake Classic</option>
-          <option value="tetris">🟦 Tetris</option>
-          <option value="space-invaders">👾 Space Invaders</option>
-          <option value="basketball">🏀 Basketball</option>
-          <option value="racecar">🏎️ Race Car</option>
-        </select>
-        
-        <div class="player-setup">
-          <div class="player-form">
-            <input type="text" id="playerName" class="input" placeholder="Enter your username (3-20 chars)" maxlength="20" minlength="3">
-            <input type="email" id="playerEmail" class="input" placeholder="Enter your email for verification" required>
-            <div class="player-actions">
-              <button id="savePlayer" class="play-button" style="width: auto; margin: 0; padding: 12px 20px;">🔐 Register Player</button>
-              <button id="loginPlayer" class="play-button secondary" style="width: auto; margin: 0; padding: 12px 20px;">📧 Login</button>
-            </div>
+        <div class="controls-row">
+          <div class="filter-section">
+            <select id="gameFilter" class="select">
+              <option value="overall">🌟 Overall Rankings</option>
+              <option value="snake-classic">🐍 Snake Classic</option>
+              <option value="tetris">🟦 Tetris</option>
+              <option value="space-invaders">👾 Space Invaders</option>
+              <option value="basketball">🏀 Basketball</option>
+              <option value="racecar">🏎️ Race Car</option>
+              <option value="neon-maze-runner">🌟 Neon Maze Runner</option>
+            </select>
           </div>
-          <div class="current-player" id="currentPlayerInfo" style="display: none;">
-            <span>Playing as: <strong id="currentPlayerName"></strong></span>
-            <button id="logoutPlayer" class="play-button secondary" style="width: auto; margin: 0; padding: 8px 16px; font-size: 14px;">Logout</button>
+          
+          <div class="player-setup">
+            <div class="player-form">
+              <div class="form-row">
+                <input type="text" id="playerName" class="input" placeholder="Enter your username (3-20 chars)" maxlength="20" minlength="3">
+                <input type="email" id="playerEmail" class="input" placeholder="Enter your email for verification" required>
+              </div>
+              <div class="player-actions">
+                <button id="savePlayer" class="play-button" style="width: auto; margin: 0; padding: 12px 20px;">🔐 Register Player</button>
+                <button id="loginPlayer" class="play-button secondary" style="width: auto; margin: 0; padding: 12px 20px;">📧 Login</button>
+              </div>
+            </div>
+            <div class="current-player" id="currentPlayerInfo" style="display: none;">
+              <span>Playing as: <strong id="currentPlayerName"></strong></span>
+              <button id="logoutPlayer" class="play-button secondary" style="width: auto; margin: 0; padding: 8px 16px; font-size: 14px;">Logout</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1070,11 +1235,22 @@
           <!-- Leaderboard entries will be populated here -->
         </div>
       </div>
+
+      <!-- My Scores Section -->
+      <div class="my-scores-section" id="myScoresSection" style="display: none;">
+        <div class="section-header">
+          <h3>📊 My Scores</h3>
+          <span class="score-count" id="myScoreCount">0 scores</span>
+        </div>
+        <div class="my-scores-grid" id="myScoresList">
+          <!-- User's scores will be populated here -->
+        </div>
+      </div>
     </div>
 
     <div class="section-title">
       <h2>🎮 All Games</h2>
-      <span id="gameCount" style="color: var(--muted); font-size: 16px;">5 games available</span>
+      <span id="gameCount" style="color: var(--muted); font-size: 16px;">6 games available</span>
     </div>
 
     <div id="gameGrid" class="grid cols-4"></div>
@@ -1162,6 +1338,20 @@
         emoji: "🏎️",
         featured: true,
         tags: ["Racing", "Speed", "Championship"]
+      },
+      {
+        id: "neon-maze-runner",
+        title: "Neon Maze Runner",
+        description: "Navigate through digital mazes as a cyber-runner collecting data packets while avoiding AI security drones. Use stealth mode and power-ups to survive 20 levels of cyberpunk action!",
+        genres: ["Action", "Arcade"],
+        players: "1",
+        rating: 4.8,
+        plays: 3200,
+        updatedAt: "2025-08-31",
+        route: "./NeonMazeRunner/index.html",
+        emoji: "🌟",
+        featured: true,
+        tags: ["Cyberpunk", "Stealth", "Levels"]
       }
     ];
 
@@ -1328,15 +1518,96 @@
         const playerForm = document.querySelector('.player-form');
         const currentPlayerInfo = document.getElementById('currentPlayerInfo');
         const currentPlayerName = document.getElementById('currentPlayerName');
+        const myScoresSection = document.getElementById('myScoresSection');
 
         if (this.currentPlayer) {
           playerForm.style.display = 'none';
           currentPlayerInfo.style.display = 'flex';
           currentPlayerName.textContent = this.currentPlayer.name;
+          myScoresSection.style.display = 'block';
+          this.loadMyScores();
         } else {
           playerForm.style.display = 'block';
           currentPlayerInfo.style.display = 'none';
+          myScoresSection.style.display = 'none';
         }
+      }
+
+      // Load and display current player's scores
+      loadMyScores() {
+        if (!this.currentPlayer) return;
+
+        const myScoresList = document.getElementById('myScoresList');
+        const myScoreCount = document.getElementById('myScoreCount');
+        
+        // Get all scores for current player
+        const playerScores = this.scores.filter(score => 
+          score.playerId === this.currentPlayer.id
+        );
+
+        // Group by game and get best score for each
+        const gameScores = {};
+        playerScores.forEach(score => {
+          if (!gameScores[score.game] || score.score > gameScores[score.game].score) {
+            gameScores[score.game] = score;
+          }
+        });
+
+        const bestScores = Object.values(gameScores).sort((a, b) => b.score - a.score);
+        
+        myScoreCount.textContent = `${bestScores.length} game${bestScores.length !== 1 ? 's' : ''} played`;
+
+        if (bestScores.length === 0) {
+          myScoresList.innerHTML = `
+            <div class="empty-scores">
+              <h4>🎮 No scores yet!</h4>
+              <p>Start playing games to track your progress.</p>
+            </div>
+          `;
+          return;
+        }
+
+        myScoresList.innerHTML = bestScores.map((score, index) => {
+          const rank = this.getPlayerRankInGame(score.game, score.score);
+          let rankDisplay = `#${rank}`;
+          if (rank === 1) rankDisplay = '🥇 #1';
+          else if (rank === 2) rankDisplay = '🥈 #2';
+          else if (rank === 3) rankDisplay = '🥉 #3';
+          
+          return `
+            <div class="score-item">
+              <div class="score-game">
+                <h4>${score.gameName}</h4>
+                <span class="score-rank">${rankDisplay}</span>
+              </div>
+              <div class="score-details">
+                <span class="score-value">${score.score.toLocaleString()}</span>
+                <span class="score-date">${score.date}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Get player's rank in a specific game
+      getPlayerRankInGame(gameId, playerScore) {
+        const gameScores = this.scores
+          .filter(score => score.game === gameId)
+          .map(score => ({
+            playerId: score.playerId,
+            score: score.score
+          }));
+
+        // Get best score per player for this game
+        const playerBest = {};
+        gameScores.forEach(score => {
+          if (!playerBest[score.playerId] || score.score > playerBest[score.playerId]) {
+            playerBest[score.playerId] = score.score;
+          }
+        });
+
+        const sortedScores = Object.values(playerBest).sort((a, b) => b - a);
+        return sortedScores.indexOf(playerScore) + 1;
       }
 
       // Record a new score (called from game completion)
@@ -1458,6 +1729,11 @@
             </div>
           `;
         }).join('');
+
+        // Update My Scores section if player is logged in
+        if (this.currentPlayer) {
+          this.loadMyScores();
+        }
       }
     }
 

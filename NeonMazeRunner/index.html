@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Maze Runner - Cyberpunk Action Game</title>
+  <meta name="description" content="Navigate through digital mazes, collect data packets, and avoid AI security drones in this cyberpunk action game!">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%);
+      font-family: 'Courier New', monospace;
+      color: #00f5ff;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .hud {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 30px;
+      background: rgba(0, 245, 255, 0.1);
+      padding: 15px 25px;
+      border-radius: 10px;
+      border: 2px solid #00f5ff;
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+      z-index: 1000;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .hud-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hud-icon {
+      font-size: 18px;
+    }
+
+    #gameCanvas {
+      border: 3px solid #00f5ff;
+      border-radius: 10px;
+      box-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
+      background: #000;
+    }
+
+    .menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      text-align: center;
+    }
+
+    .menu-title {
+      font-size: 48px;
+      font-weight: bold;
+      background: linear-gradient(45deg, #00f5ff, #ff006e, #ffbe0b);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 20px;
+      text-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    }
+
+    .menu-subtitle {
+      font-size: 18px;
+      color: #8892b0;
+      margin-bottom: 40px;
+      max-width: 600px;
+      line-height: 1.5;
+    }
+
+    .menu-button {
+      background: linear-gradient(135deg, #00f5ff 0%, #ff006e 100%);
+      color: #000;
+      border: none;
+      padding: 15px 30px;
+      margin: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Courier New', monospace;
+      min-width: 200px;
+    }
+
+    .menu-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 245, 255, 0.4);
+    }
+
+    .controls-info {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #8892b0;
+      line-height: 1.6;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+      max-width: 400px;
+    }
+
+    .control-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 245, 255, 0.1);
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid rgba(0, 245, 255, 0.3);
+    }
+
+    .game-over-screen {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .final-score {
+      font-size: 36px;
+      color: #ffbe0b;
+      margin: 20px 0;
+      text-shadow: 0 0 10px rgba(255, 190, 11, 0.5);
+    }
+
+    .level-complete-screen {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .level-title {
+      font-size: 32px;
+      color: #00f5ff;
+      margin-bottom: 20px;
+    }
+
+    .stealth-indicator {
+      position: fixed;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(138, 43, 226, 0.9);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      display: none;
+      z-index: 1001;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    .power-up-notification {
+      position: fixed;
+      top: 130px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 190, 11, 0.9);
+      color: #000;
+      padding: 8px 16px;
+      border-radius: 15px;
+      font-weight: bold;
+      display: none;
+      z-index: 1001;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+
+    .mobile-controls {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      z-index: 1000;
+    }
+
+    .mobile-btn {
+      background: rgba(0, 245, 255, 0.3);
+      border: 2px solid #00f5ff;
+      color: #00f5ff;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mobile-btn:active {
+      background: rgba(0, 245, 255, 0.5);
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 768px) {
+      .mobile-controls {
+        display: grid;
+      }
+      
+      .hud {
+        font-size: 14px;
+        gap: 20px;
+        padding: 10px 20px;
+      }
+      
+      .menu-title {
+        font-size: 36px;
+      }
+      
+      #gameCanvas {
+        width: 95vw;
+        height: auto;
+      }
+    }
+
+    .particle {
+      position: absolute;
+      pointer-events: none;
+      border-radius: 50%;
+      animation: particleFloat 1s ease-out forwards;
+    }
+
+    @keyframes particleFloat {
+      from {
+        opacity: 1;
+        transform: scale(1);
+      }
+      to {
+        opacity: 0;
+        transform: scale(0) translateY(-30px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-item">
+        <span class="hud-icon">🏆</span>
+        <span>Score: <span id="scoreDisplay">0</span></span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-icon">🌐</span>
+        <span>Level: <span id="levelDisplay">1</span></span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-icon">💎</span>
+        <span>Data: <span id="dataDisplay">0</span>/<span id="totalDataDisplay">0</span></span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-icon">❤️</span>
+        <span>Lives: <span id="livesDisplay">3</span></span>
+      </div>
+    </div>
+
+    <!-- Stealth Indicator -->
+    <div class="stealth-indicator" id="stealthIndicator">
+      🔮 STEALTH MODE ACTIVE
+    </div>
+
+    <!-- Power-up Notification -->
+    <div class="power-up-notification" id="powerUpNotification"></div>
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <!-- Mobile Controls -->
+    <div class="mobile-controls">
+      <div class="mobile-btn" id="mobileLeft">←</div>
+      <div class="mobile-btn" id="mobileUp">↑</div>
+      <div class="mobile-btn" id="mobileRight">→</div>
+      <div class="mobile-btn" id="mobileDown">↓</div>
+      <div class="mobile-btn" id="mobileAction">⚡</div>
+      <div class="mobile-btn" id="mobileStealth">🔮</div>
+    </div>
+
+    <!-- Start Menu -->
+    <div class="menu-overlay" id="startMenu">
+      <h1 class="menu-title">🌟 NEON MAZE RUNNER</h1>
+      <p class="menu-subtitle">
+        Navigate through digital mazes as a cyber-runner collecting data packets while avoiding AI security drones. 
+        Use stealth mode and power-ups to survive increasingly complex levels in this cyberpunk adventure!
+      </p>
+      
+      <button class="menu-button" onclick="startGame()">🚀 START GAME</button>
+      <button class="menu-button" onclick="showInstructions()">📖 HOW TO PLAY</button>
+      <button class="menu-button" onclick="goHome()">🏠 BACK TO GAMES</button>
+
+      <div class="controls-info">
+        <h3>🎮 Controls</h3>
+        <div class="controls-grid">
+          <div class="control-item">
+            <span>🔄</span> Arrow Keys / WASD - Move
+          </div>
+          <div class="control-item">
+            <span>🔮</span> SPACE - Stealth Mode
+          </div>
+          <div class="control-item">
+            <span>⚡</span> SHIFT - Use Power-up
+          </div>
+          <div class="control-item">
+            <span>📱</span> Touch - Mobile Controls
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions Menu -->
+    <div class="menu-overlay" id="instructionsMenu" style="display: none;">
+      <h1 class="menu-title">📖 HOW TO PLAY</h1>
+      <div class="menu-subtitle" style="text-align: left; max-width: 700px;">
+        <h3 style="color: #00f5ff; margin-bottom: 15px;">🎯 Objective</h3>
+        <p style="margin-bottom: 20px;">Collect all data packets (💎) in each level while avoiding AI security drones (🔴). Reach the exit portal to advance to the next level.</p>
+        
+        <h3 style="color: #ff006e; margin-bottom: 15px;">🤖 AI Drones</h3>
+        <p style="margin-bottom: 20px;">• <strong>Red Patrol Drones:</strong> Follow set routes<br>• <strong>Orange Hunter Drones:</strong> Chase you when detected<br>• <strong>Purple Guard Drones:</strong> Protect specific areas</p>
+        
+        <h3 style="color: #ffbe0b; margin-bottom: 15px;">⚡ Power-ups</h3>
+        <p style="margin-bottom: 20px;">• <strong>🔮 Stealth Mode:</strong> Become invisible for 5 seconds<br>• <strong>⚡ Speed Boost:</strong> Move faster for 3 seconds<br>• <strong>🛡️ EMP Pulse:</strong> Disable nearby drones for 2 seconds</p>
+        
+        <h3 style="color: #8338ec; margin-bottom: 15px;">🌟 Tips</h3>
+        <p>• Study drone patrol patterns before moving<br>• Use walls to break line of sight<br>• Save stealth mode for emergencies<br>• Each level gets progressively harder!</p>
+      </div>
+      
+      <button class="menu-button" onclick="hideInstructions()">⬅️ BACK TO MENU</button>
+    </div>
+
+    <!-- Game Over Menu -->
+    <div class="menu-overlay" id="gameOverMenu" style="display: none;">
+      <h1 class="menu-title">💀 SYSTEM BREACHED</h1>
+      <p class="menu-subtitle">The AI security system has detected your intrusion!</p>
+      
+      <div class="final-score">Final Score: <span id="finalScore">0</span></div>
+      <div style="color: #8892b0; margin-bottom: 30px;">
+        Level Reached: <span id="finalLevel">1</span> | Data Collected: <span id="finalData">0</span>
+      </div>
+      
+      <button class="menu-button" onclick="restartGame()">🔄 TRY AGAIN</button>
+      <button class="menu-button" onclick="goToMenu()">📋 MAIN MENU</button>
+      <button class="menu-button" onclick="goHome()">🏠 BACK TO GAMES</button>
+    </div>
+
+    <!-- Level Complete Menu -->
+    <div class="menu-overlay" id="levelCompleteMenu" style="display: none;">
+      <h1 class="menu-title">✅ LEVEL COMPLETE</h1>
+      <div class="level-title">Data Core <span id="completedLevel">1</span> Secured!</div>
+      
+      <div style="color: #8892b0; margin-bottom: 30px;">
+        <div>Score Bonus: <span style="color: #ffbe0b;" id="levelBonus">+500</span></div>
+        <div>Time Bonus: <span style="color: #00f5ff;" id="timeBonus">+200</span></div>
+        <div>Total Score: <span style="color: #ff006e;" id="currentScore">1250</span></div>
+      </div>
+      
+      <button class="menu-button" onclick="nextLevel()">➡️ NEXT LEVEL</button>
+      <button class="menu-button" onclick="goToMenu()">📋 MAIN MENU</button>
+    </div>
+
+    <!-- Victory Menu -->
+    <div class="menu-overlay" id="victoryMenu" style="display: none;">
+      <h1 class="menu-title">🏆 MISSION COMPLETE</h1>
+      <p class="menu-subtitle">
+        Congratulations! You've successfully infiltrated all 20 data cores and become the ultimate cyber-runner!
+      </p>
+      
+      <div class="final-score">Final Score: <span id="victoryScore">0</span></div>
+      <div style="color: #8892b0; margin-bottom: 30px;">
+        🌟 Perfect Infiltration Achievement Unlocked! 🌟
+      </div>
+      
+      <button class="menu-button" onclick="restartGame()">🔄 PLAY AGAIN</button>
+      <button class="menu-button" onclick="goHome()">🏠 BACK TO GAMES</button>
+    </div>
+  </div>
+
+  <script>
+    // Game constants
+    const TILE_SIZE = 32;
+    const CANVAS_WIDTH = 800;
+    const CANVAS_HEIGHT = 600;
+    const MAZE_WIDTH = Math.floor(CANVAS_WIDTH / TILE_SIZE);
+    const MAZE_HEIGHT = Math.floor(CANVAS_HEIGHT / TILE_SIZE);
+
+    // Game state
+    let game = {
+      canvas: null,
+      ctx: null,
+      player: null,
+      drones: [],
+      dataPackets: [],
+      powerUps: [],
+      maze: [],
+      level: 1,
+      score: 0,
+      lives: 3,
+      gameState: 'menu', // 'menu', 'playing', 'paused', 'gameOver', 'levelComplete', 'victory'
+      keys: {},
+      stealth: false,
+      stealthTimer: 0,
+      powerUpActive: null,
+      powerUpTimer: 0,
+      startTime: 0,
+      particles: []
+    };
+
+    // Power-up types
+    const POWER_UPS = {
+      STEALTH: { color: '#8a2be2', duration: 5000, icon: '🔮' },
+      SPEED: { color: '#ffbe0b', duration: 3000, icon: '⚡' },
+      EMP: { color: '#ff006e', duration: 2000, icon: '🛡️' }
+    };
+
+    // Player class
+    class Player {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = TILE_SIZE * 0.7;
+        this.speed = 2;
+        this.color = '#00f5ff';
+        this.trail = [];
+        this.lastMove = Date.now();
+      }
+
+      update() {
+        const now = Date.now();
+        
+        // Handle movement
+        let newX = this.x;
+        let newY = this.y;
+        let moved = false;
+
+        const speed = game.powerUpActive === 'SPEED' ? this.speed * 2 : this.speed;
+
+        if (game.keys['ArrowUp'] || game.keys['KeyW']) {
+          newY -= speed;
+          moved = true;
+        }
+        if (game.keys['ArrowDown'] || game.keys['KeyS']) {
+          newY += speed;
+          moved = true;
+        }
+        if (game.keys['ArrowLeft'] || game.keys['KeyA']) {
+          newX -= speed;
+          moved = true;
+        }
+        if (game.keys['ArrowRight'] || game.keys['KeyD']) {
+          newX += speed;
+          moved = true;
+        }
+
+        // Check collision with walls
+        if (!this.checkWallCollision(newX, newY)) {
+          this.x = newX;
+          this.y = newY;
+
+          // Add trail effect
+          if (moved && now - this.lastMove > 50) {
+            this.trail.push({
+              x: this.x,
+              y: this.y,
+              time: now,
+              opacity: 1
+            });
+            this.lastMove = now;
+          }
+        }
+
+        // Update trail
+        this.trail = this.trail.filter(point => now - point.time < 500);
+        this.trail.forEach(point => {
+          point.opacity = 1 - (now - point.time) / 500;
+        });
+
+        // Check data packet collection
+        this.checkDataCollection();
+        
+        // Check power-up collection
+        this.checkPowerUpCollection();
+
+        // Check exit portal
+        this.checkExitPortal();
+      }
+
+      checkWallCollision(x, y) {
+        const left = Math.floor(x / TILE_SIZE);
+        const right = Math.floor((x + this.size) / TILE_SIZE);
+        const top = Math.floor(y / TILE_SIZE);
+        const bottom = Math.floor((y + this.size) / TILE_SIZE);
+
+        // Check bounds
+        if (left < 0 || right >= MAZE_WIDTH || top < 0 || bottom >= MAZE_HEIGHT) {
+          return true;
+        }
+
+        // Check wall tiles
+        for (let ty = top; ty <= bottom; ty++) {
+          for (let tx = left; tx <= right; tx++) {
+            if (game.maze[ty] && game.maze[ty][tx] === 1) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      }
+
+      checkDataCollection() {
+        for (let i = game.dataPackets.length - 1; i >= 0; i--) {
+          const packet = game.dataPackets[i];
+          const dx = this.x + this.size/2 - (packet.x + TILE_SIZE/2);
+          const dy = this.y + this.size/2 - (packet.y + TILE_SIZE/2);
+          const distance = Math.sqrt(dx*dx + dy*dy);
+
+          if (distance < TILE_SIZE/2) {
+            // Collect data packet
+            game.dataPackets.splice(i, 1);
+            game.score += 100;
+            createParticles(packet.x + TILE_SIZE/2, packet.y + TILE_SIZE/2, '#00f5ff');
+            updateHUD();
+
+            // Check if all data collected
+            if (game.dataPackets.length === 0) {
+              // Spawn exit portal
+              spawnExitPortal();
+            }
+          }
+        }
+      }
+
+      checkPowerUpCollection() {
+        for (let i = game.powerUps.length - 1; i >= 0; i--) {
+          const powerUp = game.powerUps[i];
+          const dx = this.x + this.size/2 - (powerUp.x + TILE_SIZE/2);
+          const dy = this.y + this.size/2 - (powerUp.y + TILE_SIZE/2);
+          const distance = Math.sqrt(dx*dx + dy*dy);
+
+          if (distance < TILE_SIZE/2) {
+            // Collect power-up
+            game.powerUps.splice(i, 1);
+            activatePowerUp(powerUp.type);
+            createParticles(powerUp.x + TILE_SIZE/2, powerUp.y + TILE_SIZE/2, POWER_UPS[powerUp.type].color);
+          }
+        }
+      }
+
+      checkExitPortal() {
+        if (game.exitPortal) {
+          const dx = this.x + this.size/2 - (game.exitPortal.x + TILE_SIZE/2);
+          const dy = this.y + this.size/2 - (game.exitPortal.y + TILE_SIZE/2);
+          const distance = Math.sqrt(dx*dx + dy*dy);
+
+          if (distance < TILE_SIZE/2) {
+            // Level complete
+            completeLevel();
+          }
+        }
+      }
+
+      draw(ctx) {
+        // Draw trail
+        this.trail.forEach(point => {
+          ctx.save();
+          ctx.globalAlpha = point.opacity * 0.3;
+          ctx.fillStyle = this.color;
+          ctx.fillRect(point.x, point.y, this.size * 0.5, this.size * 0.5);
+          ctx.restore();
+        });
+
+        // Draw player
+        ctx.save();
+        
+        if (game.stealth) {
+          ctx.globalAlpha = 0.3;
+        }
+
+        // Main body
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+
+        // Inner glow
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 10;
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(this.x + 2, this.y + 2, this.size - 4, this.size - 4);
+
+        // Core dot
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(this.x + this.size/2 - 2, this.y + this.size/2 - 2, 4, 4);
+
+        ctx.restore();
+      }
+    }
+
+    // Drone class
+    class Drone {
+      constructor(x, y, type) {
+        this.x = x;
+        this.y = y;
+        this.type = type; // 'patrol', 'hunter', 'guard'
+        this.size = TILE_SIZE * 0.8;
+        this.speed = 1;
+        this.direction = 0; // 0=right, 1=down, 2=left, 3=up
+        this.patrolPath = [];
+        this.pathIndex = 0;
+        this.alertLevel = 0;
+        this.scanRange = TILE_SIZE * 3;
+        this.lastScan = 0;
+        this.disabled = false;
+        this.disabledTimer = 0;
+
+        // Set properties based on type
+        switch(type) {
+          case 'patrol':
+            this.color = '#ff4444';
+            this.speed = 0.8;
+            this.generatePatrolPath();
+            break;
+          case 'hunter':
+            this.color = '#ff8800';
+            this.speed = 1.2;
+            this.scanRange = TILE_SIZE * 4;
+            break;
+          case 'guard':
+            this.color = '#aa44ff';
+            this.speed = 0.5;
+            this.scanRange = TILE_SIZE * 2;
+            break;
+        }
+      }
+
+      update() {
+        if (this.disabled) {
+          this.disabledTimer--;
+          if (this.disabledTimer <= 0) {
+            this.disabled = false;
+          }
+          return;
+        }
+
+        // Update based on type
+        switch(this.type) {
+          case 'patrol':
+            this.updatePatrol();
+            break;
+          case 'hunter':
+            this.updateHunter();
+            break;
+          case 'guard':
+            this.updateGuard();
+            break;
+        }
+
+        // Check collision with player
+        this.checkPlayerCollision();
+      }
+
+      generatePatrolPath() {
+        // Generate a simple patrol path
+        const startX = Math.floor(this.x / TILE_SIZE);
+        const startY = Math.floor(this.y / TILE_SIZE);
+        
+        this.patrolPath = [
+          { x: startX, y: startY },
+          { x: startX + 3, y: startY },
+          { x: startX + 3, y: startY + 2 },
+          { x: startX, y: startY + 2 }
+        ];
+      }
+
+      updatePatrol() {
+        if (this.patrolPath.length === 0) return;
+
+        const target = this.patrolPath[this.pathIndex];
+        const targetX = target.x * TILE_SIZE;
+        const targetY = target.y * TILE_SIZE;
+
+        const dx = targetX - this.x;
+        const dy = targetY - this.y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+
+        if (distance < 5) {
+          this.pathIndex = (this.pathIndex + 1) % this.patrolPath.length;
+        } else {
+          this.x += (dx / distance) * this.speed;
+          this.y += (dy / distance) * this.speed;
+        }
+      }
+
+      updateHunter() {
+        // Scan for player
+        if (this.canSeePlayer() && !game.stealth) {
+          // Chase player
+          const dx = game.player.x - this.x;
+          const dy = game.player.y - this.y;
+          const distance = Math.sqrt(dx*dx + dy*dy);
+
+          if (distance > 0) {
+            const moveX = (dx / distance) * this.speed;
+            const moveY = (dy / distance) * this.speed;
+
+            // Check if movement is valid
+            if (!this.checkWallCollision(this.x + moveX, this.y)) {
+              this.x += moveX;
+            }
+            if (!this.checkWallCollision(this.x, this.y + moveY)) {
+              this.y += moveY;
+            }
+          }
+        } else {
+          // Random movement
+          if (Math.random() < 0.02) {
+            this.direction = Math.floor(Math.random() * 4);
+          }
+          this.moveInDirection();
+        }
+      }
+
+      updateGuard() {
+        // Guard stays mostly in place, only moves if player gets close
+        if (this.canSeePlayer() && !game.stealth) {
+          const dx = game.player.x - this.x;
+          const dy = game.player.y - this.y;
+          const distance = Math.sqrt(dx*dx + dy*dy);
+
+          if (distance < this.scanRange) {
+            // Move slightly towards player
+            const moveX = (dx / distance) * this.speed * 0.5;
+            const moveY = (dy / distance) * this.speed * 0.5;
+
+            if (!this.checkWallCollision(this.x + moveX, this.y)) {
+              this.x += moveX;
+            }
+            if (!this.checkWallCollision(this.x, this.y + moveY)) {
+              this.y += moveY;
+            }
+          }
+        }
+      }
+
+      moveInDirection() {
+        let newX = this.x;
+        let newY = this.y;
+
+        switch(this.direction) {
+          case 0: newX += this.speed; break; // right
+          case 1: newY += this.speed; break; // down
+          case 2: newX -= this.speed; break; // left
+          case 3: newY -= this.speed; break; // up
+        }
+
+        if (!this.checkWallCollision(newX, newY)) {
+          this.x = newX;
+          this.y = newY;
+        } else {
+          this.direction = Math.floor(Math.random() * 4);
+        }
+      }
+
+      canSeePlayer() {
+        const dx = game.player.x - this.x;
+        const dy = game.player.y - this.y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+
+        return distance <= this.scanRange;
+      }
+
+      checkWallCollision(x, y) {
+        const left = Math.floor(x / TILE_SIZE);
+        const right = Math.floor((x + this.size) / TILE_SIZE);
+        const top = Math.floor(y / TILE_SIZE);
+        const bottom = Math.floor((y + this.size) / TILE_SIZE);
+
+        if (left < 0 || right >= MAZE_WIDTH || top < 0 || bottom >= MAZE_HEIGHT) {
+          return true;
+        }
+
+        for (let ty = top; ty <= bottom; ty++) {
+          for (let tx = left; tx <= right; tx++) {
+            if (game.maze[ty] && game.maze[ty][tx] === 1) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      }
+
+      checkPlayerCollision() {
+        const dx = this.x + this.size/2 - (game.player.x + game.player.size/2);
+        const dy = this.y + this.size/2 - (game.player.y + game.player.size/2);
+        const distance = Math.sqrt(dx*dx + dy*dy);
+
+        if (distance < (this.size + game.player.size) / 2) {
+          if (!game.stealth) {
+            playerCaught();
+          }
+        }
+      }
+
+      disable(duration) {
+        this.disabled = true;
+        this.disabledTimer = duration;
+      }
+
+      draw(ctx) {
+        ctx.save();
+
+        if (this.disabled) {
+          ctx.globalAlpha = 0.3;
+        }
+
+        // Main body
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+
+        // Glow effect
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 8;
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(this.x + 2, this.y + 2, this.size - 4, this.size - 4);
+
+        // Scanner beam (if can see player)
+        if (this.canSeePlayer() && !game.stealth && !this.disabled) {
+          ctx.strokeStyle = this.color;
+          ctx.lineWidth = 1;
+          ctx.globalAlpha = 0.3;
+          ctx.beginPath();
+          ctx.moveTo(this.x + this.size/2, this.y + this.size/2);
+          ctx.lineTo(game.player.x + game.player.size/2, game.player.y + game.player.size/2);
+          ctx.stroke();
+        }
+
+        // Type indicator
+        ctx.fillStyle = '#fff';
+        ctx.font = '12px Courier New';
+        ctx.textAlign = 'center';
+        const icon = this.type === 'patrol' ? '⭕' : this.type === 'hunter' ? '🎯' : '🛡️';
+        ctx.fillText(icon, this.x + this.size/2, this.y + this.size/2 + 4);
+
+        ctx.restore();
+      }
+    }
+
+    // Initialize game
+    function initGame() {
+      game.canvas = document.getElementById('gameCanvas');
+      game.ctx = game.canvas.getContext('2d');
+      
+      // Set up event listeners
+      setupEventListeners();
+      
+      // Show start menu
+      showMenu('startMenu');
+    }
+
+    function setupEventListeners() {
+      // Keyboard events
+      document.addEventListener('keydown', (e) => {
+        game.keys[e.code] = true;
+        
+        if (game.gameState === 'playing') {
+          if (e.code === 'Space') {
+            e.preventDefault();
+            activateStealth();
+          }
+          if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+            e.preventDefault();
+            usePowerUp();
+          }
+        }
+      });
+
+      document.addEventListener('keyup', (e) => {
+        game.keys[e.code] = false;
+      });
+
+      // Mobile controls
+      setupMobileControls();
+
+      // Prevent context menu on canvas
+      game.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    }
+
+    function setupMobileControls() {
+      const mobileControls = {
+        'mobileLeft': () => { game.keys['ArrowLeft'] = true; setTimeout(() => game.keys['ArrowLeft'] = false, 100); },
+        'mobileRight': () => { game.keys['ArrowRight'] = true; setTimeout(() => game.keys['ArrowRight'] = false, 100); },
+        'mobileUp': () => { game.keys['ArrowUp'] = true; setTimeout(() => game.keys['ArrowUp'] = false, 100); },
+        'mobileDown': () => { game.keys['ArrowDown'] = true; setTimeout(() => game.keys['ArrowDown'] = false, 100); },
+        'mobileAction': () => usePowerUp(),
+        'mobileStealth': () => activateStealth()
+      };
+
+      Object.keys(mobileControls).forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+          btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            mobileControls[id]();
+          });
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            mobileControls[id]();
+          });
+        }
+      });
+    }
+
+    // Game functions
+    function startGame() {
+      game.level = 1;
+      game.score = 0;
+      game.lives = 3;
+      game.gameState = 'playing';
+      game.startTime = Date.now();
+      
+      hideAllMenus();
+      generateLevel();
+      gameLoop();
+    }
+
+    function generateLevel() {
+      // Generate maze
+      game.maze = generateMaze();
+      
+      // Find valid spawn positions
+      const spawnPositions = findEmptyTiles();
+      
+      // Create player
+      const playerSpawn = spawnPositions[0];
+      game.player = new Player(playerSpawn.x * TILE_SIZE, playerSpawn.y * TILE_SIZE);
+      
+      // Create drones based on level
+      game.drones = [];
+      const droneCount = Math.min(2 + Math.floor(game.level / 3), 8);
+      
+      for (let i = 0; i < droneCount; i++) {
+        const spawn = spawnPositions[1 + i];
+        if (spawn) {
+          let type = 'patrol';
+          if (game.level >= 5 && Math.random() < 0.3) type = 'hunter';
+          if (game.level >= 10 && Math.random() < 0.2) type = 'guard';
+          
+          game.drones.push(new Drone(spawn.x * TILE_SIZE, spawn.y * TILE_SIZE, type));
+        }
+      }
+      
+      // Create data packets
+      game.dataPackets = [];
+      const dataCount = 5 + Math.floor(game.level / 2);
+      
+      for (let i = 0; i < dataCount; i++) {
+        const spawn = spawnPositions[10 + i];
+        if (spawn) {
+          game.dataPackets.push({
+            x: spawn.x * TILE_SIZE,
+            y: spawn.y * TILE_SIZE,
+            collected: false
+          });
+        }
+      }
+      
+      // Create power-ups
+      game.powerUps = [];
+      if (game.level >= 3) {
+        const powerUpCount = Math.floor(game.level / 3);
+        const powerUpTypes = Object.keys(POWER_UPS);
+        
+        for (let i = 0; i < powerUpCount; i++) {
+          const spawn = spawnPositions[20 + i];
+          if (spawn) {
+            const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+            game.powerUps.push({
+              x: spawn.x * TILE_SIZE,
+              y: spawn.y * TILE_SIZE,
+              type: type
+            });
+          }
+        }
+      }
+      
+      // Reset power-ups and stealth
+      game.stealth = false;
+      game.stealthTimer = 0;
+      game.powerUpActive = null;
+      game.powerUpTimer = 0;
+      game.exitPortal = null;
+      
+      updateHUD();
+    }
+
+    function generateMaze() {
+      // Create a simple maze with walls and empty spaces
+      const maze = [];
+      
+      for (let y = 0; y < MAZE_HEIGHT; y++) {
+        maze[y] = [];
+        for (let x = 0; x < MAZE_WIDTH; x++) {
+          // Border walls
+          if (x === 0 || x === MAZE_WIDTH - 1 || y === 0 || y === MAZE_HEIGHT - 1) {
+            maze[y][x] = 1;
+          }
+          // Random internal walls
+          else if (Math.random() < 0.25 + (game.level * 0.01)) {
+            maze[y][x] = 1;
+          }
+          // Empty space
+          else {
+            maze[y][x] = 0;
+          }
+        }
+      }
+      
+      // Ensure some paths exist
+      for (let y = 2; y < MAZE_HEIGHT - 2; y += 3) {
+        for (let x = 2; x < MAZE_WIDTH - 2; x += 3) {
+          maze[y][x] = 0;
+          maze[y][x + 1] = 0;
+          maze[y + 1][x] = 0;
+        }
+      }
+      
+      return maze;
+    }
+
+    function findEmptyTiles() {
+      const empty = [];
+      
+      for (let y = 1; y < MAZE_HEIGHT - 1; y++) {
+        for (let x = 1; x < MAZE_WIDTH - 1; x++) {
+          if (game.maze[y][x] === 0) {
+            empty.push({ x, y });
+          }
+        }
+      }
+      
+      // Shuffle array
+      for (let i = empty.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [empty[i], empty[j]] = [empty[j], empty[i]];
+      }
+      
+      return empty;
+    }
+
+    function spawnExitPortal() {
+      const emptyTiles = findEmptyTiles();
+      const farTiles = emptyTiles.filter(tile => {
+        const dx = tile.x * TILE_SIZE - game.player.x;
+        const dy = tile.y * TILE_SIZE - game.player.y;
+        return Math.sqrt(dx*dx + dy*dy) > TILE_SIZE * 5;
+      });
+      
+      if (farTiles.length > 0) {
+        const spawn = farTiles[0];
+        game.exitPortal = {
+          x: spawn.x * TILE_SIZE,
+          y: spawn.y * TILE_SIZE
+        };
+      }
+    }
+
+    function activateStealth() {
+      if (!game.stealth && game.gameState === 'playing') {
+        game.stealth = true;
+        game.stealthTimer = 5000; // 5 seconds
+        
+        document.getElementById('stealthIndicator').style.display = 'block';
+        
+        setTimeout(() => {
+          game.stealth = false;
+          document.getElementById('stealthIndicator').style.display = 'none';
+        }, 5000);
+      }
+    }
+
+    function activatePowerUp(type) {
+      game.powerUpActive = type;
+      game.powerUpTimer = POWER_UPS[type].duration;
+      
+      const notification = document.getElementById('powerUpNotification');
+      notification.textContent = `${POWER_UPS[type].icon} ${type} ACTIVATED!`;
+      notification.style.display = 'block';
+      
+      if (type === 'EMP') {
+        // Disable all drones temporarily
+        game.drones.forEach(drone => {
+          drone.disable(120); // 2 seconds at 60fps
+        });
+      }
+      
+      setTimeout(() => {
+        game.powerUpActive = null;
+        notification.style.display = 'none';
+      }, POWER_UPS[type].duration);
+    }
+
+    function usePowerUp() {
+      // For now, just activate stealth as the main power-up action
+      activateStealth();
+    }
+
+    function playerCaught() {
+      game.lives--;
+      updateHUD();
+      
+      if (game.lives <= 0) {
+        gameOver();
+      } else {
+        // Reset player position
+        const spawnPositions = findEmptyTiles();
+        const playerSpawn = spawnPositions[0];
+        game.player.x = playerSpawn.x * TILE_SIZE;
+        game.player.y = playerSpawn.y * TILE_SIZE;
+        
+        // Brief invincibility
+        game.stealth = true;
+        setTimeout(() => {
+          game.stealth = false;
+        }, 2000);
+      }
+    }
+
+    function completeLevel() {
+      const timeBonus = Math.max(0, 1000 - Math.floor((Date.now() - game.startTime) / 1000) * 10);
+      const levelBonus = game.level * 500;
+      
+      game.score += levelBonus + timeBonus;
+      
+      document.getElementById('completedLevel').textContent = game.level;
+      document.getElementById('levelBonus').textContent = `+${levelBonus}`;
+      document.getElementById('timeBonus').textContent = `+${timeBonus}`;
+      document.getElementById('currentScore').textContent = game.score;
+      
+      if (game.level >= 20) {
+        victory();
+      } else {
+        game.gameState = 'levelComplete';
+        showMenu('levelCompleteMenu');
+      }
+      
+      updateHUD();
+    }
+
+    function nextLevel() {
+      game.level++;
+      game.gameState = 'playing';
+      game.startTime = Date.now();
+      
+      hideAllMenus();
+      generateLevel();
+    }
+
+    function gameOver() {
+      game.gameState = 'gameOver';
+      
+      document.getElementById('finalScore').textContent = game.score;
+      document.getElementById('finalLevel').textContent = game.level;
+      document.getElementById('finalData').textContent = (5 + Math.floor((game.level - 1) / 2)) - game.dataPackets.length;
+      
+      // Save score to leaderboard
+      if (window.gameLeaderboard && window.gameLeaderboard.currentPlayer) {
+        window.gameLeaderboard.recordScore('neon-maze-runner', 'Neon Maze Runner', game.score);
+      }
+      
+      showMenu('gameOverMenu');
+    }
+
+    function victory() {
+      game.gameState = 'victory';
+      
+      document.getElementById('victoryScore').textContent = game.score;
+      
+      // Save score to leaderboard
+      if (window.gameLeaderboard && window.gameLeaderboard.currentPlayer) {
+        window.gameLeaderboard.recordScore('neon-maze-runner', 'Neon Maze Runner', game.score);
+      }
+      
+      showMenu('victoryMenu');
+    }
+
+    function createParticles(x, y, color) {
+      for (let i = 0; i < 8; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+        particle.style.background = color;
+        particle.style.width = '4px';
+        particle.style.height = '4px';
+        document.body.appendChild(particle);
+        
+        setTimeout(() => particle.remove(), 1000);
+      }
+    }
+
+    function updateHUD() {
+      document.getElementById('scoreDisplay').textContent = game.score;
+      document.getElementById('levelDisplay').textContent = game.level;
+      document.getElementById('dataDisplay').textContent = (5 + Math.floor((game.level - 1) / 2)) - game.dataPackets.length;
+      document.getElementById('totalDataDisplay').textContent = 5 + Math.floor((game.level - 1) / 2);
+      document.getElementById('livesDisplay').textContent = game.lives;
+    }
+
+    // Game loop
+    function gameLoop() {
+      if (game.gameState !== 'playing') return;
+      
+      // Update
+      game.player.update();
+      game.drones.forEach(drone => drone.update());
+      
+      // Update timers
+      if (game.stealthTimer > 0) {
+        game.stealthTimer -= 16; // Assuming 60fps
+      }
+      if (game.powerUpTimer > 0) {
+        game.powerUpTimer -= 16;
+      }
+      
+      // Render
+      render();
+      
+      requestAnimationFrame(gameLoop);
+    }
+
+    function render() {
+      const ctx = game.ctx;
+      
+      // Clear canvas
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      
+      // Draw maze
+      drawMaze(ctx);
+      
+      // Draw data packets
+      game.dataPackets.forEach(packet => drawDataPacket(ctx, packet));
+      
+      // Draw power-ups
+      game.powerUps.forEach(powerUp => drawPowerUp(ctx, powerUp));
+      
+      // Draw exit portal
+      if (game.exitPortal) {
+        drawExitPortal(ctx, game.exitPortal);
+      }
+      
+      // Draw drones
+      game.drones.forEach(drone => drone.draw(ctx));
+      
+      // Draw player
+      game.player.draw(ctx);
+    }
+
+    function drawMaze(ctx) {
+      for (let y = 0; y < MAZE_HEIGHT; y++) {
+        for (let x = 0; x < MAZE_WIDTH; x++) {
+          if (game.maze[y][x] === 1) {
+            // Wall
+            ctx.fillStyle = '#333';
+            ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            
+            // Wall border
+            ctx.strokeStyle = '#00f5ff';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+          }
+        }
+      }
+    }
+
+    function drawDataPacket(ctx, packet) {
+      const time = Date.now() * 0.005;
+      const pulse = Math.sin(time) * 0.2 + 0.8;
+      
+      ctx.save();
+      ctx.globalAlpha = pulse;
+      ctx.fillStyle = '#00f5ff';
+      ctx.shadowColor = '#00f5ff';
+      ctx.shadowBlur = 10;
+      
+      const size = TILE_SIZE * 0.4;
+      const x = packet.x + (TILE_SIZE - size) / 2;
+      const y = packet.y + (TILE_SIZE - size) / 2;
+      
+      ctx.fillRect(x, y, size, size);
+      
+      // Inner core
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(x + size/3, y + size/3, size/3, size/3);
+      
+      ctx.restore();
+    }
+
+    function drawPowerUp(ctx, powerUp) {
+      const time = Date.now() * 0.008;
+      const pulse = Math.sin(time) * 0.3 + 0.7;
+      const rotation = time * 0.5;
+      
+      ctx.save();
+      ctx.globalAlpha = pulse;
+      ctx.translate(powerUp.x + TILE_SIZE/2, powerUp.y + TILE_SIZE/2);
+      ctx.rotate(rotation);
+      
+      const config = POWER_UPS[powerUp.type];
+      ctx.fillStyle = config.color;
+      ctx.shadowColor = config.color;
+      ctx.shadowBlur = 15;
+      
+      const size = TILE_SIZE * 0.6;
+      ctx.fillRect(-size/2, -size/2, size, size);
+      
+      // Icon
+      ctx.font = '20px Courier New';
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.fillText(config.icon, 0, 6);
+      
+      ctx.restore();
+    }
+
+    function drawExitPortal(ctx, portal) {
+      const time = Date.now() * 0.01;
+      const pulse = Math.sin(time) * 0.4 + 0.6;
+      
+      ctx.save();
+      ctx.globalAlpha = pulse;
+      ctx.fillStyle = '#ffbe0b';
+      ctx.shadowColor = '#ffbe0b';
+      ctx.shadowBlur = 20;
+      
+      const size = TILE_SIZE * 0.8;
+      const x = portal.x + (TILE_SIZE - size) / 2;
+      const y = portal.y + (TILE_SIZE - size) / 2;
+      
+      // Outer ring
+      ctx.strokeStyle = '#ffbe0b';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(x, y, size, size);
+      
+      // Inner glow
+      ctx.fillRect(x + size/4, y + size/4, size/2, size/2);
+      
+      // Portal symbol
+      ctx.font = '24px Courier New';
+      ctx.fillStyle = '#000';
+      ctx.textAlign = 'center';
+      ctx.fillText('🚪', portal.x + TILE_SIZE/2, portal.y + TILE_SIZE/2 + 8);
+      
+      ctx.restore();
+    }
+
+    // Menu functions
+    function showMenu(menuId) {
+      hideAllMenus();
+      document.getElementById(menuId).style.display = 'flex';
+    }
+
+    function hideAllMenus() {
+      const menus = ['startMenu', 'instructionsMenu', 'gameOverMenu', 'levelCompleteMenu', 'victoryMenu'];
+      menus.forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+    }
+
+    function showInstructions() {
+      showMenu('instructionsMenu');
+    }
+
+    function hideInstructions() {
+      showMenu('startMenu');
+    }
+
+    function restartGame() {
+      startGame();
+    }
+
+    function goToMenu() {
+      game.gameState = 'menu';
+      showMenu('startMenu');
+    }
+
+    function goHome() {
+      window.location.href = '../index.html';
+    }
+
+    // Initialize when page loads
+    window.addEventListener('load', initGame);
+  </script>
+</body>
+</html>
