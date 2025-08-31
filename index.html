@@ -4,40 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PlayRetroArcade - Premium Classic Games Collection</title>
-  <meta name="description" content="Experience the best retro games with modern polish. Play Snake, Tetris, Space Invaders, Basketball Shootout, Race Car Championship, Neon Maze Runner and more - all free, no downloads required!">
+  <meta name="description" content="Experience the best retro games with modern polish. Play Snake, Tetris, Space Invaders, Basketball Shootout, Race Car Championship and more - all free, no downloads required!">
   <link rel="icon" href="./Public/logo.png" type="image/png">
   <style>
     :root {
-      --primary-neon: #00f5ff;
-      --secondary-neon: #ff006e;
-      --accent-yellow: #ffbe0b;
-      --accent-purple: #8338ec;
-      --accent-green: #4ade80;
-      --bg-dark: #0d1117;
-      --bg-darker: #010409;
-      --bg-card: rgba(13, 17, 23, 0.8);
-      --text-bright: #ffffff;
-      --text-glow: #00f5ff;
-      --text-muted: #8b949e;
-      --gradient-primary: linear-gradient(135deg, #00f5ff, #ff006e, #ffbe0b);
-      --gradient-secondary: linear-gradient(135deg, #8338ec, #ff006e);
-      --gradient-card: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.1));
-      --shadow-neon: 0 20px 40px rgba(0, 245, 255, 0.3);
-      --blur-glass: blur(15px);
+      --bg: #0f0f12;
+      --card: #18181c;
+      --muted: #9aa0a6;
+      --text: #e8eaed;
+      --accent: #4fc3f7;
+      --accent-hover: #29b6f6;
+      --line: #2a2a30;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --error: #f44336;
+      --gradient-primary: linear-gradient(135deg, #4fc3f7, #29b6f6, #03a9f4);
+      --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      --shadow-elevated: 0 20px 40px rgba(0,0,0,0.4);
+      --blur-glass: blur(10px);
     }
 
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
     body { 
-      background: linear-gradient(135deg, #0d1117 0%, #161b22 25%, #21262d 50%, #0d1117 100%);
-      color: var(--text-bright); 
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0b0b0d 0%, #1a1a1f 50%, #0f0f14 100%); 
+      color: var(--text); 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       line-height: 1.6;
       overflow-x: hidden;
-      position: relative;
     }
 
-    /* Enhanced animated background particles */
+    /* Animated background particles */
     body::before {
       content: '';
       position: fixed;
@@ -46,49 +43,34 @@
       width: 100%;
       height: 100%;
       background-image: 
-        radial-gradient(circle at 20% 20%, rgba(0, 245, 255, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(255, 0, 110, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 60%, rgba(131, 56, 236, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 60% 20%, rgba(255, 190, 11, 0.05) 0%, transparent 50%);
-      animation: floatParticles 25s ease-in-out infinite;
+        radial-gradient(circle at 20% 50%, rgba(79, 195, 247, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(79, 195, 247, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(79, 195, 247, 0.03) 0%, transparent 50%);
+      animation: floatParticles 20s ease-in-out infinite;
       pointer-events: none;
       z-index: -1;
     }
 
     @keyframes floatParticles {
-      0%, 100% { 
-        background-position: 0% 0%, 100% 100%, 50% 50%, 70% 30%;
-        transform: rotate(0deg);
-      }
-      25% { 
-        background-position: 25% 25%, 75% 75%, 60% 40%, 80% 20%;
-        transform: rotate(1deg);
-      }
-      50% { 
-        background-position: 50% 10%, 50% 90%, 40% 60%, 60% 40%;
-        transform: rotate(-1deg);
-      }
-      75% { 
-        background-position: 75% 25%, 25% 75%, 30% 70%, 90% 10%;
-        transform: rotate(0.5deg);
-      }
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      33% { transform: translateY(-20px) rotate(2deg); }
+      66% { transform: translateY(10px) rotate(-1deg); }
     }
 
-    .container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
     
-    /* Hero Header Section */
     .header { 
       display: flex; 
       align-items: center; 
-      gap: 40px; 
-      margin-bottom: 80px; 
+      gap: 24px; 
+      margin-bottom: 48px; 
       text-align: left;
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(255, 0, 110, 0.05));
+      background: rgba(255, 255, 255, 0.03);
       backdrop-filter: var(--blur-glass);
-      border: 2px solid transparent;
-      border-radius: 30px;
-      padding: 50px 40px;
-      box-shadow: var(--shadow-neon);
+      border: 1px solid rgba(79, 195, 247, 0.1);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: var(--shadow-elevated);
       position: relative;
       overflow: hidden;
     }
@@ -97,27 +79,11 @@
       content: '';
       position: absolute;
       top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
-      padding: 2px;
-      border-radius: 30px;
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask-composite: exclude;
-      -webkit-mask-composite: xor;
-      opacity: 0.3;
-    }
-
-    .header::after {
-      content: '';
-      position: absolute;
-      top: 0;
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.1), transparent);
-      animation: shimmer 4s ease-in-out infinite;
+      background: linear-gradient(90deg, transparent, rgba(79, 195, 247, 0.05), transparent);
+      animation: shimmer 3s ease-in-out infinite;
     }
 
     @keyframes shimmer {
@@ -126,187 +92,106 @@
     }
     
     .logo { 
-      width: 120px;
-      height: 120px;
+      width: 100px;
+      height: 100px;
       object-fit: contain;
       display: block;
       image-rendering: crisp-edges;
-      filter: drop-shadow(0 8px 20px rgba(0, 245, 255, 0.6));
+      filter: drop-shadow(0 4px 12px rgba(79, 195, 247, 0.4));
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1;
       position: relative;
-      animation: pulse 3s ease-in-out infinite;
     }
     .logo:hover { 
-      transform: scale(1.15) rotate(10deg); 
-      filter: drop-shadow(0 15px 35px rgba(0, 245, 255, 0.8));
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+      transform: scale(1.1) rotate(5deg); 
+      filter: drop-shadow(0 8px 20px rgba(79, 195, 247, 0.6));
     }
     
     .header-content {
       z-index: 1;
       position: relative;
-      flex: 1;
     }
     
     .header h1 { 
       margin: 0; 
-      font-size: clamp(3rem, 8vw, 5rem); 
-      font-weight: 900; 
-      line-height: 1.1; 
+      font-size: 36px; 
+      font-weight: 800; 
+      line-height: 1.2; 
       background: var(--gradient-primary);
-      background-size: 300% 300%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      animation: gradientShift 4s ease-in-out infinite;
-      text-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
-      margin-bottom: 20px;
-    }
-
-    @keyframes gradientShift {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .subtitle { 
-      color: var(--text-muted); 
-      font-size: clamp(1.2rem, 3vw, 1.8rem); 
-      margin-top: 0; 
-      max-width: 700px;
+      color: var(--muted); 
+      font-size: 18px; 
+      margin-top: 12px; 
+      max-width: 600px;
       font-weight: 300;
-      line-height: 1.6;
-      margin-bottom: 30px;
+      line-height: 1.5;
     }
 
     .stats-banner {
       display: flex;
-      gap: 30px;
-      margin-top: 0;
+      gap: 24px;
+      margin-top: 20px;
       flex-wrap: wrap;
-      justify-content: flex-start;
     }
 
     .stat-item {
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.1));
-      border: 2px solid transparent;
-      border-radius: 20px;
-      padding: 20px 30px;
+      background: rgba(79, 195, 247, 0.1);
+      border: 1px solid rgba(79, 195, 247, 0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
       text-align: center;
-      backdrop-filter: blur(10px);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-      min-width: 140px;
-    }
-
-    .stat-item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
-      padding: 2px;
-      border-radius: 20px;
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask-composite: exclude;
-      -webkit-mask-composite: xor;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .stat-item:hover {
-      transform: translateY(-8px) scale(1.05);
-      box-shadow: 0 20px 40px rgba(0, 245, 255, 0.3);
-    }
-
-    .stat-item:hover::before {
-      opacity: 1;
     }
 
     .stat-number {
-      font-size: 2.5rem;
-      font-weight: 900;
-      color: var(--primary-neon);
-      margin-bottom: 8px;
-      text-shadow: 0 0 20px currentColor;
-      animation: statPulse 3s ease-in-out infinite;
-    }
-
-    @keyframes statPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+      display: block;
     }
 
     .stat-label {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
     }
-
-    /* Remove duplicate stat styling */
 
     .toolbar { 
       display: grid; 
       grid-template-columns: 1fr auto auto; 
-      gap: 20px; 
+      gap: 16px; 
       align-items: center; 
-      margin: 60px 0 40px; 
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(255, 0, 110, 0.05));
+      margin: 32px 0; 
+      background: rgba(255, 255, 255, 0.05);
       backdrop-filter: var(--blur-glass);
-      border: 2px solid transparent;
-      border-radius: 25px;
-      padding: 30px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .toolbar::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
-      padding: 2px;
-      border-radius: 25px;
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask-composite: exclude;
-      -webkit-mask-composite: xor;
-      opacity: 0.2;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
     }
     
     .input, .select { 
-      background: rgba(13, 17, 23, 0.8); 
-      color: var(--text-bright); 
-      border: 2px solid rgba(0, 245, 255, 0.3); 
-      padding: 18px 24px; 
-      border-radius: 18px; 
-      font-size: 16px;
-      font-weight: 500;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: rgba(255,255,255,0.08); 
+      color: var(--text); 
+      border: 1px solid rgba(79, 195, 247, 0.2); 
+      padding: 16px 20px; 
+      border-radius: 12px; 
+      font-size: 15px;
+      transition: all 0.3s ease;
       font-family: inherit;
-      backdrop-filter: blur(10px);
     }
     .input:focus, .select:focus {
       outline: none;
-      border-color: var(--primary-neon);
-      box-shadow: 0 0 0 4px rgba(0, 245, 255, 0.2);
-      background: rgba(13, 17, 23, 0.9);
-      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.1);
+      background: rgba(255,255,255,0.12);
     }
-    .input::placeholder { color: var(--text-muted); }
-    .select { min-width: 200px; cursor: pointer; }
+    .input::placeholder { color: var(--muted); }
+    .select { min-width: 180px; cursor: pointer; }
 
     .section-title { 
       display: flex; 
@@ -337,15 +222,14 @@
     }
 
     .featured-section {
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(255, 0, 110, 0.08));
-      border: 2px solid rgba(0, 245, 255, 0.3);
-      border-radius: 30px;
-      padding: 50px 40px;
+      background: linear-gradient(135deg, rgba(79, 195, 247, 0.1), rgba(79, 195, 247, 0.05));
+      border: 1px solid rgba(79, 195, 247, 0.2);
+      border-radius: 24px;
+      padding: 40px;
       margin: 48px 0;
       backdrop-filter: var(--blur-glass);
       position: relative;
       overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0, 245, 255, 0.2);
     }
 
     .featured-section::before {
@@ -355,37 +239,26 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: radial-gradient(circle at 30% 70%, rgba(0, 245, 255, 0.1), transparent 60%),
-                  radial-gradient(circle at 70% 30%, rgba(255, 0, 110, 0.08), transparent 60%);
+      background: radial-gradient(circle at 50% 50%, rgba(79, 195, 247, 0.05), transparent 70%);
       pointer-events: none;
-      animation: featuredGlow 8s ease-in-out infinite;
-    }
-
-    @keyframes featuredGlow {
-      0%, 100% { opacity: 0.7; }
-      50% { opacity: 1; }
     }
 
     .featured-section h2 {
-      margin: 0 0 50px;
-      font-size: clamp(2.5rem, 6vw, 4rem);
+      margin: 0 0 32px;
+      font-size: 36px;
       text-align: center;
       background: var(--gradient-primary);
-      background-size: 300% 300%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      animation: gradientShift 4s ease-in-out infinite;
       position: relative;
       z-index: 1;
-      font-weight: 900;
-      text-shadow: 0 0 30px rgba(0, 245, 255, 0.3);
     }
 
     .grid { 
       display: grid; 
-      gap: 35px; 
-      margin-bottom: 60px;
+      gap: 24px; 
+      margin-bottom: 32px;
       position: relative;
       z-index: 1;
       align-items: stretch;
@@ -396,9 +269,9 @@
     @media (min-width: 1200px) { .grid.cols-4 { grid-template-columns: repeat(4, 1fr); } }
 
     .card { 
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(255, 0, 110, 0.05)); 
-      border: 2px solid transparent; 
-      border-radius: 30px; 
+      background: var(--gradient-card); 
+      border: 1px solid rgba(79, 195, 247, 0.1); 
+      border-radius: 24px; 
       overflow: hidden; 
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
       cursor: pointer;
@@ -407,7 +280,6 @@
       display: flex;
       flex-direction: column;
       height: 100%;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
     
     .card::before {
@@ -417,61 +289,31 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
-      padding: 2px;
-      border-radius: 30px;
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask-composite: exclude;
-      -webkit-mask-composite: xor;
+      background: linear-gradient(135deg, rgba(79, 195, 247, 0.1), transparent);
       opacity: 0;
       transition: opacity 0.3s ease;
       pointer-events: none;
     }
     
     .card:hover { 
-      transform: translateY(-15px) scale(1.05);
-      box-shadow: 0 25px 50px rgba(0, 245, 255, 0.4);
+      transform: translateY(-12px) scale(1.03);
+      box-shadow: 
+        var(--shadow-elevated),
+        0 0 0 1px rgba(79, 195, 247, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border-color: var(--accent);
     }
     
     .card:hover::before { opacity: 1; }
     
     .card-body { 
-      padding: 35px; 
+      padding: 28px; 
       position: relative; 
       z-index: 1; 
       display: flex;
       flex-direction: column;
       flex-grow: 1;
     }
-    
-    .card-cover { 
-      width: 100%; 
-      height: 220px; 
-      object-fit: cover; 
-      display: block;
-      transition: all 0.4s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .card-cover::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(45deg, transparent 30%, rgba(0, 245, 255, 0.4) 50%, transparent 70%);
-      opacity: 0;
-      transition: all 0.6s ease;
-      transform: translateX(-100%);
-    }
-    
-    .card:hover .card-cover::before { 
-      opacity: 1; 
-      transform: translateX(100%);
-    }
-
     .cover { 
       aspect-ratio: 16/9; 
       display: grid; 
@@ -503,88 +345,53 @@
     .title-row { 
       display: flex; 
       align-items: flex-start; 
-      justify-content: flex-start; 
+      justify-content: space-between; 
       gap: 16px; 
-      margin-bottom: 16px;
-      margin-top: 8px;
-      padding-right: 70px; /* Space for badge */
+      margin-bottom: 16px; 
     }
     .game-title { 
       margin: 0; 
-      font-size: 22px; 
-      font-weight: 700; 
-      color: var(--text-bright);
+      font-size: 20px; 
+      font-weight: 600; 
+      color: var(--text);
       line-height: 1.3;
-      background: var(--gradient-primary);
-      background-size: 300% 300%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: gradientShift 4s ease-in-out infinite;
-      text-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
     }
     .description { 
       margin: 0 0 20px; 
-      font-size: 16px; 
-      color: var(--text-muted); 
-      line-height: 1.6; 
+      font-size: 15px; 
+      color: var(--muted); 
+      line-height: 1.5; 
       flex-grow: 1;
       min-height: 3em;
-      font-weight: 400;
     }
     .badge { 
       background: var(--gradient-primary); 
-      color: var(--bg-dark); 
-      border-radius: 20px; 
+      color: #000; 
+      border-radius: 10px; 
       padding: 6px 12px; 
-      font-size: 11px; 
-      font-weight: 700;
+      font-size: 12px; 
+      font-weight: 600;
       white-space: nowrap;
-      box-shadow: 0 4px 15px rgba(0, 245, 255, 0.4);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      animation: badgePulse 3s ease-in-out infinite;
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      z-index: 10;
-      transform: scale(0.85);
-      max-width: calc(100% - 24px);
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    @keyframes badgePulse {
-      0%, 100% { box-shadow: 0 4px 15px rgba(0, 245, 255, 0.4); }
-      50% { box-shadow: 0 8px 25px rgba(0, 245, 255, 0.6); }
+      box-shadow: 0 2px 8px rgba(79, 195, 247, 0.3);
     }
 
     .meta { 
       margin: 20px 0; 
       display: flex; 
       gap: 16px; 
-      font-size: 14px; 
-      color: var(--text-muted); 
+      font-size: 13px; 
+      color: var(--muted); 
       align-items: center; 
       flex-wrap: wrap;
     }
     .meta span { 
       display: flex; 
       align-items: center; 
-      gap: 8px;
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.1));
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 600;
-      border: 1px solid rgba(0, 245, 255, 0.2);
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
-    }
-
-    .meta span:hover {
-      transform: translateY(-2px);
-      border-color: var(--primary-neon);
-      box-shadow: 0 4px 15px rgba(0, 245, 255, 0.3);
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-weight: 500;
     }
 
     .tags { 
@@ -596,43 +403,35 @@
       align-items: flex-start;
     }
     .tag { 
-      border: 2px solid rgba(0, 245, 255, 0.4); 
-      border-radius: 12px; 
-      padding: 8px 14px; 
-      font-size: 13px; 
-      color: var(--primary-neon); 
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.05)); 
-      font-weight: 600;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      backdrop-filter: blur(10px);
+      border: 1px solid rgba(79, 195, 247, 0.3); 
+      border-radius: 8px; 
+      padding: 6px 12px; 
+      font-size: 12px; 
+      color: var(--accent); 
+      background: rgba(79, 195, 247, 0.1); 
+      font-weight: 500;
+      transition: all 0.3s ease;
     }
     .tag:hover {
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.2), rgba(255, 0, 110, 0.1));
-      border-color: var(--primary-neon);
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 8px 20px rgba(0, 245, 255, 0.4);
-      text-shadow: 0 0 10px currentColor;
+      background: rgba(79, 195, 247, 0.2);
+      border-color: var(--accent);
+      transform: translateY(-1px);
     }
 
     .play-button { 
       background: var(--gradient-primary); 
-      color: var(--bg-dark); 
+      color: #000; 
       border: none; 
-      border-radius: 18px; 
-      padding: 18px 28px; 
-      font-weight: 700; 
+      border-radius: 14px; 
+      padding: 16px 24px; 
+      font-weight: 600; 
       cursor: pointer; 
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       width: 100%;
       margin-top: auto;
-      font-size: 17px;
+      font-size: 16px;
       position: relative;
       overflow: hidden;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: 0 8px 25px rgba(0, 245, 255, 0.3);
     }
     
     .play-button::before {
@@ -647,9 +446,8 @@
     }
     
     .play-button:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(0, 245, 255, 0.6);
-      filter: brightness(1.1);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(79, 195, 247, 0.5);
     }
     
     .play-button:hover::before {
@@ -657,424 +455,36 @@
     }
     
     .play-button:active {
-      transform: translateY(-2px) scale(0.98);
+      transform: translateY(-1px);
     }
 
     .empty-state { 
       text-align: center; 
       padding: 80px 24px; 
-      color: var(--text-muted); 
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(255, 0, 110, 0.05));
-      border: 2px dashed rgba(0, 245, 255, 0.3);
-      border-radius: 25px;
+      color: var(--muted); 
+      background: rgba(255, 255, 255, 0.03);
+      border: 2px dashed rgba(79, 195, 247, 0.2);
+      border-radius: 20px;
       margin: 32px 0;
-      backdrop-filter: var(--blur-glass);
-      position: relative;
-      overflow: hidden;
     }
-
-    .empty-state::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: radial-gradient(circle at 50% 50%, rgba(0, 245, 255, 0.1), transparent 70%);
-      pointer-events: none;
-    }
-
     .empty-state h3 { 
       margin: 0 0 16px; 
-      font-size: 32px; 
-      color: var(--text-bright);
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      font-weight: 700;
-      position: relative;
-      z-index: 1;
+      font-size: 28px; 
+      color: var(--text); 
     }
 
     .footer { 
       margin-top: 80px; 
       padding: 48px 0; 
       text-align: center; 
-      color: var(--text-muted); 
-      border-top: 2px solid rgba(0, 245, 255, 0.2);
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(255, 0, 110, 0.05));
+      color: var(--muted); 
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.02);
       backdrop-filter: var(--blur-glass);
-      position: relative;
     }
-
-    .footer::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: radial-gradient(circle at 50% 50%, rgba(0, 245, 255, 0.05), transparent 70%);
-      pointer-events: none;
-    }
-
     .footer p { 
       margin: 8px 0; 
-      font-size: 16px;
-      position: relative;
-      z-index: 1;
-      font-weight: 500;
-    }
-
-    .footer strong {
-      color: var(--text-bright);
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      font-weight: 700;
-    }
-
-    /* Leaderboard Section */
-    .leaderboard-section {
-      margin: 60px 0;
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(255, 0, 110, 0.08));
-      border: 2px solid rgba(0, 245, 255, 0.3);
-      border-radius: 30px;
-      padding: 50px 40px;
-      backdrop-filter: var(--blur-glass);
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0, 245, 255, 0.2);
-    }
-
-    .leaderboard-controls {
-      display: flex;
-      flex-direction: column;
-      gap: 25px;
-      margin-bottom: 40px;
-    }
-
-    .controls-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 30px;
-      flex-wrap: wrap;
-    }
-
-    .player-setup {
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.1));
-      border: 1px solid rgba(0, 245, 255, 0.3);
-      border-radius: 20px;
-      padding: 25px;
-      backdrop-filter: blur(10px);
-      flex: 1;
-      min-width: 300px;
-      max-width: 500px;
-    }
-
-    .player-form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .form-row input {
-      flex: 1;
-      min-width: 200px;
-      padding: 14px 18px;
-      background: rgba(13, 17, 23, 0.8);
-      border: 2px solid rgba(0, 245, 255, 0.3);
-      border-radius: 12px;
-      color: var(--text-bright);
-      font-size: 15px;
-      transition: all 0.3s ease;
-      font-family: inherit;
-    }
-
-    .form-row input:focus {
-      outline: none;
-      border-color: var(--primary-neon);
-      box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
-      background: rgba(13, 17, 23, 0.9);
-    }
-
-    .form-row input::placeholder {
-      color: var(--text-muted);
-    }
-
-    .player-actions {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .current-player {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(74, 222, 128, 0.05));
-      border: 2px solid rgba(74, 222, 128, 0.3);
-      border-radius: 12px;
-      padding: 15px 20px;
-      backdrop-filter: blur(10px);
-      margin-top: 10px;
-    }
-
-    .current-player strong {
-      color: var(--accent-green);
-      text-shadow: 0 0 10px currentColor;
-    }
-
-    .filter-section {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 250px;
-    }
-
-    .filter-section label {
-      color: var(--text-bright);
-      font-weight: 600;
-      font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .play-button.secondary {
-      background: var(--gradient-secondary) !important;
-      color: var(--text-bright) !important;
-    }
-
-    .play-button.primary {
-      background: var(--gradient-primary) !important;
-      color: var(--bg-dark) !important;
-      font-weight: 700;
-    }
-
-    /* My Scores Section */
-    .my-scores-section {
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(255, 0, 110, 0.05));
-      border: 1px solid rgba(0, 245, 255, 0.2);
-      border-radius: 20px;
-      padding: 25px;
-      margin-bottom: 30px;
-      backdrop-filter: blur(10px);
-    }
-
-    .my-scores-header h4 {
-      color: var(--primary-neon);
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-      text-align: center;
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .my-scores-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .my-score-item {
-      display: grid;
-      grid-template-columns: 50px 1fr 120px 100px;
-      align-items: center;
-      padding: 15px 20px;
-      background: rgba(13, 17, 23, 0.6);
-      border: 1px solid rgba(0, 245, 255, 0.1);
-      border-radius: 12px;
-      transition: all 0.3s ease;
-    }
-
-    .my-score-item:hover {
-      background: rgba(0, 245, 255, 0.1);
-      border-color: rgba(0, 245, 255, 0.3);
-      transform: translateX(5px);
-    }
-
-    .score-rank {
-      font-weight: 700;
-      color: var(--accent-yellow);
-      font-size: 1.1rem;
-    }
-
-    .score-game {
-      color: var(--text-bright);
-      font-weight: 600;
-    }
-
-    .score-points {
-      color: var(--primary-neon);
-      font-weight: 700;
-      text-align: right;
-    }
-
-    .score-date {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      text-align: right;
-    }
-
-    .no-scores {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--text-muted);
-    }
-
-    .no-scores p {
-      font-size: 1.1rem;
-    }
-
-    .play-button.secondary {
-      background: var(--gradient-secondary) !important;
-      color: var(--text-bright) !important;
-    }
-
-    .toggle-btn {
-      background: var(--gradient-secondary);
-      color: var(--text-bright);
-      border: none;
-      border-radius: 12px;
-      padding: 12px 20px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .toggle-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(131, 56, 236, 0.4);
-    }
-
-    .leaderboard-container {
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(255, 0, 110, 0.05));
-      border-radius: 20px;
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(0, 245, 255, 0.2);
-    }
-
-    .leaderboard-header {
-      display: grid;
-      grid-template-columns: 80px 1fr 150px 120px 120px;
-      gap: 20px;
-      padding: 20px;
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.1));
-      font-weight: 700;
-      font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--primary-neon);
-      border-bottom: 2px solid rgba(0, 245, 255, 0.3);
-    }
-
-    .leaderboard-list {
-      max-height: 500px;
-      overflow-y: auto;
-    }
-
-    .leaderboard-entry {
-      display: grid;
-      grid-template-columns: 80px 1fr 150px 120px 120px;
-      gap: 20px;
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(0, 245, 255, 0.1);
-      transition: all 0.3s ease;
-      align-items: center;
-    }
-
-    .leaderboard-entry:hover {
-      background: linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(255, 0, 110, 0.08));
-      transform: translateX(5px);
-    }
-
-    .leaderboard-entry:nth-child(1) {
-      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 193, 7, 0.05));
-      border-left: 4px solid #ffd700;
-    }
-
-    .leaderboard-entry:nth-child(2) {
-      background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), rgba(169, 169, 169, 0.05));
-      border-left: 4px solid #c0c0c0;
-    }
-
-    .leaderboard-entry:nth-child(3) {
-      background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), rgba(184, 115, 51, 0.05));
-      border-left: 4px solid #cd7f32;
-    }
-
-    .rank {
-      font-weight: 700;
-      font-size: 18px;
-      text-align: center;
-      color: var(--primary-neon);
-    }
-
-    .rank.top-3 {
-      font-size: 22px;
-      text-shadow: 0 0 10px currentColor;
-    }
-
-    .player-name {
-      font-weight: 600;
-      color: var(--text-bright);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .player-name.current-player {
-      color: var(--accent-yellow);
-      text-shadow: 0 0 10px currentColor;
-    }
-
-    .score {
-      font-weight: 700;
-      font-size: 16px;
-      color: var(--accent-green);
-      text-align: right;
-    }
-
-    .game-name {
-      font-size: 14px;
-      color: var(--text-muted);
-      text-align: center;
-    }
-
-    .score-date {
-      font-size: 12px;
-      color: var(--text-muted);
-      text-align: center;
-    }
-
-    .empty-leaderboard {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-muted);
-    }
-
-    .empty-leaderboard h3 {
-      margin-bottom: 16px;
-      font-size: 24px;
-      color: var(--text-bright);
+      font-size: 15px; 
     }
 
     /* Responsive improvements */
@@ -1096,26 +506,6 @@
       }
       .section-title h2 { font-size: 28px; }
       .featured-section { padding: 28px 20px; }
-      .leaderboard-section { padding: 28px 20px; }
-      .leaderboard-controls {
-        grid-template-columns: 1fr;
-        gap: 16px;
-      }
-      .player-setup {
-        flex-direction: column;
-        gap: 12px;
-      }
-      .leaderboard-header {
-        grid-template-columns: 60px 1fr 100px 80px 80px;
-        gap: 10px;
-        padding: 16px;
-        font-size: 12px;
-      }
-      .leaderboard-entry {
-        grid-template-columns: 60px 1fr 100px 80px 80px;
-        gap: 10px;
-        padding: 12px 16px;
-      }
     }
 
     @media (max-width: 480px) {
@@ -1124,16 +514,73 @@
       .card-body { padding: 20px; }
       .cover { font-size: 48px; }
       .featured-section h2 { font-size: 28px; }
-      .leaderboard-header {
-        grid-template-columns: 50px 1fr 80px;
-        gap: 8px;
+    }
+
+    /* Player Registration Section Styles */
+    .player-registration-section {
+      margin: 40px 0;
+      padding: 0;
+    }
+
+    .player-setup {
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.1));
+      border: 1px solid rgba(0, 245, 255, 0.3);
+      border-radius: 20px;
+      padding: 32px;
+      margin: 24px 0;
+      backdrop-filter: var(--blur-glass);
+    }
+
+    .section-subtitle {
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: normal;
+      margin-top: 8px;
+    }
+
+    .player-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .player-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .current-player {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      background: rgba(0, 245, 255, 0.05);
+      border: 1px solid rgba(0, 245, 255, 0.2);
+      border-radius: 12px;
+      color: var(--accent);
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
       }
-      .leaderboard-entry {
-        grid-template-columns: 50px 1fr 80px;
-        gap: 8px;
+      .player-actions {
+        flex-direction: column;
+        gap: 12px;
       }
-      .game-name, .score-date {
-        display: none;
+      .current-player {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
       }
     }
   </style>
@@ -1147,7 +594,7 @@
         <p class="subtitle">Experience premium retro gaming with modern polish. Classic games, zero downloads, infinite fun!</p>
         <div class="stats-banner">
           <div class="stat-item">
-            <span class="stat-number">5</span>
+            <span class="stat-number">3</span>
             <div class="stat-label">Premium Games</div>
           </div>
           <div class="stat-item">
@@ -1179,78 +626,39 @@
       </select>
     </div>
 
+    <!-- Player Registration Section - Moved to Top -->
+    <section class="player-registration-section">
+      <div class="section-title">
+        <h2>👤 Player Registration</h2>
+        <span class="section-subtitle">Register to save your scores and compete on the leaderboard</span>
+      </div>
+      
+      <div class="player-setup">
+        <div class="player-form">
+          <div class="form-row">
+            <input type="text" id="playerName" class="input" placeholder="Enter your username (3-20 chars)" maxlength="20" minlength="3">
+            <input type="email" id="playerEmail" class="input" placeholder="Enter your email for verification" required>
+          </div>
+          <div class="player-actions">
+            <button id="savePlayer" class="play-button" style="width: auto; margin: 0; padding: 12px 20px;">🔐 Register Player</button>
+            <button id="loginPlayer" class="play-button secondary" style="width: auto; margin: 0; padding: 12px 20px;">📧 Login</button>
+          </div>
+        </div>
+        <div class="current-player" id="currentPlayerInfo" style="display: none;">
+          <span>Playing as: <strong id="currentPlayerName"></strong></span>
+          <button id="logoutPlayer" class="play-button secondary" style="width: auto; margin: 0; padding: 8px 16px; font-size: 14px;">Logout</button>
+        </div>
+      </div>
+    </section>
+
     <div class="featured-section">
       <h2>🌟 Featured Games</h2>
       <div id="featuredGames" class="grid cols-4"></div>
     </div>
 
-    <div class="leaderboard-section">
-      <div class="section-title">
-        <h2>🏆 Top Players</h2>
-        <button id="toggleLeaderboard" class="toggle-btn">Show All Games</button>
-      </div>
-      
-      <div class="leaderboard-controls">
-        <div class="controls-row">
-          <div class="filter-section">
-            <select id="gameFilter" class="select">
-              <option value="overall">🌟 Overall Rankings</option>
-              <option value="snake-classic">🐍 Snake Classic</option>
-              <option value="tetris">🟦 Tetris</option>
-              <option value="space-invaders">👾 Space Invaders</option>
-              <option value="basketball">🏀 Basketball</option>
-              <option value="racecar">🏎️ Race Car</option>
-              <option value="neon-maze-runner">🌟 Neon Maze Runner</option>
-            </select>
-          </div>
-          
-          <div class="player-setup">
-            <div class="player-form">
-              <div class="form-row">
-                <input type="text" id="playerName" class="input" placeholder="Enter your username (3-20 chars)" maxlength="20" minlength="3">
-                <input type="email" id="playerEmail" class="input" placeholder="Enter your email for verification" required>
-              </div>
-              <div class="player-actions">
-                <button id="savePlayer" class="play-button" style="width: auto; margin: 0; padding: 12px 20px;">🔐 Register Player</button>
-                <button id="loginPlayer" class="play-button secondary" style="width: auto; margin: 0; padding: 12px 20px;">📧 Login</button>
-              </div>
-            </div>
-            <div class="current-player" id="currentPlayerInfo" style="display: none;">
-              <span>Playing as: <strong id="currentPlayerName"></strong></span>
-              <button id="logoutPlayer" class="play-button secondary" style="width: auto; margin: 0; padding: 8px 16px; font-size: 14px;">Logout</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="leaderboard-container">
-        <div class="leaderboard-header">
-          <span class="rank-col">Rank</span>
-          <span class="player-col">Player</span>
-          <span class="score-col">Best Score</span>
-          <span class="game-col">Game</span>
-          <span class="date-col">Date</span>
-        </div>
-        <div id="leaderboardList" class="leaderboard-list">
-          <!-- Leaderboard entries will be populated here -->
-        </div>
-      </div>
-
-      <!-- My Scores Section -->
-      <div class="my-scores-section" id="myScoresSection" style="display: none;">
-        <div class="section-header">
-          <h3>📊 My Scores</h3>
-          <span class="score-count" id="myScoreCount">0 scores</span>
-        </div>
-        <div class="my-scores-grid" id="myScoresList">
-          <!-- User's scores will be populated here -->
-        </div>
-      </div>
-    </div>
-
     <div class="section-title">
       <h2>🎮 All Games</h2>
-      <span id="gameCount" style="color: var(--muted); font-size: 16px;">6 games available</span>
+      <span id="gameCount" style="color: var(--muted); font-size: 16px;">5 games available</span>
     </div>
 
     <div id="gameGrid" class="grid cols-4"></div>
@@ -1338,410 +746,8 @@
         emoji: "🏎️",
         featured: true,
         tags: ["Racing", "Speed", "Championship"]
-      },
-      {
-        id: "neon-maze-runner",
-        title: "Neon Maze Runner",
-        description: "Navigate through digital mazes as a cyber-runner collecting data packets while avoiding AI security drones. Use stealth mode and power-ups to survive 20 levels of cyberpunk action!",
-        genres: ["Action", "Arcade"],
-        players: "1",
-        rating: 4.8,
-        plays: 3200,
-        updatedAt: "2025-08-31",
-        route: "./NeonMazeRunner/index.html",
-        emoji: "🌟",
-        featured: true,
-        tags: ["Cyberpunk", "Stealth", "Levels"]
       }
     ];
-
-    // Secure Leaderboard System with Email Validation
-    class LeaderboardManager {
-      constructor() {
-        this.currentPlayer = this.getCurrentPlayer();
-        this.scores = JSON.parse(localStorage.getItem('gameScores') || '[]');
-        this.players = JSON.parse(localStorage.getItem('registeredPlayers') || '{}');
-        this.initializeControls();
-        this.loadLeaderboard();
-        this.initializeDemoData();
-        this.updatePlayerUI();
-      }
-
-      // Simple hash function for email verification (in production, use proper backend)
-      simpleHash(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-          const char = str.charCodeAt(i);
-          hash = ((hash << 5) - hash) + char;
-          hash = hash & hash; // Convert to 32-bit integer
-        }
-        return Math.abs(hash).toString(36);
-      }
-
-      getCurrentPlayer() {
-        const playerData = localStorage.getItem('currentPlayer');
-        return playerData ? JSON.parse(playerData) : null;
-      }
-
-      initializeControls() {
-        const playerNameInput = document.getElementById('playerName');
-        const playerEmailInput = document.getElementById('playerEmail');
-        const savePlayerBtn = document.getElementById('savePlayer');
-        const loginPlayerBtn = document.getElementById('loginPlayer');
-        const logoutPlayerBtn = document.getElementById('logoutPlayer');
-        const gameFilter = document.getElementById('gameFilter');
-        const toggleBtn = document.getElementById('toggleLeaderboard');
-
-        // Register new player
-        savePlayerBtn.addEventListener('click', () => {
-          const name = playerNameInput.value.trim();
-          const email = playerEmailInput.value.trim().toLowerCase();
-          
-          if (!name || name.length < 3 || name.length > 20) {
-            alert('Username must be between 3-20 characters');
-            return;
-          }
-          
-          if (!email || !this.isValidEmail(email)) {
-            alert('Please enter a valid email address');
-            return;
-          }
-
-          // Check if username is already taken
-          const existingPlayer = Object.values(this.players).find(p => p.name.toLowerCase() === name.toLowerCase());
-          if (existingPlayer && existingPlayer.email !== email) {
-            alert('This username is already taken by another player. Please choose a different one.');
-            return;
-          }
-
-          // Generate unique player ID
-          const playerId = this.simpleHash(email + name);
-          
-          // Check if email is already registered with different name
-          if (this.players[playerId] && this.players[playerId].name !== name) {
-            alert('This email is already registered with a different username. Please login instead.');
-            return;
-          }
-
-          // Register or update player
-          this.players[playerId] = {
-            name: name,
-            email: email,
-            registeredAt: new Date().toISOString(),
-            verified: true // In production, send verification email
-          };
-
-          this.currentPlayer = {
-            id: playerId,
-            name: name,
-            email: email
-          };
-
-          localStorage.setItem('registeredPlayers', JSON.stringify(this.players));
-          localStorage.setItem('currentPlayer', JSON.stringify(this.currentPlayer));
-          
-          this.updatePlayerUI();
-          this.loadLeaderboard();
-          
-          // Clear form
-          playerNameInput.value = '';
-          playerEmailInput.value = '';
-          
-          alert(`Welcome, ${name}! You're now registered and your scores will be tracked.`);
-        });
-
-        // Login existing player
-        loginPlayerBtn.addEventListener('click', () => {
-          const email = playerEmailInput.value.trim().toLowerCase();
-          
-          if (!email || !this.isValidEmail(email)) {
-            alert('Please enter a valid email address');
-            return;
-          }
-
-          // Find player by email
-          const playerId = Object.keys(this.players).find(id => this.players[id].email === email);
-          
-          if (!playerId) {
-            alert('No player found with this email. Please register first.');
-            return;
-          }
-
-          const player = this.players[playerId];
-          this.currentPlayer = {
-            id: playerId,
-            name: player.name,
-            email: player.email
-          };
-
-          localStorage.setItem('currentPlayer', JSON.stringify(this.currentPlayer));
-          
-          this.updatePlayerUI();
-          this.loadLeaderboard();
-          
-          // Clear form
-          playerNameInput.value = '';
-          playerEmailInput.value = '';
-          
-          alert(`Welcome back, ${player.name}!`);
-        });
-
-        // Logout player
-        logoutPlayerBtn.addEventListener('click', () => {
-          this.currentPlayer = null;
-          localStorage.removeItem('currentPlayer');
-          this.updatePlayerUI();
-          this.loadLeaderboard();
-          alert('You have been logged out.');
-        });
-
-        // Filter leaderboard
-        gameFilter.addEventListener('change', () => {
-          this.loadLeaderboard();
-        });
-
-        // Toggle leaderboard visibility
-        toggleBtn.addEventListener('click', () => {
-          const leaderboardSection = document.querySelector('.leaderboard-section');
-          const isVisible = leaderboardSection.style.display !== 'none';
-          leaderboardSection.style.display = isVisible ? 'none' : 'block';
-          toggleBtn.textContent = isVisible ? 'Show Leaderboard' : 'Hide Leaderboard';
-        });
-      }
-
-      isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-      }
-
-      updatePlayerUI() {
-        const playerForm = document.querySelector('.player-form');
-        const currentPlayerInfo = document.getElementById('currentPlayerInfo');
-        const currentPlayerName = document.getElementById('currentPlayerName');
-        const myScoresSection = document.getElementById('myScoresSection');
-
-        if (this.currentPlayer) {
-          playerForm.style.display = 'none';
-          currentPlayerInfo.style.display = 'flex';
-          currentPlayerName.textContent = this.currentPlayer.name;
-          myScoresSection.style.display = 'block';
-          this.loadMyScores();
-        } else {
-          playerForm.style.display = 'block';
-          currentPlayerInfo.style.display = 'none';
-          myScoresSection.style.display = 'none';
-        }
-      }
-
-      // Load and display current player's scores
-      loadMyScores() {
-        if (!this.currentPlayer) return;
-
-        const myScoresList = document.getElementById('myScoresList');
-        const myScoreCount = document.getElementById('myScoreCount');
-        
-        // Get all scores for current player
-        const playerScores = this.scores.filter(score => 
-          score.playerId === this.currentPlayer.id
-        );
-
-        // Group by game and get best score for each
-        const gameScores = {};
-        playerScores.forEach(score => {
-          if (!gameScores[score.game] || score.score > gameScores[score.game].score) {
-            gameScores[score.game] = score;
-          }
-        });
-
-        const bestScores = Object.values(gameScores).sort((a, b) => b.score - a.score);
-        
-        myScoreCount.textContent = `${bestScores.length} game${bestScores.length !== 1 ? 's' : ''} played`;
-
-        if (bestScores.length === 0) {
-          myScoresList.innerHTML = `
-            <div class="empty-scores">
-              <h4>🎮 No scores yet!</h4>
-              <p>Start playing games to track your progress.</p>
-            </div>
-          `;
-          return;
-        }
-
-        myScoresList.innerHTML = bestScores.map((score, index) => {
-          const rank = this.getPlayerRankInGame(score.game, score.score);
-          let rankDisplay = `#${rank}`;
-          if (rank === 1) rankDisplay = '🥇 #1';
-          else if (rank === 2) rankDisplay = '🥈 #2';
-          else if (rank === 3) rankDisplay = '🥉 #3';
-          
-          return `
-            <div class="score-item">
-              <div class="score-game">
-                <h4>${score.gameName}</h4>
-                <span class="score-rank">${rankDisplay}</span>
-              </div>
-              <div class="score-details">
-                <span class="score-value">${score.score.toLocaleString()}</span>
-                <span class="score-date">${score.date}</span>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-
-      // Get player's rank in a specific game
-      getPlayerRankInGame(gameId, playerScore) {
-        const gameScores = this.scores
-          .filter(score => score.game === gameId)
-          .map(score => ({
-            playerId: score.playerId,
-            score: score.score
-          }));
-
-        // Get best score per player for this game
-        const playerBest = {};
-        gameScores.forEach(score => {
-          if (!playerBest[score.playerId] || score.score > playerBest[score.playerId]) {
-            playerBest[score.playerId] = score.score;
-          }
-        });
-
-        const sortedScores = Object.values(playerBest).sort((a, b) => b - a);
-        return sortedScores.indexOf(playerScore) + 1;
-      }
-
-      // Record a new score (called from game completion)
-      recordScore(gameId, gameName, score) {
-        if (!this.currentPlayer) {
-          alert('Please register/login to save your score!');
-          return false;
-        }
-
-        const scoreEntry = {
-          playerId: this.currentPlayer.id,
-          player: this.currentPlayer.name,
-          score: score,
-          game: gameId,
-          gameName: gameName,
-          date: new Date().toISOString().split('T')[0],
-          timestamp: Date.now()
-        };
-
-        this.scores.push(scoreEntry);
-        this.scores.sort((a, b) => b.score - a.score);
-        
-        // Keep only top 1000 scores to prevent storage bloat
-        this.scores = this.scores.slice(0, 1000);
-        
-        localStorage.setItem('gameScores', JSON.stringify(this.scores));
-        this.loadLeaderboard();
-        
-        return true;
-      }
-
-      initializeDemoData() {
-        // Add some demo data if no scores exist
-        if (this.scores.length === 0) {
-          const demoScores = [
-            { playerId: 'demo1', player: 'GameMaster', score: 25640, game: 'snake-classic', gameName: 'Snake Classic', date: '2025-08-30' },
-            { playerId: 'demo2', player: 'TetrisKing', score: 145200, game: 'tetris', gameName: 'Tetris', date: '2025-08-29' },
-            { playerId: 'demo3', player: 'AlienHunter', score: 18750, game: 'space-invaders', gameName: 'Space Invaders', date: '2025-08-28' },
-            { playerId: 'demo4', player: 'HoopStar', score: 92, game: 'basketball', gameName: 'Basketball', date: '2025-08-27' },
-            { playerId: 'demo5', player: 'SpeedRacer', score: 180000, game: 'racecar', gameName: 'Race Car', date: '2025-08-26' },
-            { playerId: 'demo1', player: 'GameMaster', score: 22100, game: 'snake-classic', gameName: 'Snake Classic', date: '2025-08-25' },
-            { playerId: 'demo6', player: 'BlockMaster', score: 98500, game: 'tetris', gameName: 'Tetris', date: '2025-08-24' },
-            { playerId: 'demo7', player: 'DefenderX', score: 15600, game: 'space-invaders', gameName: 'Space Invaders', date: '2025-08-23' },
-            { playerId: 'demo8', player: 'Shooter92', score: 78, game: 'basketball', gameName: 'Basketball', date: '2025-08-22' },
-            { playerId: 'demo9', player: 'RaceAce', score: 165000, game: 'racecar', gameName: 'Race Car', date: '2025-08-21' }
-          ];
-          this.scores = demoScores;
-          localStorage.setItem('gameScores', JSON.stringify(this.scores));
-        }
-      }
-
-      getFilteredScores() {
-        const gameFilter = document.getElementById('gameFilter').value;
-        let filteredScores = [...this.scores];
-
-        if (gameFilter !== 'overall') {
-          filteredScores = filteredScores.filter(score => score.game === gameFilter);
-        }
-
-        // Sort by score (descending)
-        filteredScores.sort((a, b) => b.score - a.score);
-
-        // For overall ranking, get best score per player across all games
-        if (gameFilter === 'overall') {
-          const playerBest = {};
-          filteredScores.forEach(score => {
-            const playerId = score.playerId || score.player; // Handle legacy scores
-            if (!playerBest[playerId] || score.score > playerBest[playerId].score) {
-              playerBest[playerId] = score;
-            }
-          });
-          filteredScores = Object.values(playerBest).sort((a, b) => b.score - a.score);
-        } else {
-          // For specific games, get best score per player for that game
-          const playerGameBest = {};
-          filteredScores.forEach(score => {
-            const playerId = score.playerId || score.player; // Handle legacy scores
-            if (!playerGameBest[playerId] || score.score > playerGameBest[playerId].score) {
-              playerGameBest[playerId] = score;
-            }
-          });
-          filteredScores = Object.values(playerGameBest).sort((a, b) => b.score - a.score);
-        }
-
-        return filteredScores.slice(0, 100); // Top 100
-      }
-
-      loadLeaderboard() {
-        const leaderboardList = document.getElementById('leaderboardList');
-        const filteredScores = this.getFilteredScores();
-
-        if (filteredScores.length === 0) {
-          leaderboardList.innerHTML = `
-            <div class="empty-leaderboard">
-              <h3>🎯 No Scores Yet</h3>
-              <p>Be the first to set a high score! Register and play some games.</p>
-            </div>
-          `;
-          return;
-        }
-
-        leaderboardList.innerHTML = filteredScores.map((score, index) => {
-          const rank = index + 1;
-          const isCurrentPlayer = this.currentPlayer && score.playerId === this.currentPlayer.id;
-          const isTopThree = rank <= 3;
-          
-          let rankDisplay = rank;
-          if (rank === 1) rankDisplay = '🥇';
-          else if (rank === 2) rankDisplay = '🥈';
-          else if (rank === 3) rankDisplay = '🥉';
-          
-          return `
-            <div class="leaderboard-entry">
-              <div class="rank ${isTopThree ? 'top-3' : ''}">${rankDisplay}</div>
-              <div class="player-name ${isCurrentPlayer ? 'current-player' : ''}">${score.player}</div>
-              <div class="score">${score.score.toLocaleString()}</div>
-              <div class="game-name">${score.gameName}</div>
-              <div class="score-date">${score.date}</div>
-            </div>
-          `;
-        }).join('');
-
-        // Update My Scores section if player is logged in
-        if (this.currentPlayer) {
-          this.loadMyScores();
-        }
-      }
-    }
-
-    // Initialize leaderboard
-    const leaderboard = new LeaderboardManager();
-
-    // Make leaderboard globally available for games to use
-    window.gameLeaderboard = leaderboard;
 
     // Enhanced rendering with improved animations and effects
     function renderGames(games, containerId) {
