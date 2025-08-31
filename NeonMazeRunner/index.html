@@ -997,10 +997,34 @@
       // Find valid spawn positions
       const spawnPositions = findEmptyTiles();
       
-      // Create player
-      const playerSpawn = spawnPositions[0];
-      game.player = new Player(playerSpawn.x * TILE_SIZE, playerSpawn.y * TILE_SIZE);
+      // Create player with better spawn logic to avoid "born in a box"
+      let playerSpawn = spawnPositions[0];
       
+      // Try to find a better spawn position with more movement space
+      for (let i = 0; i < Math.min(spawnPositions.length, 10); i++) {
+        const candidate = spawnPositions[i];
+        let emptyNeighbors = 0;
+        
+        // Check surrounding tiles for movement space
+        const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+        for (const [dx, dy] of directions) {
+          const nx = candidate.x + dx;
+          const ny = candidate.y + dy;
+          if (nx >= 0 && nx < MAZE_WIDTH && ny >= 0 && ny < MAZE_HEIGHT) {
+            if (game.maze[ny][nx] === 0) {
+              emptyNeighbors++;
+            }
+          }
+        }
+        
+        // Use this position if it has at least 2 movement directions
+        if (emptyNeighbors >= 2) {
+          playerSpawn = candidate;
+          break;
+        }
+      }
+      
+      game.player = new Player(playerSpawn.x * TILE_SIZE, playerSpawn.y * TILE_SIZE);      
       // Create drones based on level
       game.drones = [];
       const droneCount = Math.min(2 + Math.floor(game.level / 3), 8);
