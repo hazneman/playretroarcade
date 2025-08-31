@@ -8,25 +8,30 @@
   <link rel="icon" href="../Public/logo.png" type="image/png">
   <style>
     :root {
-      --bg: #0f0f12;
-      --card: #18181c;
-      --muted: #9aa0a6;
-      --text: #e8eaed;
-      --accent: #4fc3f7;
-      --accent-hover: #29b6f6;
-      --line: #2a2a30;
-      --success: #4caf50;
-      --warning: #ff9800;
-      --error: #f44336;
-      --gradient-primary: linear-gradient(135deg, #4fc3f7, #29b6f6, #03a9f4);
-      --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
-      --shadow-elevated: 0 20px 40px rgba(0,0,0,0.4);
-      --blur-glass: blur(10px);
-      --alien-green: #00ff41;
-      --alien-yellow: #ffff00;
-      --alien-red: #ff4141;
-      --laser-blue: #41c9ff;
-      --laser-red: #ff4141;
+      --primary-neon: #00f5ff;
+      --secondary-neon: #ff006e;
+      --accent-yellow: #ffbe0b;
+      --accent-purple: #8338ec;
+      --accent-green: #4ade80;
+      --bg-dark: #0d1117;
+      --bg-darker: #010409;
+      --bg-card: rgba(13, 17, 23, 0.8);
+      --text-bright: #ffffff;
+      --text-glow: #00f5ff;
+      --text-muted: #8b949e;
+      --success: #4ade80;
+      --warning: #ffbe0b;
+      --error: #ff006e;
+      --gradient-primary: linear-gradient(135deg, #00f5ff, #ff006e, #ffbe0b);
+      --gradient-secondary: linear-gradient(135deg, #8338ec, #ff006e);
+      --gradient-card: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.1));
+      --shadow-neon: 0 20px 40px rgba(0, 245, 255, 0.3);
+      --blur-glass: blur(15px);
+      --alien-green: #4ade80;
+      --alien-yellow: #ffbe0b;
+      --alien-red: #ff006e;
+      --laser-blue: #00f5ff;
+      --laser-red: #ff006e;
     }
 
     * { box-sizing: border-box; }
@@ -34,9 +39,9 @@
     html, body { 
       height: 100%; 
       margin: 0; 
-      background: linear-gradient(135deg, #0b0b0d 0%, #1a1a1f 50%, #0f0f14 100%); 
-      color: var(--text); 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 25%, #21262d 50%, #0d1117 100%); 
+      color: var(--text-bright); 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       line-height: 1.6;
       overflow-x: hidden;
     }

@@ -8,34 +8,39 @@
   <link rel="icon" href="../Public/logo.png" type="image/png">
   <style>
     :root {
-      --bg: #0f0f12;
-      --card: #18181c;
-      --muted: #9aa0a6;
-      --text: #e8eaed;
-      --accent: #4fc3f7;
-      --accent-hover: #29b6f6;
-      --line: #2a2a30;
-      --success: #4caf50;
-      --warning: #ff9800;
-      --error: #f44336;
-      --gradient-primary: linear-gradient(135deg, #4fc3f7, #29b6f6, #03a9f4);
-      --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
-      --shadow-elevated: 0 20px 40px rgba(0,0,0,0.4);
-      --blur-glass: blur(10px);
+      --primary-neon: #00f5ff;
+      --secondary-neon: #ff006e;
+      --accent-yellow: #ffbe0b;
+      --accent-purple: #8338ec;
+      --accent-green: #4ade80;
+      --bg-dark: #0d1117;
+      --bg-darker: #010409;
+      --bg-card: rgba(13, 17, 23, 0.8);
+      --text-bright: #ffffff;
+      --text-glow: #00f5ff;
+      --text-muted: #8b949e;
+      --success: #4ade80;
+      --warning: #ffbe0b;
+      --error: #ff006e;
+      --gradient-primary: linear-gradient(135deg, #00f5ff, #ff006e, #ffbe0b);
+      --gradient-secondary: linear-gradient(135deg, #8338ec, #ff006e);
+      --gradient-card: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.1));
+      --shadow-neon: 0 20px 40px rgba(0, 245, 255, 0.3);
+      --blur-glass: blur(15px);
     }
 
     * { box-sizing: border-box; }
     html, body { 
       height: 100%; 
       margin: 0; 
-      background: linear-gradient(135deg, #0b0b0d 0%, #1a1a1f 50%, #0f0f14 100%); 
-      color: var(--text); 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 25%, #21262d 50%, #0d1117 100%); 
+      color: var(--text-bright); 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       line-height: 1.6;
       overflow-x: hidden;
     }
 
-    /* Animated background particles */
+    /* Enhanced animated background particles */
     body::before {
       content: '';
       position: fixed;
@@ -44,18 +49,32 @@
       width: 100%;
       height: 100%;
       background-image: 
-        radial-gradient(circle at 20% 50%, rgba(79, 195, 247, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(79, 195, 247, 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 40% 80%, rgba(79, 195, 247, 0.02) 0%, transparent 50%);
-      animation: floatParticles 20s ease-in-out infinite;
+        radial-gradient(circle at 20% 20%, rgba(0, 245, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 0, 110, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 60%, rgba(131, 56, 236, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 60% 20%, rgba(255, 190, 11, 0.05) 0%, transparent 50%);
+      animation: floatParticles 25s ease-in-out infinite;
       pointer-events: none;
       z-index: -1;
     }
 
     @keyframes floatParticles {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      33% { transform: translateY(-20px) rotate(2deg); }
-      66% { transform: translateY(10px) rotate(-1deg); }
+      0%, 100% { 
+        background-position: 0% 0%, 100% 100%, 50% 50%, 70% 30%;
+        transform: rotate(0deg);
+      }
+      25% { 
+        background-position: 25% 25%, 75% 75%, 60% 40%, 80% 20%;
+        transform: rotate(1deg);
+      }
+      50% { 
+        background-position: 50% 10%, 50% 90%, 40% 60%, 60% 40%;
+        transform: rotate(-1deg);
+      }
+      75% { 
+        background-position: 75% 25%, 25% 75%, 30% 70%, 90% 10%;
+        transform: rotate(0.5deg);
+      }
     }
 
     .wrap { max-width: 1000px; margin: 0 auto; padding: 20px; }
@@ -64,14 +83,14 @@
       display: flex; 
       justify-content: center; 
       align-items: center; 
-      gap: 16px; 
-      margin: 0 0 32px; 
-      background: rgba(255, 255, 255, 0.03);
+      gap: 20px; 
+      margin: 0 0 40px; 
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(255, 0, 110, 0.05));
       backdrop-filter: var(--blur-glass);
-      border: 1px solid rgba(79, 195, 247, 0.1);
-      border-radius: 20px;
-      padding: 24px 32px;
-      box-shadow: var(--shadow-elevated);
+      border: 2px solid transparent;
+      border-radius: 25px;
+      padding: 30px 40px;
+      box-shadow: var(--shadow-neon);
       position: relative;
       overflow: hidden;
     }
@@ -80,11 +99,27 @@
       content: '';
       position: absolute;
       top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
+      padding: 2px;
+      border-radius: 25px;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      -webkit-mask-composite: xor;
+      opacity: 0.3;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      top: 0;
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(79, 195, 247, 0.05), transparent);
-      animation: shimmer 3s ease-in-out infinite;
+      background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.1), transparent);
+      animation: shimmer 4s ease-in-out infinite;
     }
 
     @keyframes shimmer {
@@ -93,15 +128,23 @@
     }
 
     h1 { 
-      font-size: 24px; 
+      font-size: 28px; 
       margin: 0; 
-      font-weight: 700;
+      font-weight: 800;
       background: var(--gradient-primary);
+      background-size: 300% 300%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      z-index: 1;
+      animation: gradientShift 4s ease-in-out infinite;
+      text-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
       position: relative;
+      z-index: 1;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
     
     .game-container { 
