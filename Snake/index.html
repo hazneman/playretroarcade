@@ -1133,7 +1133,19 @@
     if (snake.some(s => s.x===head.x && s.y===head.y)) {
       dead = true; playing = false; gameState = 'gameOver'; setBest(score); 
       stopBackgroundMusic();
-      showOverlay('Game Over', 'Press <kbd>R</kbd> to restart');
+      
+      // Submit score to leaderboard if available
+      if (window.parent && window.parent.gameLeaderboard) {
+        const submitted = window.parent.gameLeaderboard.recordScore('snake-classic', 'Snake Classic', score);
+        if (submitted) {
+          showOverlay('Game Over', `Score: ${score.toLocaleString()}<br>Score saved to leaderboard!<br>Press <kbd>R</kbd> to restart`);
+        } else {
+          showOverlay('Game Over', `Score: ${score.toLocaleString()}<br>Register on main page to save scores!<br>Press <kbd>R</kbd> to restart`);
+        }
+      } else {
+        showOverlay('Game Over', 'Press <kbd>R</kbd> to restart');
+      }
+      
       flashHit(); return;
     }
 
