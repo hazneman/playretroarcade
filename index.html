@@ -726,6 +726,199 @@
       font-weight: 700;
     }
 
+    /* Leaderboard Section */
+    .leaderboard-section {
+      margin: 60px 0;
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(255, 0, 110, 0.08));
+      border: 2px solid rgba(0, 245, 255, 0.3);
+      border-radius: 30px;
+      padding: 40px;
+      backdrop-filter: var(--blur-glass);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 245, 255, 0.2);
+    }
+
+    .leaderboard-controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .player-setup {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .player-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .player-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .current-player {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(74, 222, 128, 0.05));
+      border: 2px solid rgba(74, 222, 128, 0.3);
+      border-radius: 12px;
+      padding: 12px 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .current-player strong {
+      color: var(--accent-green);
+      text-shadow: 0 0 10px currentColor;
+    }
+
+    .play-button.secondary {
+      background: var(--gradient-secondary) !important;
+      color: var(--text-bright) !important;
+    }
+
+    .toggle-btn {
+      background: var(--gradient-secondary);
+      color: var(--text-bright);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .toggle-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(131, 56, 236, 0.4);
+    }
+
+    .leaderboard-container {
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(255, 0, 110, 0.05));
+      border-radius: 20px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 245, 255, 0.2);
+    }
+
+    .leaderboard-header {
+      display: grid;
+      grid-template-columns: 80px 1fr 150px 120px 120px;
+      gap: 20px;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.1));
+      font-weight: 700;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary-neon);
+      border-bottom: 2px solid rgba(0, 245, 255, 0.3);
+    }
+
+    .leaderboard-list {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .leaderboard-entry {
+      display: grid;
+      grid-template-columns: 80px 1fr 150px 120px 120px;
+      gap: 20px;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+      transition: all 0.3s ease;
+      align-items: center;
+    }
+
+    .leaderboard-entry:hover {
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.08), rgba(255, 0, 110, 0.08));
+      transform: translateX(5px);
+    }
+
+    .leaderboard-entry:nth-child(1) {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 193, 7, 0.05));
+      border-left: 4px solid #ffd700;
+    }
+
+    .leaderboard-entry:nth-child(2) {
+      background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), rgba(169, 169, 169, 0.05));
+      border-left: 4px solid #c0c0c0;
+    }
+
+    .leaderboard-entry:nth-child(3) {
+      background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), rgba(184, 115, 51, 0.05));
+      border-left: 4px solid #cd7f32;
+    }
+
+    .rank {
+      font-weight: 700;
+      font-size: 18px;
+      text-align: center;
+      color: var(--primary-neon);
+    }
+
+    .rank.top-3 {
+      font-size: 22px;
+      text-shadow: 0 0 10px currentColor;
+    }
+
+    .player-name {
+      font-weight: 600;
+      color: var(--text-bright);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .player-name.current-player {
+      color: var(--accent-yellow);
+      text-shadow: 0 0 10px currentColor;
+    }
+
+    .score {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--accent-green);
+      text-align: right;
+    }
+
+    .game-name {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .score-date {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .empty-leaderboard {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-leaderboard h3 {
+      margin-bottom: 16px;
+      font-size: 24px;
+      color: var(--text-bright);
+    }
+
     /* Responsive improvements */
     @media (max-width: 768px) {
       .container { padding: 20px 16px; }
@@ -745,6 +938,26 @@
       }
       .section-title h2 { font-size: 28px; }
       .featured-section { padding: 28px 20px; }
+      .leaderboard-section { padding: 28px 20px; }
+      .leaderboard-controls {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .player-setup {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .leaderboard-header {
+        grid-template-columns: 60px 1fr 100px 80px 80px;
+        gap: 10px;
+        padding: 16px;
+        font-size: 12px;
+      }
+      .leaderboard-entry {
+        grid-template-columns: 60px 1fr 100px 80px 80px;
+        gap: 10px;
+        padding: 12px 16px;
+      }
     }
 
     @media (max-width: 480px) {
@@ -753,6 +966,17 @@
       .card-body { padding: 20px; }
       .cover { font-size: 48px; }
       .featured-section h2 { font-size: 28px; }
+      .leaderboard-header {
+        grid-template-columns: 50px 1fr 80px;
+        gap: 8px;
+      }
+      .leaderboard-entry {
+        grid-template-columns: 50px 1fr 80px;
+        gap: 8px;
+      }
+      .game-name, .score-date {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -765,7 +989,7 @@
         <p class="subtitle">Experience premium retro gaming with modern polish. Classic games, zero downloads, infinite fun!</p>
         <div class="stats-banner">
           <div class="stat-item">
-            <span class="stat-number">3</span>
+            <span class="stat-number">5</span>
             <div class="stat-label">Premium Games</div>
           </div>
           <div class="stat-item">
@@ -800,6 +1024,52 @@
     <div class="featured-section">
       <h2>🌟 Featured Games</h2>
       <div id="featuredGames" class="grid cols-4"></div>
+    </div>
+
+    <div class="leaderboard-section">
+      <div class="section-title">
+        <h2>🏆 Top Players</h2>
+        <button id="toggleLeaderboard" class="toggle-btn">Show All Games</button>
+      </div>
+      
+      <div class="leaderboard-controls">
+        <select id="gameFilter" class="select">
+          <option value="overall">🌟 Overall Rankings</option>
+          <option value="snake-classic">🐍 Snake Classic</option>
+          <option value="tetris">🟦 Tetris</option>
+          <option value="space-invaders">👾 Space Invaders</option>
+          <option value="basketball">🏀 Basketball</option>
+          <option value="racecar">🏎️ Race Car</option>
+        </select>
+        
+        <div class="player-setup">
+          <div class="player-form">
+            <input type="text" id="playerName" class="input" placeholder="Enter your username (3-20 chars)" maxlength="20" minlength="3">
+            <input type="email" id="playerEmail" class="input" placeholder="Enter your email for verification" required>
+            <div class="player-actions">
+              <button id="savePlayer" class="play-button" style="width: auto; margin: 0; padding: 12px 20px;">🔐 Register Player</button>
+              <button id="loginPlayer" class="play-button secondary" style="width: auto; margin: 0; padding: 12px 20px;">📧 Login</button>
+            </div>
+          </div>
+          <div class="current-player" id="currentPlayerInfo" style="display: none;">
+            <span>Playing as: <strong id="currentPlayerName"></strong></span>
+            <button id="logoutPlayer" class="play-button secondary" style="width: auto; margin: 0; padding: 8px 16px; font-size: 14px;">Logout</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="leaderboard-container">
+        <div class="leaderboard-header">
+          <span class="rank-col">Rank</span>
+          <span class="player-col">Player</span>
+          <span class="score-col">Best Score</span>
+          <span class="game-col">Game</span>
+          <span class="date-col">Date</span>
+        </div>
+        <div id="leaderboardList" class="leaderboard-list">
+          <!-- Leaderboard entries will be populated here -->
+        </div>
+      </div>
     </div>
 
     <div class="section-title">
@@ -894,6 +1164,308 @@
         tags: ["Racing", "Speed", "Championship"]
       }
     ];
+
+    // Secure Leaderboard System with Email Validation
+    class LeaderboardManager {
+      constructor() {
+        this.currentPlayer = this.getCurrentPlayer();
+        this.scores = JSON.parse(localStorage.getItem('gameScores') || '[]');
+        this.players = JSON.parse(localStorage.getItem('registeredPlayers') || '{}');
+        this.initializeControls();
+        this.loadLeaderboard();
+        this.initializeDemoData();
+        this.updatePlayerUI();
+      }
+
+      // Simple hash function for email verification (in production, use proper backend)
+      simpleHash(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+          const char = str.charCodeAt(i);
+          hash = ((hash << 5) - hash) + char;
+          hash = hash & hash; // Convert to 32-bit integer
+        }
+        return Math.abs(hash).toString(36);
+      }
+
+      getCurrentPlayer() {
+        const playerData = localStorage.getItem('currentPlayer');
+        return playerData ? JSON.parse(playerData) : null;
+      }
+
+      initializeControls() {
+        const playerNameInput = document.getElementById('playerName');
+        const playerEmailInput = document.getElementById('playerEmail');
+        const savePlayerBtn = document.getElementById('savePlayer');
+        const loginPlayerBtn = document.getElementById('loginPlayer');
+        const logoutPlayerBtn = document.getElementById('logoutPlayer');
+        const gameFilter = document.getElementById('gameFilter');
+        const toggleBtn = document.getElementById('toggleLeaderboard');
+
+        // Register new player
+        savePlayerBtn.addEventListener('click', () => {
+          const name = playerNameInput.value.trim();
+          const email = playerEmailInput.value.trim().toLowerCase();
+          
+          if (!name || name.length < 3 || name.length > 20) {
+            alert('Username must be between 3-20 characters');
+            return;
+          }
+          
+          if (!email || !this.isValidEmail(email)) {
+            alert('Please enter a valid email address');
+            return;
+          }
+
+          // Check if username is already taken
+          const existingPlayer = Object.values(this.players).find(p => p.name.toLowerCase() === name.toLowerCase());
+          if (existingPlayer && existingPlayer.email !== email) {
+            alert('This username is already taken by another player. Please choose a different one.');
+            return;
+          }
+
+          // Generate unique player ID
+          const playerId = this.simpleHash(email + name);
+          
+          // Check if email is already registered with different name
+          if (this.players[playerId] && this.players[playerId].name !== name) {
+            alert('This email is already registered with a different username. Please login instead.');
+            return;
+          }
+
+          // Register or update player
+          this.players[playerId] = {
+            name: name,
+            email: email,
+            registeredAt: new Date().toISOString(),
+            verified: true // In production, send verification email
+          };
+
+          this.currentPlayer = {
+            id: playerId,
+            name: name,
+            email: email
+          };
+
+          localStorage.setItem('registeredPlayers', JSON.stringify(this.players));
+          localStorage.setItem('currentPlayer', JSON.stringify(this.currentPlayer));
+          
+          this.updatePlayerUI();
+          this.loadLeaderboard();
+          
+          // Clear form
+          playerNameInput.value = '';
+          playerEmailInput.value = '';
+          
+          alert(`Welcome, ${name}! You're now registered and your scores will be tracked.`);
+        });
+
+        // Login existing player
+        loginPlayerBtn.addEventListener('click', () => {
+          const email = playerEmailInput.value.trim().toLowerCase();
+          
+          if (!email || !this.isValidEmail(email)) {
+            alert('Please enter a valid email address');
+            return;
+          }
+
+          // Find player by email
+          const playerId = Object.keys(this.players).find(id => this.players[id].email === email);
+          
+          if (!playerId) {
+            alert('No player found with this email. Please register first.');
+            return;
+          }
+
+          const player = this.players[playerId];
+          this.currentPlayer = {
+            id: playerId,
+            name: player.name,
+            email: player.email
+          };
+
+          localStorage.setItem('currentPlayer', JSON.stringify(this.currentPlayer));
+          
+          this.updatePlayerUI();
+          this.loadLeaderboard();
+          
+          // Clear form
+          playerNameInput.value = '';
+          playerEmailInput.value = '';
+          
+          alert(`Welcome back, ${player.name}!`);
+        });
+
+        // Logout player
+        logoutPlayerBtn.addEventListener('click', () => {
+          this.currentPlayer = null;
+          localStorage.removeItem('currentPlayer');
+          this.updatePlayerUI();
+          this.loadLeaderboard();
+          alert('You have been logged out.');
+        });
+
+        // Filter leaderboard
+        gameFilter.addEventListener('change', () => {
+          this.loadLeaderboard();
+        });
+
+        // Toggle leaderboard visibility
+        toggleBtn.addEventListener('click', () => {
+          const leaderboardSection = document.querySelector('.leaderboard-section');
+          const isVisible = leaderboardSection.style.display !== 'none';
+          leaderboardSection.style.display = isVisible ? 'none' : 'block';
+          toggleBtn.textContent = isVisible ? 'Show Leaderboard' : 'Hide Leaderboard';
+        });
+      }
+
+      isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+
+      updatePlayerUI() {
+        const playerForm = document.querySelector('.player-form');
+        const currentPlayerInfo = document.getElementById('currentPlayerInfo');
+        const currentPlayerName = document.getElementById('currentPlayerName');
+
+        if (this.currentPlayer) {
+          playerForm.style.display = 'none';
+          currentPlayerInfo.style.display = 'flex';
+          currentPlayerName.textContent = this.currentPlayer.name;
+        } else {
+          playerForm.style.display = 'block';
+          currentPlayerInfo.style.display = 'none';
+        }
+      }
+
+      // Record a new score (called from game completion)
+      recordScore(gameId, gameName, score) {
+        if (!this.currentPlayer) {
+          alert('Please register/login to save your score!');
+          return false;
+        }
+
+        const scoreEntry = {
+          playerId: this.currentPlayer.id,
+          player: this.currentPlayer.name,
+          score: score,
+          game: gameId,
+          gameName: gameName,
+          date: new Date().toISOString().split('T')[0],
+          timestamp: Date.now()
+        };
+
+        this.scores.push(scoreEntry);
+        this.scores.sort((a, b) => b.score - a.score);
+        
+        // Keep only top 1000 scores to prevent storage bloat
+        this.scores = this.scores.slice(0, 1000);
+        
+        localStorage.setItem('gameScores', JSON.stringify(this.scores));
+        this.loadLeaderboard();
+        
+        return true;
+      }
+
+      initializeDemoData() {
+        // Add some demo data if no scores exist
+        if (this.scores.length === 0) {
+          const demoScores = [
+            { playerId: 'demo1', player: 'GameMaster', score: 25640, game: 'snake-classic', gameName: 'Snake Classic', date: '2025-08-30' },
+            { playerId: 'demo2', player: 'TetrisKing', score: 145200, game: 'tetris', gameName: 'Tetris', date: '2025-08-29' },
+            { playerId: 'demo3', player: 'AlienHunter', score: 18750, game: 'space-invaders', gameName: 'Space Invaders', date: '2025-08-28' },
+            { playerId: 'demo4', player: 'HoopStar', score: 92, game: 'basketball', gameName: 'Basketball', date: '2025-08-27' },
+            { playerId: 'demo5', player: 'SpeedRacer', score: 180000, game: 'racecar', gameName: 'Race Car', date: '2025-08-26' },
+            { playerId: 'demo1', player: 'GameMaster', score: 22100, game: 'snake-classic', gameName: 'Snake Classic', date: '2025-08-25' },
+            { playerId: 'demo6', player: 'BlockMaster', score: 98500, game: 'tetris', gameName: 'Tetris', date: '2025-08-24' },
+            { playerId: 'demo7', player: 'DefenderX', score: 15600, game: 'space-invaders', gameName: 'Space Invaders', date: '2025-08-23' },
+            { playerId: 'demo8', player: 'Shooter92', score: 78, game: 'basketball', gameName: 'Basketball', date: '2025-08-22' },
+            { playerId: 'demo9', player: 'RaceAce', score: 165000, game: 'racecar', gameName: 'Race Car', date: '2025-08-21' }
+          ];
+          this.scores = demoScores;
+          localStorage.setItem('gameScores', JSON.stringify(this.scores));
+        }
+      }
+
+      getFilteredScores() {
+        const gameFilter = document.getElementById('gameFilter').value;
+        let filteredScores = [...this.scores];
+
+        if (gameFilter !== 'overall') {
+          filteredScores = filteredScores.filter(score => score.game === gameFilter);
+        }
+
+        // Sort by score (descending)
+        filteredScores.sort((a, b) => b.score - a.score);
+
+        // For overall ranking, get best score per player across all games
+        if (gameFilter === 'overall') {
+          const playerBest = {};
+          filteredScores.forEach(score => {
+            const playerId = score.playerId || score.player; // Handle legacy scores
+            if (!playerBest[playerId] || score.score > playerBest[playerId].score) {
+              playerBest[playerId] = score;
+            }
+          });
+          filteredScores = Object.values(playerBest).sort((a, b) => b.score - a.score);
+        } else {
+          // For specific games, get best score per player for that game
+          const playerGameBest = {};
+          filteredScores.forEach(score => {
+            const playerId = score.playerId || score.player; // Handle legacy scores
+            if (!playerGameBest[playerId] || score.score > playerGameBest[playerId].score) {
+              playerGameBest[playerId] = score;
+            }
+          });
+          filteredScores = Object.values(playerGameBest).sort((a, b) => b.score - a.score);
+        }
+
+        return filteredScores.slice(0, 100); // Top 100
+      }
+
+      loadLeaderboard() {
+        const leaderboardList = document.getElementById('leaderboardList');
+        const filteredScores = this.getFilteredScores();
+
+        if (filteredScores.length === 0) {
+          leaderboardList.innerHTML = `
+            <div class="empty-leaderboard">
+              <h3>🎯 No Scores Yet</h3>
+              <p>Be the first to set a high score! Register and play some games.</p>
+            </div>
+          `;
+          return;
+        }
+
+        leaderboardList.innerHTML = filteredScores.map((score, index) => {
+          const rank = index + 1;
+          const isCurrentPlayer = this.currentPlayer && score.playerId === this.currentPlayer.id;
+          const isTopThree = rank <= 3;
+          
+          let rankDisplay = rank;
+          if (rank === 1) rankDisplay = '🥇';
+          else if (rank === 2) rankDisplay = '🥈';
+          else if (rank === 3) rankDisplay = '🥉';
+          
+          return `
+            <div class="leaderboard-entry">
+              <div class="rank ${isTopThree ? 'top-3' : ''}">${rankDisplay}</div>
+              <div class="player-name ${isCurrentPlayer ? 'current-player' : ''}">${score.player}</div>
+              <div class="score">${score.score.toLocaleString()}</div>
+              <div class="game-name">${score.gameName}</div>
+              <div class="score-date">${score.date}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // Initialize leaderboard
+    const leaderboard = new LeaderboardManager();
+
+    // Make leaderboard globally available for games to use
+    window.gameLeaderboard = leaderboard;
 
     // Enhanced rendering with improved animations and effects
     function renderGames(games, containerId) {
