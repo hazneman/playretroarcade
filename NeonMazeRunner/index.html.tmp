@@ -730,16 +730,11 @@
         } else {
           const newX = this.x + (dx / distance) * this.speed;
           const newY = this.y + (dy / distance) * this.speed;
-          
-          // Check boundaries before moving
-          if (newX >= TILE_SIZE && newX + this.size <= CANVAS_WIDTH - TILE_SIZE && 
-              newY >= TILE_SIZE && newY + this.size <= CANVAS_HEIGHT - TILE_SIZE) {
+          if (newX >= 0 && newX + this.size <= CANVAS_WIDTH && newY >= 0 && newY + this.size <= CANVAS_HEIGHT) {
             this.x = newX;
             this.y = newY;
-          } else {
-            // If can't move to target, skip to next patrol point
-            this.pathIndex = (this.pathIndex + 1) % this.patrolPath.length;
           }
+          this.y += (dy / distance) * this.speed;
         }
       }
 
@@ -756,16 +751,11 @@
             const moveY = (dy / distance) * this.speed;
 
             // Check if movement is valid
-            const newX = this.x + moveX;
-            const newY = this.y + moveY;
-            
-            if (!this.checkWallCollision(newX, this.y) && 
-                newX >= TILE_SIZE && newX + this.size <= CANVAS_WIDTH - TILE_SIZE) {
-              this.x = newX;
+            if (!this.checkWallCollision(this.x + moveX, this.y)) {
+              this.x += moveX;
             }
-            if (!this.checkWallCollision(this.x, newY) && 
-                newY >= TILE_SIZE && newY + this.size <= CANVAS_HEIGHT - TILE_SIZE) {
-              this.y = newY;
+            if (!this.checkWallCollision(this.x, this.y + moveY)) {
+              this.y += moveY;
             }
           }
         } else {
@@ -789,16 +779,11 @@
             const moveX = (dx / distance) * this.speed * 0.5;
             const moveY = (dy / distance) * this.speed * 0.5;
 
-            const newX = this.x + moveX;
-            const newY = this.y + moveY;
-            
-            if (!this.checkWallCollision(newX, this.y) && 
-                newX >= TILE_SIZE && newX + this.size <= CANVAS_WIDTH - TILE_SIZE) {
-              this.x = newX;
+            if (!this.checkWallCollision(this.x + moveX, this.y)) {
+              this.x += moveX;
             }
-            if (!this.checkWallCollision(this.x, newY) && 
-                newY >= TILE_SIZE && newY + this.size <= CANVAS_HEIGHT - TILE_SIZE) {
-              this.y = newY;
+            if (!this.checkWallCollision(this.x, this.y + moveY)) {
+              this.y += moveY;
             }
           }
         }
@@ -815,9 +800,7 @@
           case 3: newY -= this.speed; break; // up
         }
 
-        if (!this.checkWallCollision(newX, newY) && 
-            newX >= TILE_SIZE && newX + this.size <= CANVAS_WIDTH - TILE_SIZE &&
-            newY >= TILE_SIZE && newY + this.size <= CANVAS_HEIGHT - TILE_SIZE) {
+        if (!this.checkWallCollision(newX, newY)) {
           this.x = newX;
           this.y = newY;
         } else {
@@ -1271,12 +1254,6 @@
       document.getElementById('totalDataDisplay').textContent = 5 + Math.floor((game.level - 1) / 2);
       document.getElementById('livesDisplay').textContent = game.lives;
     }
-    // Safety function to keep drones within bounds
-    function constrainToBounds(drone) {
-      drone.x = Math.max(TILE_SIZE, Math.min(drone.x, CANVAS_WIDTH - drone.size - TILE_SIZE));
-      drone.y = Math.max(TILE_SIZE, Math.min(drone.y, CANVAS_HEIGHT - drone.size - TILE_SIZE));
-    }
-
 
     // Game loop
     function gameLoop() {
@@ -1284,10 +1261,7 @@
       
       // Update
       game.player.update();
-      game.drones.forEach(drone => {
-        drone.update();
-        constrainToBounds(drone); // Safety constraint
-      });
+      game.drones.forEach(drone => drone.update());
       
       // Update timers
       if (game.stealthTimer > 0) {
