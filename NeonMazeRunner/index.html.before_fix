@@ -1196,11 +1196,7 @@
       game.startTime = Date.now();
       
       hideAllMenus();
-      
-      // Small delay to ensure state is ready for level transition
-      setTimeout(() => {
-        generateLevel();
-      }, 50);
+      generateLevel();
     }
 
     function gameOver() {

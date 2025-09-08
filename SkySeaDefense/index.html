@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sky & Sea Defense - PlayRetroArcade</title>
+    <style>
+        :root {
+            --neon-cyan: #00f5ff;
+            --neon-pink: #ff006e;
+            --neon-yellow: #ffbe0b;
+            --dark-bg: #0a0a0a;
+            --dark-secondary: #1a1a1a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
+            color: var(--neon-cyan);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(
+                to bottom,
+                #001122 0%,
+                #003344 30%,
+                #002244 70%,
+                #001133 100%
+            );
+        }
+
+        .game-canvas {
+            display: block;
+            background: transparent;
+            cursor: crosshair;
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 20px;
+            pointer-events: none;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 8px;
+            padding: 10px 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+        }
+
+        .radar-scope {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            width: 120px;
+            height: 120px;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            pointer-events: none;
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
+        }
+
+        .radar-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 4px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .menu-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .game-title {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px var(--neon-cyan);
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .game-description {
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            color: #aaa;
+        }
+
+        .controls-info {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .control-item {
+            background: rgba(255, 0, 110, 0.1);
+            border: 1px solid var(--neon-pink);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.9em;
+        }
+
+        .game-button {
+            background: linear-gradient(45deg, var(--neon-cyan), #0080ff);
+            border: none;
+            border-radius: 8px;
+            padding: 15px 30px;
+            color: #000;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+
+        .game-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 245, 255, 0.4);
+        }
+
+        .secondary-button {
+            background: linear-gradient(45deg, var(--neon-pink), #ff4081);
+            color: #fff;
+        }
+
+        .home-button {
+            background: linear-gradient(45deg, var(--neon-yellow), #ffa000);
+        }
+
+        @media (max-width: 768px) {
+            .game-title { font-size: 2em; }
+            .game-description { font-size: 0.9em; padding: 0 20px; }
+            .controls-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" class="game-canvas"></canvas>
+        
+        <div class="ui-overlay">
+            <div class="game-stats">
+                <div class="stat-item">
+                    <div>🏆 Score: <span id="score">0</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>🌊 Wave: <span id="wave">1</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>🚀 Rockets: <span id="rockets">10</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>❤️ Lives: <span id="lives">3</span></div>
+                </div>
+            </div>
+            
+            <!-- Radar Scope -->
+            <div class="radar-scope">
+                <div class="radar-center"></div>
+                <canvas id="radarCanvas" width="120" height="120" style="border-radius: 50%;"></canvas>
+            </div>
+        </div>
+
+        <!-- Main Menu -->
+        <div id="mainMenu" class="menu-screen">
+            <h1 class="game-title">⚓ SKY & SEA DEFENSE</h1>
+            <div class="game-description">
+                Defend your naval base from incoming enemy forces! Ships approach by sea while fighter planes attack from the sky. 
+                Use your cannon for ships and save precious rockets for fast-moving aircraft. How long can you hold the line?
+            </div>
+            
+            <div class="controls-info">
+                <h3 style="margin-bottom: 15px;">🎮 Controls</h3>
+                <div class="controls-grid">
+                    <div class="control-item">🖱️ Mouse - Aim & Fire Cannon</div>
+                    <div class="control-item">💥 Right Click - Fire Rocket</div>
+                    <div class="control-item">📱 Tap - Fire Cannon (Mobile)</div>
+                    <div class="control-item">🚀 Long Press - Fire Rocket (Mobile)</div>
+                </div>
+            </div>
+
+            <button class="game-button" onclick="startGame()">🚀 START DEFENSE</button>
+            <button class="game-button secondary-button" onclick="showInstructions()">📖 HOW TO PLAY</button>
+            <button class="game-button home-button" onclick="goHome()">🏠 BACK TO GAMES</button>
+        </div>
+
+        <!-- Instructions -->
+        <div id="instructionsMenu" class="menu-screen" style="display: none;">
+            <h2 class="game-title" style="font-size: 2em;">📖 BATTLE INSTRUCTIONS</h2>
+            <div style="max-width: 700px; text-align: left; line-height: 1.8;">
+                <h3 style="color: var(--neon-cyan); margin: 20px 0 10px;">🎯 Objective:</h3>
+                <p>Protect your naval base from enemy ships and aircraft. Survive as many waves as possible!</p>
+
+                <h3 style="color: var(--neon-pink); margin: 20px 0 10px;">⚔️ Weapons:</h3>
+                <p><strong>Cannon:</strong> Unlimited ammo, effective against ships (100 points)</p>
+                <p><strong>Rockets:</strong> Limited ammo (10 per wave), powerful against planes (200 points)</p>
+
+                <h3 style="color: var(--neon-yellow); margin: 20px 0 10px;">👾 Enemies:</h3>
+                <p><strong>Ships:</strong> Move horizontally across the sea, slower but sturdy</p>
+                <p><strong>Planes:</strong> Fly diagonally from sky, faster and harder to hit</p>
+
+                <h3 style="color: var(--neon-cyan); margin: 20px 0 10px;">⚡ Strategy:</h3>
+                <p>• Use cannon for ships to conserve rockets</p>
+                <p>• Save rockets for fast-moving planes</p>
+                <p>• Each wave brings more enemies</p>
+                <p>• You lose a life if enemies reach your base</p>
+            </div>
+            <button class="game-button" onclick="hideInstructions()">🚀 START GAME</button>
+            <button class="game-button secondary-button" onclick="showMainMenu()">⬅️ BACK TO MENU</button>
+        </div>
+
+        <!-- Game Over -->
+        <div id="gameOverMenu" class="menu-screen" style="display: none;">
+            <h2 class="game-title" style="color: var(--neon-pink);">💥 BASE DESTROYED</h2>
+            <div style="text-align: center; margin: 20px 0;">
+                <div style="font-size: 1.5em; margin-bottom: 10px;">Final Score: <span id="finalScore">0</span></div>
+                <div style="font-size: 1.2em; color: var(--neon-yellow);">Waves Survived: <span id="finalWave">0</span></div>
+            </div>
+            <button class="game-button" onclick="startGame()">🔄 PLAY AGAIN</button>
+            <button class="game-button secondary-button" onclick="showMainMenu()">📋 MAIN MENU</button>
+            <button class="game-button home-button" onclick="goHome()">🏠 BACK TO GAMES</button>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let canvas, ctx, radarCanvas, radarCtx;
+        let gameState = 'menu'; // 'menu', 'playing', 'gameOver'
+        let gameStats = {
+            score: 0,
+            wave: 1,
+            rockets: 15, // Increased starting rockets
+            lives: 5    // Increased starting lives
+        };
+
+        // Game objects
+        let player, projectiles, enemies, explosions, particles;
+        let keys = {};
+        let mousePos = { x: 0, y: 0 };
+        let lastTime = 0;
+
+        // Initialize game
+        function initGame() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            radarCanvas = document.getElementById('radarCanvas');
+            radarCtx = radarCanvas.getContext('2d');
+            
+            resizeCanvas();
+            
+            // Event listeners
+            window.addEventListener('resize', resizeCanvas);
+            canvas.addEventListener('mousemove', updateMouse);
+            canvas.addEventListener('click', handleClick);
+            canvas.addEventListener('contextmenu', handleRightClick);
+            
+            // Touch events for mobile
+            canvas.addEventListener('touchstart', handleTouch);
+            canvas.addEventListener('touchmove', handleTouchMove);
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function updateMouse(e) {
+            const rect = canvas.getBoundingClientRect();
+            mousePos.x = e.clientX - rect.left;
+            mousePos.y = e.clientY - rect.top;
+        }
+
+        function handleClick(e) {
+            if (gameState === 'playing') {
+                fireCannon();
+            }
+        }
+
+        function handleRightClick(e) {
+            e.preventDefault();
+            if (gameState === 'playing' && gameStats.rockets > 0) {
+                fireRocket();
+            }
+        }
+
+        let touchStartTime = 0;
+        function handleTouch(e) {
+            e.preventDefault();
+            touchStartTime = Date.now();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            mousePos.x = touch.clientX - rect.left;
+            mousePos.y = touch.clientY - rect.top;
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (Date.now() - touchStartTime > 500) { // Long press
+                if (gameState === 'playing' && gameStats.rockets > 0) {
+                    fireRocket();
+                    touchStartTime = Date.now() + 1000; // Prevent multiple rockets
+                }
+            }
+        }
+
+        // Game objects
+        class Player {
+            constructor() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height - 80;
+                this.width = 60;
+                this.height = 40;
+                this.angle = 0;
+            }
+
+            update() {
+                // Aim at mouse
+                this.angle = Math.atan2(mousePos.y - this.y, mousePos.x - this.x);
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // Base
+                ctx.fillStyle = '#333';
+                ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+                
+                // Cannon barrel
+                ctx.save();
+                ctx.rotate(this.angle);
+                ctx.fillStyle = '#666';
+                ctx.fillRect(0, -5, 40, 10);
+                ctx.restore();
+                
+                // Neon outline
+                ctx.strokeStyle = '#00f5ff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(-this.width/2, -this.height/2, this.width, this.height);
+                
+                ctx.restore();
+            }
+        }
+
+        class Projectile {
+            constructor(x, y, angle, speed, type = 'cannon') {
+                this.x = x;
+                this.y = y;
+                this.angle = angle;
+                this.speed = speed;
+                this.type = type;
+                this.width = type === 'rocket' ? 8 : 4;
+                this.height = type === 'rocket' ? 15 : 8;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                return this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                
+                if (this.type === 'rocket') {
+                    // Rocket
+                    ctx.fillStyle = '#ff006e';
+                    ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+                    ctx.fillStyle = '#ffbe0b';
+                    ctx.fillRect(-this.width/2 - 5, -2, 5, 4); // Flame
+                } else {
+                    // Cannon ball
+                    ctx.fillStyle = '#00f5ff';
+                    ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+                }
+                
+                ctx.restore();
+            }
+        }
+
+        class Enemy {
+            constructor(type, x, y) {
+                this.type = type; // 'ship' or 'plane'
+                this.x = x;
+                this.y = y;
+                this.health = type === 'ship' ? 2 : 1;
+                this.maxHealth = this.health;
+                
+                if (type === 'ship') {
+                    this.width = 50;
+                    this.height = 20;
+                    this.speed = 0.7 + Math.random() * 0.8; // Reduced speed
+                    this.direction = Math.random() > 0.5 ? 1 : -1;
+                    this.y = canvas.height - 150 + Math.random() * 50;
+                } else {
+                    this.width = 30;
+                    this.height = 15;
+                    this.speed = 1.2 + Math.random() * 1.3; // Reduced speed
+                    this.angle = Math.random() * Math.PI / 3 + Math.PI / 6; // 30-60 degrees
+                    this.vx = Math.cos(this.angle) * this.speed * (Math.random() > 0.5 ? 1 : -1);
+                    this.vy = Math.sin(this.angle) * this.speed;
+                }
+            }
+
+            update() {
+                if (this.type === 'ship') {
+                    this.x += this.speed * this.direction;
+                    return this.x < -100 || this.x > canvas.width + 100;
+                } else {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    return this.y > canvas.height + 50;
+                }
+            }
+
+            draw() {
+                const healthRatio = this.health / this.maxHealth;
+                
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                if (this.type === 'ship') {
+                    // Ship body
+                    ctx.fillStyle = `rgb(${255 * (1 - healthRatio)}, ${100 * healthRatio}, ${150})`;
+                    ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+                    
+                    // Ship details
+                    ctx.fillStyle = '#444';
+                    ctx.fillRect(-this.width/2 + 10, -this.height/2 - 5, 5, 10);
+                    ctx.fillRect(this.width/2 - 15, -this.height/2 - 5, 5, 10);
+                } else {
+                    // Plane body
+                    ctx.fillStyle = `rgb(${200 * (1 - healthRatio)}, ${150 * healthRatio}, 255)`;
+                    ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+                    
+                    // Wings
+                    ctx.fillRect(-this.width/2 - 5, -2, 10, 4);
+                    ctx.fillRect(this.width/2 - 5, -2, 10, 4);
+                }
+                
+                // Neon outline
+                ctx.strokeStyle = this.type === 'ship' ? '#ff006e' : '#ffbe0b';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(-this.width/2, -this.height/2, this.width, this.height);
+                
+                ctx.restore();
+            }
+
+            takeDamage(amount) {
+                this.health -= amount;
+                return this.health <= 0;
+            }
+
+            checkCollision(projectile) {
+                return projectile.x > this.x - this.width/2 &&
+                       projectile.x < this.x + this.width/2 &&
+                       projectile.y > this.y - this.height/2 &&
+                       projectile.y < this.y + this.height/2;
+            }
+        }
+
+        class Explosion {
+            constructor(x, y, size = 30) {
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.maxSize = size;
+                this.life = 1;
+                this.decay = 0.02;
+            }
+
+            update() {
+                this.life -= this.decay;
+                this.size = this.maxSize * this.life;
+                return this.life <= 0;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                
+                // Explosion circle
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                gradient.addColorStop(0, '#ffbe0b');
+                gradient.addColorStop(0.3, '#ff006e');
+                gradient.addColorStop(1, 'transparent');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+
+        // Game functions
+        function startGame() {
+            gameState = 'playing';
+            gameStats = { score: 0, wave: 1, rockets: 15, lives: 5 }; // Easier starting stats
+            
+            player = new Player();
+            projectiles = [];
+            enemies = [];
+            explosions = [];
+            particles = [];
+            
+            spawnWave();
+            updateUI();
+            hideAllMenus();
+        }
+
+        function fireCannon() {
+            const angle = Math.atan2(mousePos.y - player.y, mousePos.x - player.x);
+            projectiles.push(new Projectile(player.x, player.y, angle, 8, 'cannon'));
+        }
+
+        function fireRocket() {
+            if (gameStats.rockets > 0) {
+                const angle = Math.atan2(mousePos.y - player.y, mousePos.x - player.x);
+                projectiles.push(new Projectile(player.x, player.y, angle, 12, 'rocket'));
+                gameStats.rockets--;
+                updateUI();
+            }
+        }
+
+        function spawnWave() {
+            const baseEnemies = 2 + Math.floor(gameStats.wave * 1.5); // Reduced enemy count
+            const enemyCount = Math.min(baseEnemies, 12); // Cap max enemies
+            
+            for (let i = 0; i < enemyCount; i++) {
+                setTimeout(() => {
+                    const type = Math.random() > 0.7 ? 'plane' : 'ship'; // More ships, fewer planes
+                    let x, y;
+                    
+                    if (type === 'ship') {
+                        x = Math.random() > 0.5 ? -50 : canvas.width + 50;
+                        y = canvas.height - 150;
+                    } else {
+                        x = Math.random() * canvas.width;
+                        y = -50;
+                    }
+                    
+                    enemies.push(new Enemy(type, x, y));
+                }, i * 1500); // Longer delay between spawns
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = gameStats.score;
+            document.getElementById('wave').textContent = gameStats.wave;
+            document.getElementById('rockets').textContent = gameStats.rockets;
+            document.getElementById('lives').textContent = gameStats.lives;
+        }
+
+        function updateRadar() {
+            radarCtx.clearRect(0, 0, 120, 120);
+            
+            // Draw radar background
+            radarCtx.strokeStyle = '#00f5ff';
+            radarCtx.lineWidth = 1;
+            
+            // Draw concentric circles
+            for (let i = 1; i <= 3; i++) {
+                radarCtx.beginPath();
+                radarCtx.arc(60, 60, i * 20, 0, Math.PI * 2);
+                radarCtx.stroke();
+            }
+            
+            // Draw crosshairs
+            radarCtx.beginPath();
+            radarCtx.moveTo(0, 60);
+            radarCtx.lineTo(120, 60);
+            radarCtx.moveTo(60, 0);
+            radarCtx.lineTo(60, 120);
+            radarCtx.stroke();
+            
+            // Draw player position (center)
+            radarCtx.fillStyle = '#ffbe0b';
+            radarCtx.beginPath();
+            radarCtx.arc(60, 60, 3, 0, Math.PI * 2);
+            radarCtx.fill();
+            
+            // Draw enemies on radar
+            enemies.forEach(enemy => {
+                const relX = (enemy.x - player.x) / canvas.width * 120 + 60;
+                const relY = (enemy.y - player.y) / canvas.height * 120 + 60;
+                
+                // Only show enemies within radar range
+                const dist = Math.sqrt((relX - 60) ** 2 + (relY - 60) ** 2);
+                if (dist <= 60) {
+                    radarCtx.fillStyle = enemy.type === 'ship' ? '#ff006e' : '#ff4444';
+                    radarCtx.beginPath();
+                    radarCtx.arc(relX, relY, 2, 0, Math.PI * 2);
+                    radarCtx.fill();
+                }
+            });
+        }
+
+        function gameLoop(currentTime) {
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+
+            if (gameState === 'playing') {
+                update(deltaTime);
+                draw();
+                updateRadar();
+                
+                // Check wave completion
+                if (enemies.length === 0) {
+                    gameStats.wave++;
+                    gameStats.rockets = Math.min(gameStats.rockets + 5, 15);
+                    spawnWave();
+                    updateUI();
+                }
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function update(deltaTime) {
+            player.update();
+
+            // Update projectiles
+            projectiles = projectiles.filter(projectile => {
+                const remove = projectile.update();
+                
+                // Check enemy collisions
+                enemies.forEach((enemy, enemyIndex) => {
+                    if (enemy.checkCollision(projectile)) {
+                        const damage = projectile.type === 'rocket' ? 2 : 1;
+                        if (enemy.takeDamage(damage)) {
+                            // Enemy destroyed
+                            gameStats.score += enemy.type === 'ship' ? 100 : 200;
+                            explosions.push(new Explosion(enemy.x, enemy.y));
+                            enemies.splice(enemyIndex, 1);
+                        }
+                        
+                        explosions.push(new Explosion(projectile.x, projectile.y, 15));
+                        projectiles.splice(projectiles.indexOf(projectile), 1);
+                        updateUI();
+                    }
+                });
+                
+                return !remove;
+            });
+
+            // Update enemies
+            enemies = enemies.filter(enemy => {
+                const remove = enemy.update();
+                
+                // Check if enemy reached base
+                if ((enemy.type === 'ship' && Math.abs(enemy.x - player.x) < 100) ||
+                    (enemy.type === 'plane' && enemy.y > canvas.height - 100)) {
+                    gameStats.lives--;
+                    explosions.push(new Explosion(enemy.x, enemy.y, 50));
+                    updateUI();
+                    
+                    if (gameStats.lives <= 0) {
+                        gameOver();
+                    }
+                    
+                    return false;
+                }
+                
+                return !remove;
+            });
+
+            // Update explosions
+            explosions = explosions.filter(explosion => !explosion.update());
+        }
+
+        function draw() {
+            // Clear canvas with gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#001122');
+            gradient.addColorStop(0.3, '#003344');
+            gradient.addColorStop(0.7, '#002244');
+            gradient.addColorStop(1, '#001133');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw water line
+            ctx.strokeStyle = '#00f5ff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height - 120);
+            ctx.lineTo(canvas.width, canvas.height - 120);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw game objects
+            player.draw();
+            projectiles.forEach(projectile => projectile.draw());
+            enemies.forEach(enemy => enemy.draw());
+            explosions.forEach(explosion => explosion.draw());
+        }
+
+        function gameOver() {
+            gameState = 'gameOver';
+            document.getElementById('finalScore').textContent = gameStats.score;
+            document.getElementById('finalWave').textContent = gameStats.wave - 1;
+            document.getElementById('gameOverMenu').style.display = 'flex';
+            
+            // Submit score to leaderboard
+            if (window.gameLeaderboard && window.userManager) {
+                const user = window.userManager.getCurrentUser();
+                if (user) {
+                    window.gameLeaderboard.submitScore('sky-sea-defense', gameStats.score, user.playerId, user.username);
+                }
+            }
+        }
+
+        // Menu functions
+        function showMainMenu() {
+            hideAllMenus();
+            document.getElementById('mainMenu').style.display = 'flex';
+            gameState = 'menu';
+        }
+
+        function showInstructions() {
+            hideAllMenus();
+            document.getElementById('instructionsMenu').style.display = 'flex';
+        }
+
+        function hideInstructions() {
+            hideAllMenus();
+            startGame();
+        }
+
+        function hideAllMenus() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('instructionsMenu').style.display = 'none';
+            document.getElementById('gameOverMenu').style.display = 'none';
+        }
+
+        function goHome() {
+            window.location.href = '../index.html';
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naval Strategy - PlayRetroArcade</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: 'Courier New', monospace;
+            color: #00f5ff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .game-container {
+            display: flex;
+            height: 100vh;
+            background: linear-gradient(180deg, #87CEEB 0%, #4682B4 50%, #191970 100%);
+        }
+
+        .battlefield {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+            background: linear-gradient(180deg, #87CEEB 0%, #4682B4 30%, #191970 100%);
+        }
+
+        .ui-panel {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.9);
+            border-left: 2px solid #00f5ff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-section {
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid #00f5ff;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .panel-title {
+            color: #ffbe0b;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .ship-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ship-card {
+            background: rgba(255, 0, 110, 0.2);
+            border: 1px solid #ff006e;
+            border-radius: 4px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .ship-card:hover {
+            background: rgba(255, 0, 110, 0.4);
+            transform: translateX(5px);
+        }
+
+        .ship-card.selected {
+            background: rgba(255, 190, 11, 0.3);
+            border-color: #ffbe0b;
+        }
+
+        .ship-name {
+            font-weight: bold;
+            color: #00f5ff;
+            font-size: 12px;
+        }
+
+        .ship-stats {
+            font-size: 10px;
+            color: #ccc;
+            margin-top: 4px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: linear-gradient(45deg, #ff006e, #ffbe0b);
+            border: none;
+            color: #000;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 190, 11, 0.6);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-stats {
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #00f5ff;
+        }
+
+        .stat-value {
+            color: #ffbe0b;
+            font-weight: bold;
+        }
+
+        .turn-indicator {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .player-turn {
+            background: rgba(0, 245, 255, 0.3);
+            color: #00f5ff;
+        }
+
+        .enemy-turn {
+            background: rgba(255, 0, 110, 0.3);
+            color: #ff006e;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                flex-direction: column;
+            }
+            
+            .ui-panel {
+                width: 100%;
+                height: 200px;
+                padding: 10px;
+                flex-direction: row;
+                overflow-x: auto;
+            }
+            
+            .panel-section {
+                min-width: 150px;
+                margin-right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="battlefield">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+        
+        <div class="ui-panel">
+            <div class="panel-section">
+                <div class="turn-indicator player-turn" id="turnIndicator">
+                    Your Turn
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">Your Fleet</div>
+                <div class="ship-info" id="playerFleet">
+                    <!-- Ships will be populated here -->
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">Controls</div>
+                <div class="controls">
+                    <button class="control-btn" id="moveBtn">Move Ship</button>
+                    <button class="control-btn" id="attackBtn">Attack</button>
+                    <button class="control-btn" id="endTurnBtn">End Turn</button>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="panel-title">Battle Stats</div>
+                <div class="game-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">Turn:</span>
+                        <span class="stat-value" id="turnCount">1</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Your Ships:</span>
+                        <span class="stat-value" id="playerShipCount">5</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Enemy Ships:</span>
+                        <span class="stat-value" id="enemyShipCount">5</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Score:</span>
+                        <span class="stat-value" id="gameScore">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Asset loading system
+        const ASSET_MAP = {
+            battleship: 'Assets/battleship.png',
+            carrier: 'Assets/carrier.png',
+            destroyer: 'Assets/destroyer (1).png',
+            submarine: 'Assets/submarine (1).png',
+            island1: 'Assets/island-with-trees.png',
+            island2: 'Assets/island-with-trees-2.png',
+            island3: 'Assets/island-with-trees-3.png',
+            island4: 'Assets/island-with-trees-4.png'
+        };
+
+        const IMAGES = {};
+        let assetsLoaded = false;
+
+        function loadImage(key, src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    IMAGES[key] = img;
+                    console.log(`Loaded asset: ${key}`);
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    console.warn(`Failed to load asset: ${src}`);
+                    resolve(null);
+                };
+                img.src = src;
+            });
+        }
+
+        async function loadAllAssets() {
+            console.log('Loading assets...');
+            const tasks = [];
+            for (const [key, src] of Object.entries(ASSET_MAP)) {
+                tasks.push(loadImage(key, src));
+            }
+            await Promise.all(tasks);
+            assetsLoaded = true;
+            console.log('All assets loaded:', Object.keys(IMAGES).filter(k => IMAGES[k]));
+        }
+
+        // Game state
+        let gameState = {
+            currentTurn: 'player', // 'player' or 'enemy'
+            turnCount: 1,
+            selectedShip: null,
+            mode: 'select', // 'select', 'move', 'attack'
+            score: 0,
+            gameOver: false
+        };
+
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            // Limit maximum canvas size for better gameplay
+            const maxWidth = Math.min(container.clientWidth, 1200);
+            const maxHeight = Math.min(container.clientHeight, 800);
+            canvas.width = maxWidth;
+            canvas.height = maxHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Grid system
+        const GRID_SIZE = 40;
+        const GRID_COLS = Math.floor(canvas.width / GRID_SIZE);
+        const GRID_ROWS = Math.floor(canvas.height / GRID_SIZE);
+
+        // Game arrays (declared here)
+        let ships = [];
+        let islands = [];
+        let explosions = [];
+
+        // Explosion class
+        class Explosion {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = 0;
+                this.maxSize = 60;
+                this.life = 1.0;
+                this.particles = [];
+                
+                // Create particles
+                for (let i = 0; i < 15; i++) {
+                    this.particles.push({
+                        x: 0,
+                        y: 0,
+                        vx: (Math.random() - 0.5) * 10,
+                        vy: (Math.random() - 0.5) * 10,
+                        life: 1.0,
+                        color: Math.random() > 0.5 ? '#ff4500' : '#ffd700'
+                    });
+                }
+            }
+
+            update() {
+                this.life -= 0.02;
+                this.size = Math.min(this.size + 2, this.maxSize);
+                
+                this.particles.forEach(particle => {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.vx *= 0.98;
+                    particle.vy *= 0.98;
+                    particle.life -= 0.025;
+                });
+                
+                return this.life <= 0;
+            }
+
+            draw() {
+                const centerX = this.x * GRID_SIZE + GRID_SIZE / 2;
+                const centerY = this.y * GRID_SIZE + GRID_SIZE / 2;
+                
+                // Main explosion circle
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = '#ff4500';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, this.size * this.life, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Inner bright core
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, this.size * this.life * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Particles
+                this.particles.forEach(particle => {
+                    if (particle.life > 0) {
+                        ctx.fillStyle = particle.color;
+                        ctx.globalAlpha = particle.life;
+                        ctx.beginPath();
+                        ctx.arc(centerX + particle.x, centerY + particle.y, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+                
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        // Ship class
+        class Ship {
+            constructor(type, x, y, team) {
+                this.type = type;
+                this.x = x;
+                this.y = y;
+                this.team = team; // 'player' or 'enemy'
+                this.selected = false;
+                this.health = this.getMaxHealth();
+                this.maxHealth = this.getMaxHealth();
+                this.moveRange = this.getMoveRange();
+                this.attackRange = this.getAttackRange();
+                this.attackDamage = this.getAttackDamage();
+                this.hasMoved = false;
+                this.hasAttacked = false;
+            }
+
+            getMaxHealth() {
+                const healthMap = {
+                    'destroyer': 100,
+                    'cruiser': 150,
+                    'battleship': 200,
+                    'carrier': 120,
+                    'submarine': 80
+                };
+                return healthMap[this.type] || 100;
+            }
+
+            getMoveRange() {
+                const rangeMap = {
+                    'destroyer': 3,
+                    'cruiser': 2,
+                    'battleship': 1,
+                    'carrier': 2,
+                    'submarine': 4
+                };
+                return rangeMap[this.type] || 2;
+            }
+
+            getAttackRange() {
+                const rangeMap = {
+                    'destroyer': 3,
+                    'cruiser': 4,
+                    'battleship': 5,
+                    'carrier': 2,
+                    'submarine': 2
+                };
+                return rangeMap[this.type] || 3;
+            }
+
+            getAttackDamage() {
+                const damageMap = {
+                    'destroyer': 25,
+                    'cruiser': 35,
+                    'battleship': 50,
+                    'carrier': 20,
+                    'submarine': 40
+                };
+                return damageMap[this.type] || 25;
+            }
+
+            getColor() {
+                if (this.team === 'player') {
+                    return this.selected ? '#ffbe0b' : '#00f5ff';
+                } else {
+                    return '#ff006e';
+                }
+            }
+
+            getSize() {
+                const sizeMap = {
+                    'destroyer': 25,
+                    'cruiser': 30,
+                    'battleship': 35,
+                    'carrier': 32,
+                    'submarine': 20
+                };
+                return sizeMap[this.type] || 25;
+            }
+
+            draw() {
+                const centerX = this.x * GRID_SIZE + GRID_SIZE / 2;
+                const centerY = this.y * GRID_SIZE + GRID_SIZE / 2;
+                const size = this.getSize();
+
+                // Try to draw sprite if available
+                const sprite = IMAGES[this.type];
+                if (sprite && assetsLoaded) {
+                    // Draw shadow
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                    ctx.fillRect(centerX - size/2 + 3, centerY - size/2 + 3, size, size);
+                    
+                    // Draw ship sprite
+                    ctx.drawImage(sprite, centerX - size/2, centerY - size/2, size, size);
+                    
+                    // Add team indicator border
+                    ctx.strokeStyle = this.team === 'player' ? '#00ff00' : '#ff0000';
+                    ctx.lineWidth = this.selected ? 3 : 1;
+                    ctx.strokeRect(centerX - size/2 - 2, centerY - size/2 - 2, size + 4, size + 4);
+
+                    // Health bar
+                    const barWidth = size + 4;
+                    const barHeight = 4;
+                    const healthPercent = this.health / this.maxHealth;
+                    
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(centerX - barWidth/2, centerY - size/2 - 10, barWidth, barHeight);
+                    
+                    ctx.fillStyle = healthPercent > 0.6 ? '#00ff00' : healthPercent > 0.3 ? '#ffff00' : '#ff0000';
+                    ctx.fillRect(centerX - barWidth/2, centerY - size/2 - 10, barWidth * healthPercent, barHeight);
+
+                    // Ship type label
+                    ctx.fillStyle = '#fff';
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 1;
+                    ctx.font = 'bold 8px Courier New';
+                    ctx.textAlign = 'center';
+                    ctx.strokeText(this.type.toUpperCase(), centerX, centerY + size/2 + 14);
+                    ctx.fillText(this.type.toUpperCase(), centerX, centerY + size/2 + 14);
+
+                    // Action indicators
+                    if (this.hasMoved) {
+                        ctx.fillStyle = 'rgba(255, 255, 0, 0.6)';
+                        ctx.beginPath();
+                        ctx.arc(centerX - size/2 + 5, centerY - size/2 + 5, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    if (this.hasAttacked) {
+                        ctx.fillStyle = 'rgba(255, 0, 0, 0.6)';
+                        ctx.beginPath();
+                        ctx.arc(centerX + size/2 - 5, centerY - size/2 + 5, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    return;
+                }
+
+                // Fallback to vector drawing if sprites not loaded
+                // Ship shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.fillRect(centerX - size/2 + 3, centerY - size/2 + 3, size, size);
+
+                // Ship body - more detailed based on type
+                ctx.fillStyle = this.getColor();
+                
+                if (this.type === 'battleship') {
+                    // Main hull
+                    ctx.fillRect(centerX - size/2, centerY - size/2, size, size);
+                    // Gun turrets
+                    ctx.fillStyle = '#444';
+                    ctx.fillRect(centerX - 12, centerY - 18, 24, 8);
+                    ctx.fillRect(centerX - 12, centerY + 10, 24, 8);
+                    // Gun barrels
+                    ctx.fillStyle = '#222';
+                    ctx.fillRect(centerX - 2, centerY - 25, 4, 12);
+                    ctx.fillRect(centerX - 2, centerY + 13, 4, 12);
+                    // Bridge
+                    ctx.fillStyle = '#666';
+                    ctx.fillRect(centerX - 6, centerY - 8, 12, 16);
+                    
+                } else if (this.type === 'cruiser') {
+                    // Main hull
+                    ctx.fillRect(centerX - size/2, centerY - size/2, size, size);
+                    // Single turret
+                    ctx.fillStyle = '#444';
+                    ctx.fillRect(centerX - 10, centerY - 12, 20, 6);
+                    // Gun barrel
+                    ctx.fillStyle = '#222';
+                    ctx.fillRect(centerX - 2, centerY - 18, 4, 8);
+                    // Bridge
+                    ctx.fillStyle = '#666';
+                    ctx.fillRect(centerX - 5, centerY - 4, 10, 12);
+                    
+                } else if (this.type === 'destroyer') {
+                    // Sleek hull
+                    ctx.beginPath();
+                    ctx.ellipse(centerX, centerY, size/2, size/2.5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Small gun
+                    ctx.fillStyle = '#444';
+                    ctx.fillRect(centerX - 6, centerY - 8, 12, 4);
+                    // Bridge
+                    ctx.fillStyle = '#666';
+                    ctx.fillRect(centerX - 3, centerY - 2, 6, 8);
+                    
+                } else if (this.type === 'carrier') {
+                    // Flight deck
+                    ctx.fillRect(centerX - size/2, centerY - size/2, size, size);
+                    // Runway markings
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(centerX - size/2 + 2, centerY - 2, size - 4, 2);
+                    ctx.fillRect(centerX - size/2 + 2, centerY + 2, size - 4, 2);
+                    // Island (bridge)
+                    ctx.fillStyle = '#555';
+                    ctx.fillRect(centerX + 8, centerY - 10, 8, 20);
+                    
+                } else if (this.type === 'submarine') {
+                    // Submarine hull (oval)
+                    ctx.beginPath();
+                    ctx.ellipse(centerX, centerY, size/2.5, size/2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Conning tower
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(centerX - 3, centerY - 8, 6, 8);
+                    // Periscope
+                    ctx.fillStyle = '#222';
+                    ctx.fillRect(centerX - 1, centerY - 12, 2, 6);
+                }
+
+                // Add team indicator border
+                ctx.strokeStyle = this.team === 'player' ? '#00ff00' : '#ff0000';
+                ctx.lineWidth = this.selected ? 3 : 1;
+                ctx.strokeRect(centerX - size/2 - 2, centerY - size/2 - 2, size + 4, size + 4);
+
+                // Health bar
+                const barWidth = size + 4;
+                const barHeight = 4;
+                const healthPercent = this.health / this.maxHealth;
+                
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(centerX - barWidth/2, centerY - size/2 - 10, barWidth, barHeight);
+                
+                ctx.fillStyle = healthPercent > 0.6 ? '#00ff00' : healthPercent > 0.3 ? '#ffff00' : '#ff0000';
+                ctx.fillRect(centerX - barWidth/2, centerY - size/2 - 10, barWidth * healthPercent, barHeight);
+
+                // Ship type label with better styling
+                ctx.fillStyle = '#fff';
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1;
+                ctx.font = 'bold 8px Courier New';
+                ctx.textAlign = 'center';
+                ctx.strokeText(this.type.toUpperCase(), centerX, centerY + size/2 + 14);
+                ctx.fillText(this.type.toUpperCase(), centerX, centerY + size/2 + 14);
+
+                // Action indicators
+                if (this.hasMoved) {
+                    ctx.fillStyle = 'rgba(255, 255, 0, 0.6)';
+                    ctx.beginPath();
+                    ctx.arc(centerX - size/2 + 5, centerY - size/2 + 5, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                if (this.hasAttacked) {
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.6)';
+                    ctx.beginPath();
+                    ctx.arc(centerX + size/2 - 5, centerY - size/2 + 5, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            canMoveTo(newX, newY) {
+                if (this.hasMoved) return false;
+                const distance = Math.abs(newX - this.x) + Math.abs(newY - this.y);
+                return distance <= this.moveRange && this.isValidPosition(newX, newY);
+            }
+
+            canAttack(target) {
+                if (this.hasAttacked || target.team === this.team) return false;
+                const distance = Math.abs(target.x - this.x) + Math.abs(target.y - this.y);
+                return distance <= this.attackRange;
+            }
+
+            isValidPosition(x, y) {
+                // Check bounds
+                if (x < 0 || x >= GRID_COLS || y < 0 || y >= GRID_ROWS) return false;
+                
+                // Check for other ships
+                if (ships.some(ship => ship !== this && ship.x === x && ship.y === y)) return false;
+                
+                // Check for islands
+                for (let island of islands) {
+                    const distanceToIsland = Math.sqrt((x - island.x) ** 2 + (y - island.y) ** 2);
+                    const islandRadius = island.size / GRID_SIZE; // Convert pixel size to grid units
+                    if (distanceToIsland <= islandRadius) return false;
+                }
+                
+                return true;
+            }
+
+            takeDamage(damage) {
+                this.health -= damage;
+                const destroyed = this.health <= 0;
+                if (destroyed) {
+                    // Create explosion when ship is destroyed
+                    explosions.push(new Explosion(this.x, this.y));
+                }
+                return destroyed;
+            }
+
+            resetTurn() {
+                this.hasMoved = false;
+                this.hasAttacked = false;
+                this.selected = false;
+            }
+        }
+
+        // Initialize game
+        function initializeGame() {
+            ships = [];
+            explosions = [];
+            
+            // Create player fleet
+            const playerShipTypes = ['battleship', 'cruiser', 'destroyer', 'carrier', 'submarine'];
+            for (let i = 0; i < 5; i++) {
+                ships.push(new Ship(playerShipTypes[i], i * 2, GRID_ROWS - 2, 'player'));
+            }
+            
+            // Create enemy fleet
+            const enemyShipTypes = ['battleship', 'cruiser', 'destroyer', 'carrier', 'submarine'];
+            for (let i = 0; i < 5; i++) {
+                ships.push(new Ship(enemyShipTypes[i], i * 2 + 1, 1, 'enemy'));
+            }
+            
+            // Generate islands
+            generateIslands();
+            
+            updateUI();
+        }
+
+        function generateIslands() {
+            islands = [];
+            const numIslands = 8;
+            
+            for (let i = 0; i < numIslands; i++) {
+                let x, y;
+                do {
+                    x = Math.floor(Math.random() * GRID_COLS);
+                    y = Math.floor(Math.random() * GRID_ROWS);
+                } while (ships.some(ship => ship.x === x && ship.y === y) || 
+                         islands.some(island => Math.abs(island.x - x) < 3 && Math.abs(island.y - y) < 3));
+                
+                islands.push({x, y, size: Math.random() * 20 + 15});
+            }
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            for (let x = 0; x <= canvas.width; x += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y <= canvas.height; y += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        function drawIslands() {
+            islands.forEach((island, index) => {
+                const centerX = island.x * GRID_SIZE + GRID_SIZE / 2;
+                const centerY = island.y * GRID_SIZE + GRID_SIZE / 2;
+                
+                // Try to draw island sprite if available
+                const islandTypes = ['island1', 'island2', 'island3', 'island4'];
+                const spriteKey = islandTypes[index % islandTypes.length];
+                const sprite = IMAGES[spriteKey];
+                
+                if (sprite && assetsLoaded) {
+                    // Draw shadow
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                    ctx.beginPath();
+                    ctx.arc(centerX + 3, centerY + 3, island.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw island sprite
+                    const spriteSize = island.size * 2.2; // Make sprites a bit larger
+                    ctx.drawImage(sprite, centerX - spriteSize/2, centerY - spriteSize/2, spriteSize, spriteSize);
+                    return;
+                }
+                
+                // Fallback to vector drawing if sprites not loaded
+                // Island shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.beginPath();
+                ctx.arc(centerX + 3, centerY + 3, island.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Main island (rocky base)
+                ctx.fillStyle = '#8B4513';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, island.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Rocky texture
+                ctx.fillStyle = '#A0522D';
+                for (let i = 0; i < 5; i++) {
+                    const rockX = centerX + (Math.random() - 0.5) * island.size * 1.5;
+                    const rockY = centerY + (Math.random() - 0.5) * island.size * 1.5;
+                    ctx.beginPath();
+                    ctx.arc(rockX, rockY, 2 + Math.random() * 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Beach/sand ring
+                ctx.fillStyle = '#F4A460';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, island.size * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Trees
+                ctx.fillStyle = '#228B22';
+                for (let i = 0; i < 4; i++) {
+                    const treeX = centerX + (Math.random() - 0.5) * island.size * 0.6;
+                    const treeY = centerY + (Math.random() - 0.5) * island.size * 0.6;
+                    // Tree trunk
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(treeX - 1, treeY - 2, 2, 4);
+                    // Tree crown
+                    ctx.fillStyle = '#228B22';
+                    ctx.beginPath();
+                    ctx.arc(treeX, treeY - 2, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Palm trees
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 2; i++) {
+                    const palmX = centerX + (Math.random() - 0.5) * island.size * 0.9;
+                    const palmY = centerY + (Math.random() - 0.5) * island.size * 0.9;
+                    // Palm trunk (curved)
+                    ctx.beginPath();
+                    ctx.moveTo(palmX, palmY + 5);
+                    ctx.quadraticCurveTo(palmX + 3, palmY - 5, palmX + 1, palmY - 10);
+                    ctx.stroke();
+                    // Palm leaves
+                    ctx.fillStyle = '#228B22';
+                    ctx.beginPath();
+                    ctx.ellipse(palmX + 1, palmY - 10, 6, 3, Math.PI/4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+
+        function drawWater() {
+            // Animated water effect with multiple layers
+            const time = Date.now() * 0.001;
+            
+            // Deep water base
+            ctx.fillStyle = '#1e3a8a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Wave patterns
+            for (let x = 0; x < canvas.width; x += 10) {
+                for (let y = 0; y < canvas.height; y += 10) {
+                    const wave1 = Math.sin(x * 0.02 + time * 2) * Math.cos(y * 0.02 + time * 1.5);
+                    const wave2 = Math.sin(x * 0.01 + y * 0.01 + time * 0.8) * 0.5;
+                    const waveIntensity = (wave1 + wave2) * 0.3;
+                    
+                    const alpha = Math.max(0, Math.min(0.4, 0.1 + waveIntensity * 0.3));
+                    ctx.fillStyle = `rgba(100, 149, 237, ${alpha})`;
+                    ctx.fillRect(x, y, 10, 10);
+                }
+            }
+            
+            // Foam and whitecaps
+            for (let i = 0; i < 20; i++) {
+                const x = (i * 123.456 + time * 50) % canvas.width;
+                const y = (i * 78.901 + time * 30) % canvas.height;
+                const size = 3 + Math.sin(time * 3 + i) * 2;
+                
+                ctx.fillStyle = `rgba(255, 255, 255, ${0.1 + Math.sin(time * 2 + i) * 0.1})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Subtle grid reflection
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 0.5;
+            for (let x = 0; x <= canvas.width; x += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= canvas.height; y += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        function drawMoveRange(ship) {
+            if (!ship || ship.hasMoved) return;
+            
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.6)';
+            ctx.lineWidth = 2;
+            
+            for (let x = 0; x < GRID_COLS; x++) {
+                for (let y = 0; y < GRID_ROWS; y++) {
+                    if (ship.canMoveTo(x, y)) {
+                        const cellX = x * GRID_SIZE;
+                        const cellY = y * GRID_SIZE;
+                        
+                        // Animated border
+                        const time = Date.now() * 0.005;
+                        const alpha = 0.3 + Math.sin(time + x + y) * 0.1;
+                        ctx.fillStyle = `rgba(0, 255, 0, ${alpha})`;
+                        ctx.fillRect(cellX, cellY, GRID_SIZE, GRID_SIZE);
+                        
+                        // Dotted border
+                        ctx.setLineDash([5, 5]);
+                        ctx.strokeRect(cellX, cellY, GRID_SIZE, GRID_SIZE);
+                        ctx.setLineDash([]);
+                    }
+                }
+            }
+        }
+
+        function drawAttackRange(ship) {
+            if (!ship || ship.hasAttacked) return;
+            
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.7)';
+            ctx.lineWidth = 3;
+            
+            for (let x = 0; x < GRID_COLS; x++) {
+                for (let y = 0; y < GRID_ROWS; y++) {
+                    const distance = Math.abs(x - ship.x) + Math.abs(y - ship.y);
+                    if (distance <= ship.attackRange && distance > 0) {
+                        const cellX = x * GRID_SIZE;
+                        const cellY = y * GRID_SIZE;
+                        
+                        // Check if there's an enemy ship here
+                        const target = ships.find(s => s.x === x && s.y === y && s.team !== ship.team);
+                        if (target) {
+                            // Highlight enemy targets
+                            ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
+                            ctx.fillRect(cellX, cellY, GRID_SIZE, GRID_SIZE);
+                            
+                            // Pulsing crosshair
+                            const time = Date.now() * 0.01;
+                            const pulse = 0.5 + Math.sin(time) * 0.3;
+                            ctx.strokeStyle = `rgba(255, 255, 0, ${pulse})`;
+                            ctx.lineWidth = 2;
+                            
+                            const centerX = cellX + GRID_SIZE/2;
+                            const centerY = cellY + GRID_SIZE/2;
+                            ctx.beginPath();
+                            ctx.moveTo(centerX - 15, centerY);
+                            ctx.lineTo(centerX + 15, centerY);
+                            ctx.moveTo(centerX, centerY - 15);
+                            ctx.lineTo(centerX, centerY + 15);
+                            ctx.stroke();
+                        } else {
+                            // Regular attack range
+                            ctx.setLineDash([3, 3]);
+                            ctx.strokeRect(cellX, cellY, GRID_SIZE, GRID_SIZE);
+                            ctx.setLineDash([]);
+                        }
+                    }
+                }
+            }
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawWater();
+            drawGrid();
+            drawIslands();
+            
+            if (gameState.selectedShip && gameState.mode === 'move') {
+                drawMoveRange(gameState.selectedShip);
+            }
+            
+            if (gameState.selectedShip && gameState.mode === 'attack') {
+                drawAttackRange(gameState.selectedShip);
+            }
+            
+            ships.forEach(ship => ship.draw());
+            
+            // Update and draw explosions
+            explosions = explosions.filter(explosion => {
+                explosion.draw();
+                return !explosion.update(); // Remove expired explosions
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('turnCount').textContent = gameState.turnCount;
+            document.getElementById('playerShipCount').textContent = ships.filter(s => s.team === 'player').length;
+            document.getElementById('enemyShipCount').textContent = ships.filter(s => s.team === 'enemy').length;
+            document.getElementById('gameScore').textContent = gameState.score;
+            
+            const turnIndicator = document.getElementById('turnIndicator');
+            if (gameState.currentTurn === 'player') {
+                turnIndicator.textContent = 'Your Turn';
+                turnIndicator.className = 'turn-indicator player-turn';
+            } else {
+                turnIndicator.textContent = 'Enemy Turn';
+                turnIndicator.className = 'turn-indicator enemy-turn';
+            }
+            
+            updateFleetDisplay();
+        }
+
+        function updateFleetDisplay() {
+            const fleetContainer = document.getElementById('playerFleet');
+            fleetContainer.innerHTML = '';
+            
+            ships.filter(ship => ship.team === 'player').forEach(ship => {
+                const shipCard = document.createElement('div');
+                shipCard.className = `ship-card ${ship.selected ? 'selected' : ''}`;
+                shipCard.innerHTML = `
+                    <div class="ship-name">${ship.type.toUpperCase()}</div>
+                    <div class="ship-stats">
+                        HP: ${ship.health}/${ship.maxHealth} | 
+                        Pos: (${ship.x}, ${ship.y})
+                    </div>
+                `;
+                shipCard.addEventListener('click', () => selectShip(ship));
+                fleetContainer.appendChild(shipCard);
+            });
+        }
+
+        function selectShip(ship) {
+            if (gameState.currentTurn !== 'player' || ship.team !== 'player') return;
+            
+            ships.forEach(s => s.selected = false);
+            ship.selected = true;
+            gameState.selectedShip = ship;
+            gameState.mode = 'select';
+            updateUI();
+        }
+
+        function getGridPosition(mouseX, mouseY) {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((mouseX - rect.left) / GRID_SIZE);
+            const y = Math.floor((mouseY - rect.top) / GRID_SIZE);
+            return {x, y};
+        }
+
+        // Event listeners
+        canvas.addEventListener('click', (e) => {
+            const {x, y} = getGridPosition(e.clientX, e.clientY);
+            
+            if (gameState.mode === 'move' && gameState.selectedShip) {
+                if (gameState.selectedShip.canMoveTo(x, y)) {
+                    gameState.selectedShip.x = x;
+                    gameState.selectedShip.y = y;
+                    gameState.selectedShip.hasMoved = true;
+                    gameState.mode = 'select';
+                    updateUI();
+                }
+            } else if (gameState.mode === 'attack' && gameState.selectedShip) {
+                const target = ships.find(ship => ship.x === x && ship.y === y && ship.team === 'enemy');
+                if (target && gameState.selectedShip.canAttack(target)) {
+                    const destroyed = target.takeDamage(gameState.selectedShip.attackDamage);
+                    if (destroyed) {
+                        ships = ships.filter(ship => ship !== target);
+                        gameState.score += 100;
+                        checkGameOver(); // Check for victory
+                    }
+                    gameState.selectedShip.hasAttacked = true;
+                    gameState.mode = 'select';
+                    updateUI();
+                }
+            } else {
+                const clickedShip = ships.find(ship => ship.x === x && ship.y === y);
+                if (clickedShip && clickedShip.team === 'player') {
+                    selectShip(clickedShip);
+                }
+            }
+        });
+
+        document.getElementById('moveBtn').addEventListener('click', () => {
+            if (gameState.selectedShip && !gameState.selectedShip.hasMoved) {
+                gameState.mode = 'move';
+            }
+        });
+
+        document.getElementById('attackBtn').addEventListener('click', () => {
+            if (gameState.selectedShip && !gameState.selectedShip.hasAttacked) {
+                gameState.mode = 'attack';
+            }
+        });
+
+        document.getElementById('endTurnBtn').addEventListener('click', () => {
+            endTurn();
+        });
+
+        function endTurn() {
+            if (gameState.currentTurn === 'player') {
+                ships.filter(ship => ship.team === 'player').forEach(ship => ship.resetTurn());
+                gameState.currentTurn = 'enemy';
+                setTimeout(enemyAI, 1000);
+            } else {
+                ships.filter(ship => ship.team === 'enemy').forEach(ship => ship.resetTurn());
+                gameState.currentTurn = 'player';
+                gameState.turnCount++;
+            }
+            gameState.selectedShip = null;
+            gameState.mode = 'select';
+            updateUI();
+        }
+
+        function enemyAI() {
+            console.log('Enemy AI turn starting...');
+            const enemyShips = ships.filter(ship => ship.team === 'enemy');
+            const playerShips = ships.filter(ship => ship.team === 'player');
+            
+            if (enemyShips.length === 0 || playerShips.length === 0) {
+                endTurn();
+                return;
+            }
+            
+            let actionsTaken = 0;
+            const maxActions = enemyShips.length * 2; // Each ship can move and attack
+            
+            enemyShips.forEach((enemyShip, index) => {
+                setTimeout(() => {
+                    console.log(`Processing enemy ship ${index + 1}: ${enemyShip.type}`);
+                    
+                    // Find closest player ship
+                    let closestPlayer = null;
+                    let minDistance = Infinity;
+                    
+                    playerShips.forEach(playerShip => {
+                        const distance = Math.abs(playerShip.x - enemyShip.x) + Math.abs(playerShip.y - enemyShip.y);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestPlayer = playerShip;
+                        }
+                    });
+                    
+                    if (closestPlayer) {
+                        // Try to attack first if in range
+                        if (!enemyShip.hasAttacked && enemyShip.canAttack(closestPlayer)) {
+                            console.log(`${enemyShip.type} attacking ${closestPlayer.type}`);
+                            const destroyed = closestPlayer.takeDamage(enemyShip.attackDamage);
+                            if (destroyed) {
+                                ships = ships.filter(ship => ship !== closestPlayer);
+                                console.log(`${closestPlayer.type} destroyed!`);
+                                checkGameOver(); // Check for game over
+                            }
+                            enemyShip.hasAttacked = true;
+                            actionsTaken++;
+                        }
+                        
+                        // Then try to move towards player if not in attack range and haven't moved
+                        if (!enemyShip.hasMoved && minDistance > enemyShip.attackRange) {
+                            let bestMove = null;
+                            let bestDistance = minDistance;
+                            
+                            // Try different movement directions
+                            const directions = [
+                                {x: 1, y: 0}, {x: -1, y: 0}, {x: 0, y: 1}, {x: 0, y: -1},
+                                {x: 1, y: 1}, {x: -1, y: -1}, {x: 1, y: -1}, {x: -1, y: 1}
+                            ];
+                            
+                            directions.forEach(dir => {
+                                const newX = enemyShip.x + dir.x;
+                                const newY = enemyShip.y + dir.y;
+                                
+                                if (enemyShip.canMoveTo(newX, newY)) {
+                                    const newDistance = Math.abs(closestPlayer.x - newX) + Math.abs(closestPlayer.y - newY);
+                                    if (newDistance < bestDistance) {
+                                        bestDistance = newDistance;
+                                        bestMove = {x: newX, y: newY};
+                                    }
+                                }
+                            });
+                            
+                            if (bestMove) {
+                                console.log(`${enemyShip.type} moving from (${enemyShip.x}, ${enemyShip.y}) to (${bestMove.x}, ${bestMove.y})`);
+                                enemyShip.x = bestMove.x;
+                                enemyShip.y = bestMove.y;
+                                enemyShip.hasMoved = true;
+                                actionsTaken++;
+                            }
+                        }
+                    }
+                    
+                    // Check if all enemy ships have completed their turn
+                    if (index === enemyShips.length - 1) {
+                        setTimeout(() => {
+                            console.log(`Enemy turn complete. Actions taken: ${actionsTaken}`);
+                            endTurn();
+                            checkGameOver();
+                        }, 500);
+                    }
+                }, index * 800); // Stagger ship actions for visual effect
+            });
+        }
+
+        function checkGameOver() {
+            const playerShips = ships.filter(ship => ship.team === 'player');
+            const enemyShips = ships.filter(ship => ship.team === 'enemy');
+            
+            if (playerShips.length === 0) {
+                gameState.gameOver = true;
+                setTimeout(() => {
+                    alert('Game Over! Enemy fleet destroyed your navy!');
+                    initializeGame();
+                }, 1000); // Delay to show explosions
+            } else if (enemyShips.length === 0) {
+                gameState.gameOver = true;
+                setTimeout(() => {
+                    alert('Victory! You destroyed the enemy fleet!');
+                    gameState.score += 1000;
+                    initializeGame();
+                }, 1000); // Delay to show explosions
+            }
+        }
+
+        // Game loop
+        function gameLoop() {
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Initialize and start game
+        loadAllAssets().then(() => {
+            console.log('Assets loaded, starting game...');
+            initializeGame();
+            gameLoop();
+        }).catch(error => {
+            console.warn('Some assets failed to load, starting with fallback graphics...');
+            initializeGame();
+            gameLoop();
+        });
+    </script>
+</body>
+</html>

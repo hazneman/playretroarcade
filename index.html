@@ -858,6 +858,34 @@
         emoji: "🔮",
         featured: true,
         tags: ["Cyberpunk", "Stealth", "Neon"]
+      },
+      {
+        id: "sky-sea-defense",
+        title: "Sky & Sea Defense",
+        description: "Defend your naval base from enemy ships and aircraft using cannons and rockets in this action-packed defense game.",
+        genres: ["Action", "Defense"],
+        players: "1",
+        rating: 4.7,
+        plays: 2100,
+        updatedAt: "2025-09-07",
+        route: "./SkySeaDefense/index.html",
+        emoji: "⚓",
+        featured: true,
+        tags: ["Defense", "Strategy", "Shooting"]
+      },
+      {
+        id: "naval-strategy",
+        title: "Naval Strategy",
+        description: "Command your fleet in tactical turn-based naval warfare. Move ships, plan attacks, and outmaneuver enemy forces in strategic grid-based combat.",
+        genres: ["Strategy", "Tactical"],
+        players: "1",
+        rating: 4.9,
+        plays: 850,
+        updatedAt: "2025-09-07",
+        route: "./NavalStrategy/index.html",
+        emoji: "🚢",
+        featured: true,
+        tags: ["Turn-based", "Fleet", "Tactical"]
       }
     ];
 
@@ -996,6 +1024,219 @@
         observer.observe(card);
       });
     });
+
+    // ====== USER REGISTRATION SYSTEM ======
+    
+    // User Management Functions
+    function updatePlayerUI() {
+      const player = JSON.parse(localStorage.getItem('player') || 'null');
+      const playerForm = document.querySelector('.player-form');
+      const currentPlayerInfo = document.getElementById('currentPlayerInfo');
+      
+      if (player) {
+        // User is logged in - show user info
+        playerForm.style.display = 'none';
+        currentPlayerInfo.style.display = 'block';
+        document.getElementById('currentPlayerName').textContent = player.name;
+        showNotification(`Welcome back, ${player.name}!`, 'success');
+      } else {
+        // No user logged in - show registration form
+        playerForm.style.display = 'block';
+        currentPlayerInfo.style.display = 'none';
+      }
+    }
+
+    function showNotification(message, type = 'info') {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#4ade80' : type === 'error' ? '#ef4444' : '#60a5fa'};
+        color: #000;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        z-index: 10000;
+        box-shadow: 0 4px 15px rgba(0, 245, 255, 0.3);
+        animation: slideInRight 0.3s ease;
+      `;
+      
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    function validateInput(name, email) {
+      if (!name || name.length < 3) {
+        showNotification('Username must be at least 3 characters long', 'error');
+        return false;
+      }
+      if (!email || !email.includes('@') || !email.includes('.')) {
+        showNotification('Please enter a valid email address', 'error');
+        return false;
+      }
+      return true;
+    }
+
+    // User Database Management
+    function getUserDatabase() {
+      return JSON.parse(localStorage.getItem('userDatabase') || '{}');
+    }
+
+    function saveUserDatabase(database) {
+      localStorage.setItem('userDatabase', JSON.stringify(database));
+    }
+
+    function isUsernameOrEmailTaken(username, email) {
+      const database = getUserDatabase();
+      
+      // Check if username is already taken
+      for (const userId in database) {
+        const user = database[userId];
+        if (user.name.toLowerCase() === username.toLowerCase()) {
+          return { taken: true, type: 'username', existing: user };
+        }
+        if (user.email.toLowerCase() === email.toLowerCase()) {
+          return { taken: true, type: 'email', existing: user };
+        }
+      }
+      
+      return { taken: false };
+    }
+
+    function findUserByCredentials(username, email) {
+      const database = getUserDatabase();
+      
+      for (const userId in database) {
+        const user = database[userId];
+        if (user.name.toLowerCase() === username.toLowerCase() && 
+            user.email.toLowerCase() === email.toLowerCase()) {
+          return user;
+        }
+      }
+      
+      return null;
+    }
+
+    // Registration Event Handlers
+    document.getElementById('savePlayer').addEventListener('click', function() {
+      const name = document.getElementById('playerName').value.trim();
+      const email = document.getElementById('playerEmail').value.trim();
+      
+      if (!validateInput(name, email)) return;
+      
+      // Check for existing username or email
+      const conflict = isUsernameOrEmailTaken(name, email);
+      if (conflict.taken) {
+        if (conflict.type === 'username') {
+          showNotification(`Username "${name}" is already taken! Please choose a different username.`, 'error');
+        } else {
+          showNotification(`Email "${email}" is already registered! Please use a different email or try logging in.`, 'error');
+        }
+        return;
+      }
+      
+      const playerId = btoa(email + name + Date.now()).substring(0, 16);
+      const playerData = {
+        name: name,
+        email: email,
+        registeredAt: new Date().toISOString(),
+        playerId: playerId,
+        scores: {}
+      };
+      
+      // Save to database
+      const database = getUserDatabase();
+      database[playerId] = playerData;
+      saveUserDatabase(database);
+      
+      // Set as current player
+      localStorage.setItem('player', JSON.stringify(playerData));
+      
+      // Clear form
+      document.getElementById('playerName').value = '';
+      document.getElementById('playerEmail').value = '';
+      
+      updatePlayerUI();
+      showNotification('Registration successful! Welcome to PlayRetroArcade!', 'success');
+    });
+
+    document.getElementById('loginPlayer').addEventListener('click', function() {
+      const name = document.getElementById('playerName').value.trim();
+      const email = document.getElementById('playerEmail').value.trim();
+      
+      if (!validateInput(name, email)) return;
+      
+      // Find user with exact credentials
+      const user = findUserByCredentials(name, email);
+      
+      if (!user) {
+        showNotification('Invalid credentials! Please check your username and email, or register if you\'re new.', 'error');
+        return;
+      }
+      
+      // Update last login
+      user.lastLoginAt = new Date().toISOString();
+      
+      // Update database
+      const database = getUserDatabase();
+      database[user.playerId] = user;
+      saveUserDatabase(database);
+      
+      // Set as current player
+      localStorage.setItem('player', JSON.stringify(user));
+      
+      // Clear form
+      document.getElementById('playerName').value = '';
+      document.getElementById('playerEmail').value = '';
+      
+      updatePlayerUI();
+      showNotification(`Welcome back, ${user.name}!`, 'success');
+    });
+
+    document.getElementById('logoutPlayer').addEventListener('click', function() {
+      const player = JSON.parse(localStorage.getItem('player') || 'null');
+      localStorage.removeItem('player');
+      updatePlayerUI();
+      showNotification(`Goodbye${player ? ', ' + player.name : ''}!`, 'info');
+    });
+
+    // Initialize player UI on page load
+    updatePlayerUI();
+
+    // CSS animations for notifications
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      
+      @keyframes slideOutRight {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
   </script>
 </body>
 </html>
