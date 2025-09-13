@@ -568,6 +568,7 @@
     let streak = 0;
     let bestStreak = 0;
     let gameStartTime = 0;
+  let timerId = null; // interval id for timed mode
     
     // Player Character
     let player = {
@@ -752,17 +753,22 @@
     }
     
     function startTimer() {
-      const timer = setInterval(() => {
-        if (gameState !== 'playing') {
-          clearInterval(timer);
-          return;
-        }
-        
+      // Ensure only one timer runs
+      if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+      }
+      timerId = setInterval(() => {
+        // Only tick down while actively playing
+        if (gameState !== 'playing') return;
+        if (gameMode !== 'timed') return;
+
         timeLeft--;
         updateUI();
-        
+
         if (timeLeft <= 0) {
-          clearInterval(timer);
+          clearInterval(timerId);
+          timerId = null;
           endGame();
         }
       }, 1000);
@@ -770,6 +776,7 @@
     
     function endGame() {
       gameState = 'gameOver';
+      if (timerId) { clearInterval(timerId); timerId = null; }
       document.getElementById('finalScore').textContent = `Final Score: ${score}`;
       document.getElementById('finalStats').textContent = 
         `Shots: ${shotsMade}/${shotsAttempted} (${shotsAttempted > 0 ? Math.round((shotsMade / shotsAttempted) * 100) : 0}%)`;
@@ -778,6 +785,7 @@
     
     function showStartScreen() {
       gameState = 'menu';
+      if (timerId) { clearInterval(timerId); timerId = null; }
       document.getElementById('startScreen').style.display = 'flex';
       document.getElementById('gameOverScreen').style.display = 'none';
       resetBall();
@@ -901,14 +909,18 @@
         return;
       }
       
-      // Add trail effect
+  // Add trail effect
       ball.trail.push({ x: ball.x, y: ball.y });
       if (ball.trail.length > 8) ball.trail.shift();
       
       // Apply gravity
       ball.vy += GRAVITY;
       
-      // Update position
+  // Preserve previous position for scoring line-cross detection
+  ball.prevX = ball.x;
+  ball.prevY = ball.y;
+
+  // Update position
       ball.x += ball.vx;
       ball.y += ball.vy;
       
@@ -1052,28 +1064,50 @@
     }
     
     function checkBasketScore() {
-      // Super forgiving basket area for scoring
-      const basketLeft = basket.x - basket.width/2 - 15; // Even wider left boundary
-      const basketRight = basket.x + basket.width/2 + 15; // Even wider right boundary
-      const basketTop = basket.y - 20; // Higher top boundary
-      const basketBottom = basket.y + 40; // Lower bottom boundary
-      
-      // Check if the ball is hovering on the rim
-      const onRim = Math.abs(ball.y - basket.y) < 15 && 
-                    Math.abs(ball.x - basket.x) < basket.width/2 + 10;
-      
-      // Check if ball passes through the basket area OR is hovering on rim with downward momentum
-      // Extremely forgiving conditions to eliminate rim sticking frustration
-      if ((ball.x > basketLeft && 
-          ball.x < basketRight && 
-          ball.y > basketTop && 
-          ball.y < basketBottom && 
-          ball.vy > -2 && // Ball can have a slight upward motion (rim bounce) and still count
-          !ball.scored) ||
-          (onRim && ball.vy > -1 && !ball.scored)) {
+  // Scoring model:
+  // - Count only when ball crosses DOWNWARD through the hoop aperture (inner ellipse),
+  //   not just anywhere near the rim. This avoids false scores on rim hits.
+  // - Still allow rim-rolls that end up INSIDE the aperture and drop down.
+  // - Disallow entries from behind the backboard side.
+  const rimHalfWidth = basket.width / 2;
+  // Inner aperture radii. Relaxed slightly to avoid rejecting legit makes.
+  const innerRX = Math.max(7, rimHalfWidth - 4 - ball.radius * 0.5);
+  const innerRY = Math.max(3.5, (basket.width / 6) - 2.5 - ball.radius * 0.5);
+  const dxR = (ball.x - basket.x) / innerRX;
+  const dyR = (ball.y - basket.y) / innerRY;
+  const insideAperture = (dxR * dxR + dyR * dyR) <= 1;
+
+      const eps = 2; // tolerance
+      let crossingDown = false;
+      let crossX = ball.x;
+      // If we crossed the rim's Y plane this frame, estimate the X at crossing
+      if (ball.prevY !== undefined && ball.prevY <= basket.y - eps && ball.y >= basket.y + eps && ball.vy > 0) {
+        const t = (basket.y - ball.prevY) / Math.max(1e-6, (ball.y - ball.prevY)); // 0..1
+        crossX = ball.prevX + t * (ball.x - ball.prevX);
+        crossingDown = true;
+      }
+
+  // For this scene, the backboard is to the right of the rim; disallow scores when ball is on/behind it
+  const notBehindBackboard = (crossX + ball.radius) < (basket.backboardX - 1);
+
+  // Validate X at the crossing, not just current X
+  const dxCross = (crossX - basket.x) / innerRX;
+  const withinCrossX = Math.abs(dxCross) <= 1;
+
+  const scoredByCrossing = crossingDown && withinCrossX && notBehindBackboard;
+
+  // Allow gentle rim-rolls that are clearly inside the net and falling
+  // Rim roll fallback: currently inside aperture area and clearly below rim height
+  const rimRoll = insideAperture && (ball.y > basket.y + 8) && (ball.vy > 0) && ((ball.x + ball.radius) < (basket.backboardX - 1));
+
+  if ((scoredByCrossing || rimRoll) && !ball.scored) {
         
         ball.scored = true;
         
+        // Precompute factors used for reactions and scoring
+        const centerDistance = Math.abs(ball.x - basket.x);
+        const speedFactor = Math.abs(ball.vx) + Math.abs(ball.vy);
+
         // Trigger hoop reaction animation
         basket.rimShake = 8 + (speedFactor * 0.5); // Shake intensity based on ball speed
         basket.netSwayIntensity = 15 + (speedFactor * 0.8);
@@ -1083,9 +1117,6 @@
         let points = 1;
         let message = "SCORE!";
         let color = "#4ade80";
-        
-        const centerDistance = Math.abs(ball.x - basket.x);
-        const speedFactor = Math.abs(ball.vx) + Math.abs(ball.vy);
         
         if (centerDistance < 10 && speedFactor < 12) {
           points = 3;
@@ -1513,26 +1544,57 @@
     
     function handleKeyDown(e) {
       if (gameState !== 'playing' || !ball.inHand) return;
-      
+
+      // Prevent page scroll when using arrow keys/WASD during gameplay
+      const k = e.key.toLowerCase();
+      if (["arrowleft","arrowright","arrowup","arrowdown","w","a","s","d"].includes(k)) {
+        e.preventDefault();
+      }
+
+      // Helper to get nearest position in a given direction
+      const nearestInDirection = (dir) => {
+        let best = null;
+        let bestMetric = Infinity;
+        for (const p of shootingPositions) {
+          if (dir === 'left' && p.x < player.x) {
+            const metric = (player.x - p.x) + Math.abs(p.y - player.y) * 0.1; // prefer closest X, slight Y tie-breaker
+            if (metric < bestMetric) { bestMetric = metric; best = p; }
+          }
+          if (dir === 'right' && p.x > player.x) {
+            const metric = (p.x - player.x) + Math.abs(p.y - player.y) * 0.1;
+            if (metric < bestMetric) { bestMetric = metric; best = p; }
+          }
+          if (dir === 'up' && p.y < player.y) {
+            const metric = (player.y - p.y) + Math.abs(p.x - player.x) * 0.1;
+            if (metric < bestMetric) { bestMetric = metric; best = p; }
+          }
+          if (dir === 'down' && p.y > player.y) {
+            const metric = (p.y - player.y) + Math.abs(p.x - player.x) * 0.1;
+            if (metric < bestMetric) { bestMetric = metric; best = p; }
+          }
+        }
+        return best;
+      };
+
       // Move player to different shooting positions
       let newPosition = null;
-      
-      switch(e.key.toLowerCase()) {
+
+      switch(k) {
         case 'a':
         case 'arrowleft':
-          newPosition = shootingPositions.find(p => p.x < player.x);
+          newPosition = nearestInDirection('left');
           break;
         case 'd':
         case 'arrowright':
-          newPosition = shootingPositions.find(p => p.x > player.x);
+          newPosition = nearestInDirection('right');
           break;
         case 'w':
         case 'arrowup':
-          newPosition = shootingPositions.find(p => p.y < player.y);
+          newPosition = nearestInDirection('up');
           break;
         case 's':
         case 'arrowdown':
-          newPosition = shootingPositions.find(p => p.y > player.y);
+          newPosition = nearestInDirection('down');
           break;
         case '1':
           newPosition = shootingPositions[0];
@@ -1550,7 +1612,7 @@
           newPosition = shootingPositions[4];
           break;
       }
-      
+
       if (newPosition) {
         player.targetX = newPosition.x;
         player.y = newPosition.y;
@@ -1625,6 +1687,7 @@
         resetGame();
       }
       if (e.key === ' ') {
+        // Prevent page scroll from spacebar in all states
         e.preventDefault();
         if (gameState === 'menu') {
           startGame('timed');
