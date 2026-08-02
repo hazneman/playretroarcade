@@ -1,41 +1,49 @@
 # PlayRetroArcade 🎮
 
-Quick, clean, and kid-friendly retro games. Pick a classic and play instantly — no installs required.
+Quick, clean, and kid-friendly retro games. Pick a classic and play instantly — no installs, no sign-ups, no downloads.
 
-## Available Games
+## Games
 
-- **Snake Classic** 🐍 - Navigate the snake to eat food and grow longer. Don't hit the walls or yourself!
+| Game | Description |
+|------|-------------|
+| 🐍 **Snake Classic** | Eat food, grow longer, don't hit the walls or yourself |
+| 🟦 **Tetris** | Stack falling blocks to clear lines |
+| 👾 **Space Invaders** | Defend Earth from waves of descending aliens |
+| 🏀 **Basketball Shootout** | Physics-based shooting with realistic ball physics |
+| 🏎️ **Race Car Championship** | High-speed racing with AI opponents and time trials |
+| 🌐 **Neon Maze Runner** | Navigate neon mazes, dodge drones, find the exit portal |
+| ⚓ **Sky & Sea Defense** | Defend your fleet from air and sea attacks |
+| 🚢 **Naval Strategy** | Turn-based naval combat with pixel art ships |
 
 ## Project Structure
 
 ```
 /
-├── index.html          # Home page with game catalog
-├── Snake/
-│   ├── index.html      # Snake game
-│   └── background.jpg  # Game background image
-└── README.md
+├── index.html          # Home page with game catalog (search, filter, sort)
+├── Snake/              # Each game is a self-contained index.html
+├── Tetris/
+├── SpaceInvaders/
+├── Basketball/
+├── RaceCar/
+├── NeonMazeRunner/
+├── SkySeaDefense/
+├── NavalStrategy/      # + pixel art assets
+├── Public/             # Logo
+├── Sound/              # Shared music loops
+└── netlify.toml        # Netlify deploy config
 ```
-
-## Features
-
-- **Modern Home Page**: Game catalog with search, filtering, and recently played tracking
-- **Enhanced Snake Game**: Pixel art graphics, multiple food types, smooth animations
-- **Responsive Design**: Works perfectly on desktop and mobile
-- **Local Storage**: Tracks high scores and recently played games
-- **No Installation**: Just open and play in any modern browser
 
 ## Getting Started
 
 1. Open `index.html` in your browser for the game catalog
-2. Click on any game to start playing
-3. Use keyboard arrows or on-screen controls (mobile)
+2. Click any game to play
+3. Keyboard controls on desktop, on-screen controls on mobile
 
 ## Technical Details
 
-- Pure HTML5, CSS3, and JavaScript (no frameworks required)
-- Canvas-based Snake game with 60 FPS smooth animations
-- Local storage for persistent data
-- Progressive enhancement for mobile devices
+- Pure HTML5, CSS3, and JavaScript — no frameworks, no build step
+- Each game is a single self-contained HTML file with canvas rendering
+- High scores and preferences persist via localStorage (per browser)
+- Deployed as a static site on Netlify
 
 Enjoy the retro gaming experience! 🕹️
