@@ -952,21 +952,10 @@
         }
       }
       
-      // Backboard collision (front-facing board above the rim): an upward
-      // shot that hits the glass banks off it and drops toward the rim
-      const boardLeft = basket.x - basket.backboardW / 2;
-      const boardRight = basket.x + basket.backboardW / 2;
-      const boardBottom = basket.y - basket.backboardGap;
-      const boardTop = boardBottom - basket.backboardH;
-      if (ball.vy < 0 &&
-          ball.x > boardLeft && ball.x < boardRight &&
-          ball.y - ball.radius < boardBottom && ball.y + ball.radius > boardTop) {
-        ball.vy = Math.abs(ball.vy) * BOUNCE_DAMPING;
-        ball.vx *= 0.9;
-        playBounceSound();
-        ball.bounces++;
-      }
-      
+      // The backboard is decorative only: in this front view it sits behind
+      // the rim in depth, so the ball arcs "in front of" the glass. Making it
+      // solid meant every high arc slammed into it on the way up.
+
       // Rim collision: only the two metal rim edges are solid. The ball flies
       // freely through the aperture; hitting an edge reflects it off the
       // contact normal like a bumper (this is what makes rim-outs feel real).
