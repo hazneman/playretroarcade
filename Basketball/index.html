@@ -601,9 +601,9 @@
       y: 120,
       width: 50,
       height: 6,
-      backboardX: 450,
-      backboardWidth: 6,
-      backboardHeight: 70,
+      backboardW: 110,   // front-facing board width, centered on the rim
+      backboardH: 70,
+      backboardGap: 30,  // vertical gap between rim plane and board bottom (leaves a swish window for clean arcs)
       netPoints: [],
       // Animation properties for reactions
       rimShake: 0,
@@ -886,18 +886,10 @@
         return;
       }
       
-      // Special check: Ball sitting on rim (immediate detection)
-      const rimDx = ball.x - basket.x;
-      const rimDy = ball.y - basket.y;
-      const distanceFromRim = Math.sqrt(rimDx * rimDx + rimDy * rimDy);
-      
-      // Much more aggressive detection for balls near rim
-      if (distanceFromRim < 40 && Math.abs(ball.vy) < 2 && Math.abs(ball.vx) < 2) {
-        console.log("Ball detected near rim with low velocity, immediate reset...");
-        resetBall();
-        return;
-      }
-      
+      // NOTE: no "slow ball near rim" reset here — a soft swish is slowest
+      // exactly at its apex above the rim, and resetting it eats legit makes.
+      // The rim is now edge-bumper physics, so balls cannot rest on it anyway.
+
       // Safety: Reset if ball has been out of hand for too long without scoring
       if (!ball.timeOutOfHand) {
         ball.timeOutOfHand = Date.now();
@@ -960,89 +952,45 @@
         }
       }
       
-      // Backboard collision
-      if (ball.x + ball.radius > basket.backboardX && 
-          ball.x - ball.radius < basket.backboardX + basket.backboardWidth &&
-          ball.y > basket.y - basket.backboardHeight && 
-          ball.y < basket.y + 20) {
-        ball.vx = -Math.abs(ball.vx) * BOUNCE_DAMPING;
+      // Backboard collision (front-facing board above the rim): an upward
+      // shot that hits the glass banks off it and drops toward the rim
+      const boardLeft = basket.x - basket.backboardW / 2;
+      const boardRight = basket.x + basket.backboardW / 2;
+      const boardBottom = basket.y - basket.backboardGap;
+      const boardTop = boardBottom - basket.backboardH;
+      if (ball.vy < 0 &&
+          ball.x > boardLeft && ball.x < boardRight &&
+          ball.y - ball.radius < boardBottom && ball.y + ball.radius > boardTop) {
+        ball.vy = Math.abs(ball.vy) * BOUNCE_DAMPING;
+        ball.vx *= 0.9;
         playBounceSound();
         ball.bounces++;
       }
       
-      // Aggressive rim collision detection (prevent ANY sticking)
+      // Rim collision: only the two metal rim edges are solid. The ball flies
+      // freely through the aperture; hitting an edge reflects it off the
+      // contact normal like a bumper (this is what makes rim-outs feel real).
       const rimCenterX = basket.x;
-      const rimCenterY = basket.y;
       const rimRadiusX = basket.width / 2;
-      const rimRadiusY = basket.width / 6;
-      
-      // Check distance from ball to rim center
-      const dx = ball.x - rimCenterX;
-      const dy = ball.y - rimCenterY;
-      const distanceFromRimCenter = Math.sqrt(dx * dx + dy * dy);
-      
-      // More forgiving rim collision - allow balls to roll into the hoop
-      if (distanceFromRimCenter < (rimRadiusX + ball.radius + 5)) {
-        // Case 1: Ball is above the rim and moving downward - let it pass through
-        if (ball.y < basket.y - 5 && ball.vy > 0) {
-          // Do nothing, allow ball to go into hoop
-        } 
-        // Case 2: Ball is near the rim center - could be a rim roll that should go in
-        else if (Math.abs(dx) < rimRadiusX * 0.6 && Math.abs(dy) < 10 && ball.vy > 0) {
-          // This is a potential rim roll that should count as a basket
-          // Apply slight guidance toward the basket center to help it fall in
-          ball.vx = ball.vx * 0.9 + (rimCenterX - ball.x) * 0.03;
-          ball.vy = ball.vy * 0.95 + 1; // Maintain downward momentum
-        }
-        // Case 3: Regular rim collision - bounce ball away
-        else {
-          // Calculate escape angle
-          let escapeAngle = Math.atan2(dy, dx);
-          if (distanceFromRimCenter < 10) {
-            escapeAngle = Math.random() * Math.PI * 2;
+      const rimTube = 4; // visual rim tube half-thickness
+      for (const edgeX of [rimCenterX - rimRadiusX, rimCenterX + rimRadiusX]) {
+        const dxE = ball.x - edgeX;
+        const dyE = ball.y - basket.y;
+        const dist = Math.hypot(dxE, dyE);
+        const minDist = ball.radius + rimTube;
+        if (dist < minDist && dist > 0.001) {
+          const nx = dxE / dist, ny = dyE / dist;
+          const vDotN = ball.vx * nx + ball.vy * ny;
+          if (vDotN < 0) { // only if moving into the rim
+            ball.vx = (ball.vx - 2 * vDotN * nx) * 0.6;
+            ball.vy = (ball.vy - 2 * vDotN * ny) * 0.6;
+            playBounceSound();
+            ball.bounces++;
           }
-          const ejectForce = 5 + Math.random() * 3; // Slightly reduced force
-          ball.vx = Math.cos(escapeAngle) * ejectForce;
-          ball.vy = Math.abs(Math.sin(escapeAngle) * ejectForce); // Always eject downward
-          ball.x = rimCenterX + Math.cos(escapeAngle) * (rimRadiusX + ball.radius + 10);
-          ball.y = rimCenterY + Math.sin(escapeAngle) * (rimRadiusY + ball.radius + 10);
-          playBounceSound();
-          ball.bounces++;
+          ball.x = edgeX + nx * minDist;
+          ball.y = basket.y + ny * minDist;
         }
       }
-      
-      // Handle balls stuck on the rim - MORE AGGRESSIVE VERSION
-      if (!ball.rimStuckTimer) ball.rimStuckTimer = 0;
-      
-      // Check if ball is near the rim and has low velocity (potentially stuck)
-      const isNearRim = distanceFromRimCenter < (rimRadiusX + ball.radius + 15); // Increased detection radius
-      const isMovingSlow = Math.abs(ball.vx) < 4 && Math.abs(ball.vy) < 4; // More lenient velocity threshold
-      
-      if (isNearRim && isMovingSlow) {
-        ball.rimStuckTimer += 2; // Increment faster
-        
-        // If the ball has been near the rim and moving slowly for several frames, help it in
-        if (ball.rimStuckTimer > 20) { // Reduced wait time
-          // Determine which side of the rim the ball is on to apply appropriate force
-          const ballOnLeftSide = ball.x < rimCenterX;
-          
-          if (Math.abs(ball.x - rimCenterX) < rimRadiusX * 0.7) {
-            // Ball is near the center of the rim - push it down through the basket
-            ball.vx = (rimCenterX - ball.x) * 0.2; // Stronger horizontal guidance
-            ball.vy = 3 + Math.random() * 2; // Stronger downward push
-          } else {
-            // Ball is on the edge of the rim - bounce it off in a natural direction
-            ball.vx = (ballOnLeftSide ? -4 : 4) + Math.random() * 2;
-            ball.vy = -2 - Math.random() * 2; // Small upward bounce
-          }
-          // Visual feedback that anti-stick system activated
-          console.log("Unsticking ball from rim");
-          ball.rimStuckTimer = 0;
-        }
-      } else {
-        ball.rimStuckTimer = 0;
-      }
-      
       // Basket collision detection
       checkBasketScore();
     }
@@ -1077,28 +1025,26 @@
   const dyR = (ball.y - basket.y) / innerRY;
   const insideAperture = (dxR * dxR + dyR * dyR) <= 1;
 
-      const eps = 2; // tolerance
       let crossingDown = false;
       let crossX = ball.x;
-      // If we crossed the rim's Y plane this frame, estimate the X at crossing
-      if (ball.prevY !== undefined && ball.prevY <= basket.y - eps && ball.y >= basket.y + eps && ball.vy > 0) {
+      // If we crossed the rim's Y plane this frame, estimate the X at crossing.
+      // No epsilon dead zone: slow swishes cross at ~3px/frame and must still count
+      // (ball.scored guards against double-counting).
+      if (ball.prevY !== undefined && ball.prevY <= basket.y && ball.y > basket.y && ball.vy > 0) {
         const t = (basket.y - ball.prevY) / Math.max(1e-6, (ball.y - ball.prevY)); // 0..1
         crossX = ball.prevX + t * (ball.x - ball.prevX);
         crossingDown = true;
       }
 
-  // For this scene, the backboard is to the right of the rim; disallow scores when ball is on/behind it
-  const notBehindBackboard = (crossX + ball.radius) < (basket.backboardX - 1);
-
   // Validate X at the crossing, not just current X
   const dxCross = (crossX - basket.x) / innerRX;
   const withinCrossX = Math.abs(dxCross) <= 1;
 
-  const scoredByCrossing = crossingDown && withinCrossX && notBehindBackboard;
+  const scoredByCrossing = crossingDown && withinCrossX;
 
   // Allow gentle rim-rolls that are clearly inside the net and falling
   // Rim roll fallback: currently inside aperture area and clearly below rim height
-  const rimRoll = insideAperture && (ball.y > basket.y + 8) && (ball.vy > 0) && ((ball.x + ball.radius) < (basket.backboardX - 1));
+  const rimRoll = insideAperture && (ball.y > basket.y + 8) && (ball.vy > 0);
 
   if ((scoredByCrossing || rimRoll) && !ball.scored) {
         
@@ -1210,14 +1156,28 @@
       const shakeX = (Math.random() - 0.5) * basket.rimShake;
       const shakeY = (Math.random() - 0.5) * basket.rimShake * 0.5;
       
-      // Backboard
-      ctx.fillStyle = '#f8f9fa';
-      ctx.fillRect(basket.backboardX, basket.y - basket.backboardHeight, basket.backboardWidth, basket.backboardHeight);
-      
-      // Backboard outline
+      // Backboard (front-facing, centered above the rim)
+      const boardLeft = basket.x - basket.backboardW / 2;
+      const boardBottom = basket.y - basket.backboardGap;
+      const boardTop = boardBottom - basket.backboardH;
+
+      // Ceiling mount pole down to the board
+      ctx.fillStyle = '#6b7280';
+      ctx.fillRect(basket.x - 4, 0, 8, boardTop + 4);
+
+      // Board face (slightly translucent "glass")
+      ctx.fillStyle = 'rgba(248, 249, 250, 0.92)';
+      ctx.fillRect(boardLeft, boardTop, basket.backboardW, basket.backboardH);
+
+      // Board outline
       ctx.strokeStyle = '#333333';
       ctx.lineWidth = 2;
-      ctx.strokeRect(basket.backboardX, basket.y - basket.backboardHeight, basket.backboardWidth, basket.backboardHeight);
+      ctx.strokeRect(boardLeft, boardTop, basket.backboardW, basket.backboardH);
+
+      // Shooter's square above the rim
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(basket.x - 18, boardBottom - 28, 36, 22);
       
       // Rim shadow/depth (with shake)
       ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
@@ -1239,14 +1199,14 @@
       ctx.ellipse(basket.x + shakeX, basket.y + shakeY, basket.width/2 - 3, basket.width/6 - 1, 0, 0, Math.PI * 2);
       ctx.stroke();
       
-      // Rim support brackets (with shake)
+      // Rim support brackets connecting rim to the board bottom (with shake)
       ctx.strokeStyle = '#666666';
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(basket.x - basket.width/3 + shakeX, basket.y + shakeY);
-      ctx.lineTo(basket.backboardX, basket.y - 5);
+      ctx.lineTo(basket.x - 10, boardBottom);
       ctx.moveTo(basket.x + basket.width/3 + shakeX, basket.y + shakeY);
-      ctx.lineTo(basket.backboardX, basket.y + 5);
+      ctx.lineTo(basket.x + 10, boardBottom);
       ctx.stroke();
       
       // Net (hanging from circular rim with enhanced sway)
@@ -1459,7 +1419,7 @@
         let simY = ball.y;
         let simVx = vx;
         let simVy = vy;
-        const gravity = 0.6; // Stronger gravity for realistic arc
+        const gravity = GRAVITY; // must match real ball physics or the preview arc lies
         
         for (let i = 0; i < 100; i++) {
           shootingArc.points.push({ x: simX, y: simY });
