@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+
+# Backups / temp files
+*.bak
+*.backup
+*.tmp
+*.before_fix
+*_old.html
+*_new.html
