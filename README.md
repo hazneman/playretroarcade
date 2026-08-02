@@ -29,8 +29,7 @@ Quick, clean, and kid-friendly retro games. Pick a classic and play instantly �
 ├── SkySeaDefense/
 ├── NavalStrategy/      # + pixel art assets
 ├── Public/             # Logo
-├── Sound/              # Shared music loops
-└── netlify.toml        # Netlify deploy config
+└── Sound/              # Shared music loops
 ```
 
 ## Getting Started
@@ -44,6 +43,6 @@ Quick, clean, and kid-friendly retro games. Pick a classic and play instantly �
 - Pure HTML5, CSS3, and JavaScript — no frameworks, no build step
 - Each game is a single self-contained HTML file with canvas rendering
 - High scores and preferences persist via localStorage (per browser)
-- Deployed as a static site on Netlify
+- Deployed on Cloudflare Pages (auto-deploys from `main`): https://playretroarcade.pages.dev
 
 Enjoy the retro gaming experience! 🕹️
