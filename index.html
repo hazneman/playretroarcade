@@ -532,7 +532,7 @@
         <p class="subtitle">Experience premium retro gaming with modern polish. Classic games, zero downloads, infinite fun!</p>
         <div class="stats-banner">
           <div class="stat-item">
-            <span class="stat-number">6</span>
+            <span class="stat-number" id="statGameCount"></span>
             <div class="stat-label">Premium Games</div>
           </div>
           <div class="stat-item">
@@ -557,10 +557,8 @@
         <option value="Sports">Sports</option>
       </select>
       <select id="sortBy" class="select">
-        <option value="rating">⭐ Top Rated</option>
-        <option value="plays">🔥 Most Played</option>
-        <option value="updated">🆕 Recently Updated</option>
         <option value="name">📝 Alphabetical</option>
+        <option value="updated">🆕 Recently Updated</option>
       </select>
     </div>
 
@@ -571,7 +569,7 @@
 
     <div class="section-title">
       <h2>🎮 All Games</h2>
-      <span id="gameCount" style="color: var(--muted); font-size: 16px;">5 games available</span>
+      <span id="gameCount" style="color: var(--muted); font-size: 16px;"></span>
     </div>
 
     <div id="gameGrid" class="grid cols-4"></div>
@@ -596,8 +594,6 @@
         description: "Navigate the snake to eat food and grow longer. Don't hit the walls or yourself! Features modern graphics and smooth controls.",
         genres: ["Arcade", "Puzzle"],
         players: "1",
-        rating: 4.8,
-        plays: 12045,
         updatedAt: "2025-08-21",
         route: "./Snake/index.html",
         emoji: "🐍",
@@ -610,8 +606,6 @@
         description: "Stack falling blocks to clear lines in this timeless puzzle classic. Enhanced with modern features and fair piece distribution.",
         genres: ["Arcade", "Puzzle"],
         players: "1",
-        rating: 4.9,
-        plays: 24550,
         updatedAt: "2025-08-21",
         route: "./Tetris/index.html",
         emoji: "🟦",
@@ -624,8 +618,6 @@
         description: "Defend Earth from waves of descending alien invaders. Fast-paced action with progressive difficulty and retro charm.",
         genres: ["Arcade", "Action"],
         players: "1",
-        rating: 4.7,
-        plays: 16780,
         updatedAt: "2025-08-28",
         route: "./SpaceInvaders/index.html",
         emoji: "👾",
@@ -638,8 +630,6 @@
         description: "Perfect your shooting skills in this physics-based basketball game. Multiple game modes with realistic ball physics and scoring.",
         genres: ["Sports", "Arcade"],
         players: "1",
-        rating: 4.8,
-        plays: 8420,
         updatedAt: "2025-08-24",
         route: "./Basketball/index.html",
         emoji: "🏀",
@@ -652,8 +642,6 @@
         description: "Experience high-speed racing with realistic car physics. Multiple tracks, AI opponents, and various game modes including time trials.",
         genres: ["Racing", "Sports"],
         players: "1",
-        rating: 4.9,
-        plays: 15600,
         updatedAt: "2025-08-29",
         route: "./RaceCar/index.html",
         emoji: "🏎️",
@@ -666,8 +654,6 @@
         description: "Navigate through cyberpunk mazes filled with neon lights and deadly drones. Collect coins, avoid obstacles, and reach the exit in this futuristic stealth adventure.",
         genres: ["Action", "Puzzle"],
         players: "1",
-        rating: 4.8,
-        plays: 7350,
         updatedAt: "2025-08-31",
         route: "./NeonMazeRunner/index.html",
         emoji: "🔮",
@@ -680,8 +666,6 @@
         description: "Defend your naval base from enemy ships and aircraft using cannons and rockets in this action-packed defense game.",
         genres: ["Action", "Defense"],
         players: "1",
-        rating: 4.7,
-        plays: 2100,
         updatedAt: "2025-09-07",
         route: "./SkySeaDefense/index.html",
         emoji: "⚓",
@@ -694,8 +678,6 @@
         description: "Command your fleet in tactical turn-based naval warfare. Move ships, plan attacks, and outmaneuver enemy forces in strategic grid-based combat.",
         genres: ["Strategy", "Tactical"],
         players: "1",
-        rating: 4.9,
-        plays: 850,
         updatedAt: "2025-09-07",
         route: "./NavalStrategy/index.html",
         emoji: "🚢",
@@ -728,8 +710,6 @@
             <p class="description">${game.description}</p>
             <div class="meta">
               <span>👥 ${game.players} Player</span>
-              <span>⭐ ${game.rating}</span>
-              <span>🎮 ${game.plays.toLocaleString()}</span>
             </div>
             <div class="tags">
               ${game.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
@@ -774,8 +754,6 @@
       // Sort games
       filteredGames.sort((a, b) => {
         switch(sortBy) {
-          case 'rating': return b.rating - a.rating;
-          case 'plays': return b.plays - a.plays;
           case 'updated': return new Date(b.updatedAt) - new Date(a.updatedAt);
           case 'name': return a.title.localeCompare(b.title);
           default: return 0;
@@ -801,6 +779,7 @@
     document.getElementById('sortBy').addEventListener('change', updateDisplay);
 
     // Initialize display
+    document.getElementById('statGameCount').textContent = GAMES.length;
     updateDisplay();
 
     // Add smooth scroll behavior
