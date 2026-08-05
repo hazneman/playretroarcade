@@ -13,7 +13,7 @@ Quick, clean, and kid-friendly retro games. Pick a classic and play instantly �
 | 🏎️ **Race Car Championship** | High-speed racing with AI opponents and time trials |
 | 🌐 **Neon Maze Runner** | Navigate neon mazes, dodge drones, find the exit portal |
 | ⚓ **Sky & Sea Defense** | Defend your fleet from air and sea attacks |
-| 🚢 **Naval Strategy** | Turn-based naval combat with pixel art ships |
+| 🚢 **Battleship (Amiral Battı)** | The classic hidden-fleet guessing game vs an AI admiral |
 
 ## Project Structure
 
@@ -27,7 +27,7 @@ Quick, clean, and kid-friendly retro games. Pick a classic and play instantly �
 ├── RaceCar/
 ├── NeonMazeRunner/
 ├── SkySeaDefense/
-├── NavalStrategy/      # + pixel art assets
+├── Battleship/         # + pixel art ship assets
 ├── Public/             # Logo
 └── Sound/              # Shared music loops
 ```

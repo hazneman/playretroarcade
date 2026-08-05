@@ -8,6 +8,7 @@ Static retro-games site: a catalog home page plus 8 self-contained HTML5 canvas 
 - `<GameName>/index.html` — each game is one self-contained file (canvas rendering, inline styles/scripts). Games do not share code.
 - `Public/logo.svg` — site logo, used as favicon and header image on all pages. There is deliberately no `logo.png` (a mislabeled SVG-as-PNG once lived there and broke rendering — don't recreate it).
 - `Sound/` — shared `.ogg` music loops referenced by some games.
+- `Battleship/` — classic Amiral Battı vs an AI (DOM grid, not canvas); ship sprites live in `Battleship/Assets/`.
 - High scores and preferences use per-game localStorage keys (`snake_best`, `tetrisBest`, `spaceInvadersHighScore`, …). There is no backend, no accounts, and no data collection — keep it that way; this is a kid-friendly site.
 
 ## Adding a game
