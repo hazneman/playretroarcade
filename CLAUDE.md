@@ -22,7 +22,7 @@ Cloudflare Pages, auto-deploys from `main` (no build command, output = repo root
 
 ## Third-party games
 
-Open-source games may be added for future ad monetization, but only under licenses that allow commercial use (MIT, BSD, Apache, Unlicense, MPL; never any "NC" license). Each one keeps its upstream LICENSE file and in-game credits in its own folder (`2048/` is the pattern: gabrielecirulli/2048, MIT), and gets a small "Back to PlayRetroArcade" link. Never add emulated ROMs or games whose *names* are live trademarks.
+Open-source games may be added for future ad monetization, but only under licenses that allow commercial use (MIT, BSD, Apache, Unlicense, MPL; never any "NC" license). Each one keeps its upstream LICENSE file and in-game credits in its own folder (`2048/` and `ADarkRoom/` are the pattern), and gets a small "Back to PlayRetroArcade" link. Strip any analytics tags and CDN script loads when vendoring. Never add emulated ROMs or games whose *names* are live trademarks — and vet the ASSETS separately from the code license: jakesgordon/javascript-racer was rejected because its code is MIT but its sprites are ripped from Sega's OutRun and its music is licensed to that project only.
 
 ## Conventions
 

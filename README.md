@@ -15,6 +15,7 @@ Quick, clean, and kid-friendly retro games. Pick a classic and play instantly �
 | ⚓ **Sky & Sea Defense** | Defend your fleet from air and sea attacks |
 | 🚢 **Battleship (Amiral Battı)** | The classic hidden-fleet guessing game vs an AI admiral |
 | 🔢 **2048** | The beloved sliding-tile puzzle ([open source, MIT](https://github.com/gabrielecirulli/2048) by Gabriele Cirulli) |
+| 🔥 **A Dark Room** | Minimalist text adventure ([open source, MPL-2.0](https://github.com/doublespeakgames/adarkroom) by Doublespeak Games) |
 
 ## Project Structure
 
