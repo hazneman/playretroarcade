@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 315 100">
+  <defs>
+    <linearGradient id="subhull" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#55616e"/>
+      <stop offset="0.5" stop-color="#434e5a"/>
+      <stop offset="1" stop-color="#303a45"/>
+    </linearGradient>
+  </defs>
+  <!-- teardrop hull: rounded stern, tapered bow -->
+  <path d="M 20 50
+           C 20 33 44 27 76 27
+           L 200 27
+           C 262 29 296 44 304 50
+           C 296 56 262 71 200 73
+           L 76 73
+           C 44 73 20 67 20 50 Z"
+        fill="url(#subhull)" stroke="#1e262e" stroke-width="4"/>
+  <!-- deck line -->
+  <line x1="40" y1="50" x2="286" y2="50" stroke="#28313b" stroke-width="3" opacity="0.8"/>
+  <!-- conning tower (sail) -->
+  <rect x="140" y="36" width="52" height="28" rx="12" fill="#2b343e" stroke="#1e262e" stroke-width="3"/>
+  <!-- periscopes -->
+  <line x1="158" y1="36" x2="158" y2="22" stroke="#1e262e" stroke-width="4"/>
+  <line x1="172" y1="36" x2="172" y2="26" stroke="#1e262e" stroke-width="4"/>
+  <circle cx="158" cy="21" r="3" fill="#9fd8ff"/>
+  <!-- bow dive planes -->
+  <line x1="262" y1="38" x2="282" y2="30" stroke="#1e262e" stroke-width="5" stroke-linecap="round"/>
+  <line x1="262" y1="62" x2="282" y2="70" stroke="#1e262e" stroke-width="5" stroke-linecap="round"/>
+  <!-- stern planes -->
+  <line x1="36" y1="38" x2="22" y2="28" stroke="#1e262e" stroke-width="5" stroke-linecap="round"/>
+  <line x1="36" y1="62" x2="22" y2="72" stroke="#1e262e" stroke-width="5" stroke-linecap="round"/>
+  <!-- hull windows -->
+  <g fill="#9fd8ff" opacity="0.55">
+    <circle cx="216" cy="50" r="4"/>
+    <circle cx="234" cy="50" r="4"/>
+    <circle cx="252" cy="50" r="4"/>
+  </g>
+</svg>

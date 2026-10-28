@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 100">
+  <defs>
+    <linearGradient id="hull" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9aa7b4"/>
+      <stop offset="0.5" stop-color="#7e8c9a"/>
+      <stop offset="1" stop-color="#5f6c7a"/>
+    </linearGradient>
+  </defs>
+  <!-- hull: pointed bow (right), rounded stern -->
+  <path d="M 16 50
+           C 16 32 34 26 58 26
+           L 300 26
+           C 360 26 400 40 412 50
+           C 400 60 360 74 300 74
+           L 58 74
+           C 34 74 16 68 16 50 Z"
+        fill="url(#hull)" stroke="#36414d" stroke-width="4"/>
+  <!-- deck -->
+  <path d="M 30 50 C 30 40 42 36 60 36 L 298 36 C 348 36 382 44 394 50 C 382 56 348 64 298 64 L 60 64 C 42 64 30 60 30 50 Z"
+        fill="#505b68"/>
+  <!-- aft turret (left) with barrels pointing left -->
+  <g>
+    <line x1="74" y1="44" x2="46" y2="44" stroke="#2c333c" stroke-width="5"/>
+    <line x1="74" y1="56" x2="46" y2="56" stroke="#2c333c" stroke-width="5"/>
+    <circle cx="86" cy="50" r="15" fill="#3b4652" stroke="#222b33" stroke-width="3"/>
+  </g>
+  <!-- superstructure -->
+  <rect x="150" y="34" width="86" height="32" rx="6" fill="#3b4652" stroke="#222b33" stroke-width="3"/>
+  <rect x="162" y="41" width="22" height="18" rx="3" fill="#9fd8ff" opacity="0.85"/>
+  <rect x="196" y="41" width="14" height="18" rx="3" fill="#9fd8ff" opacity="0.6"/>
+  <line x1="226" y1="34" x2="226" y2="16" stroke="#222b33" stroke-width="4"/>
+  <circle cx="226" cy="15" r="4" fill="#ff4d4d"/>
+  <!-- two fore turrets with barrels pointing right -->
+  <g>
+    <line x1="280" y1="44" x2="316" y2="44" stroke="#2c333c" stroke-width="5"/>
+    <line x1="280" y1="56" x2="316" y2="56" stroke="#2c333c" stroke-width="5"/>
+    <circle cx="272" cy="50" r="15" fill="#3b4652" stroke="#222b33" stroke-width="3"/>
+  </g>
+  <g>
+    <line x1="334" y1="46" x2="366" y2="46" stroke="#2c333c" stroke-width="4"/>
+    <line x1="334" y1="54" x2="366" y2="54" stroke="#2c333c" stroke-width="4"/>
+    <circle cx="328" cy="50" r="12" fill="#3b4652" stroke="#222b33" stroke-width="3"/>
+  </g>
+</svg>

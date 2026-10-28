@@ -158,10 +158,9 @@
       position: absolute;
       pointer-events: none;
       z-index: 2;
-      image-rendering: pixelated;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
     }
-    .ship-sprite img { width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; }
+    .ship-sprite img { width: 100%; height: 100%; object-fit: fill; }
     .ship-sprite.sunk { filter: grayscale(1) brightness(0.6) drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
 
     /* Side panel: fleet roster + controls */
@@ -183,7 +182,7 @@
       margin-bottom: 4px;
       font-size: 12.5px;
     }
-    .fleet-item img { height: 20px; image-rendering: pixelated; }
+    .fleet-item img { height: 16px; max-width: 72px; object-fit: contain; }
     .fleet-item .pips { margin-left: auto; letter-spacing: 2px; font-size: 10px; color: var(--accent); }
     .fleet-item.sunk { opacity: 0.45; text-decoration: line-through; }
     .fleet-item.placing { background: rgba(0, 245, 255, 0.12); box-shadow: inset 0 0 0 1px var(--line); }
@@ -316,11 +315,11 @@
     const COLS = 'ABCDEFGHIJ';
 
     const FLEET_DEF = [
-      { key: 'carrier',    name: 'Carrier',    tr: 'Uçak Gemisi', len: 5, img: 'Assets/carrier.png' },
-      { key: 'battleship', name: 'Battleship', tr: 'Amiral',      len: 4, img: 'Assets/battleship.png' },
-      { key: 'cruiser',    name: 'Cruiser',    tr: 'Kruvazör',    len: 3, img: 'Assets/destroyer.png' },
-      { key: 'submarine',  name: 'Submarine',  tr: 'Denizaltı',   len: 3, img: 'Assets/submarine.png' },
-      { key: 'destroyer',  name: 'Destroyer',  tr: 'Muhrip',      len: 2, img: 'Assets/destroyer.png' },
+      { key: 'carrier',    name: 'Carrier',    tr: 'Uçak Gemisi', len: 5, img: 'Assets/carrier.svg' },
+      { key: 'battleship', name: 'Battleship', tr: 'Amiral',      len: 4, img: 'Assets/battleship.svg' },
+      { key: 'cruiser',    name: 'Cruiser',    tr: 'Kruvazör',    len: 3, img: 'Assets/cruiser.svg' },
+      { key: 'submarine',  name: 'Submarine',  tr: 'Denizaltı',   len: 3, img: 'Assets/submarine.svg' },
+      { key: 'destroyer',  name: 'Destroyer',  tr: 'Muhrip',      len: 2, img: 'Assets/destroyer.svg' },
     ];
 
     // phase: 'placement' | 'battle' | 'over'

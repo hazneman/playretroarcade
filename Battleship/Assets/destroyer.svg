@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 100">
+  <defs>
+    <linearGradient id="hull" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9aa7b4"/>
+      <stop offset="0.5" stop-color="#7e8c9a"/>
+      <stop offset="1" stop-color="#5f6c7a"/>
+    </linearGradient>
+  </defs>
+  <!-- small fast hull -->
+  <path d="M 12 50
+           C 12 36 26 30 46 30
+           L 138 30
+           C 176 30 196 44 202 50
+           C 196 56 176 70 138 70
+           L 46 70
+           C 26 70 12 64 12 50 Z"
+        fill="url(#hull)" stroke="#36414d" stroke-width="4"/>
+  <!-- deck -->
+  <path d="M 24 50 C 24 42 34 38 48 38 L 136 38 C 164 38 182 46 188 50 C 182 54 164 62 136 62 L 48 62 C 34 62 24 58 24 50 Z"
+        fill="#505b68"/>
+  <!-- angular stealth superstructure -->
+  <path d="M 72 38 L 118 38 L 112 60 L 78 60 Z" fill="#3b4652" stroke="#222b33" stroke-width="3"/>
+  <rect x="84" y="43" width="14" height="11" rx="2" fill="#9fd8ff" opacity="0.85"/>
+  <line x1="95" y1="38" x2="95" y2="24" stroke="#222b33" stroke-width="4"/>
+  <circle cx="95" cy="23" r="3" fill="#ff4d4d"/>
+  <!-- fore gun -->
+  <g>
+    <line x1="146" y1="47" x2="170" y2="47" stroke="#2c333c" stroke-width="4"/>
+    <circle cx="142" cy="50" r="9" fill="#3b4652" stroke="#222b33" stroke-width="3"/>
+  </g>
+</svg>
