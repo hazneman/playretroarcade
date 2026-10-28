@@ -14,6 +14,7 @@ Quick, clean, and kid-friendly retro games. Pick a classic and play instantly �
 | 🌐 **Neon Maze Runner** | Navigate neon mazes, dodge drones, find the exit portal |
 | ⚓ **Sky & Sea Defense** | Defend your fleet from air and sea attacks |
 | 🚢 **Battleship (Amiral Battı)** | The classic hidden-fleet guessing game vs an AI admiral |
+| 🔢 **2048** | The beloved sliding-tile puzzle ([open source, MIT](https://github.com/gabrielecirulli/2048) by Gabriele Cirulli) |
 
 ## Project Structure
 

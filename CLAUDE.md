@@ -20,6 +20,10 @@ Static retro-games site: a catalog home page plus 8 self-contained HTML5 canvas 
 
 Cloudflare Pages, auto-deploys from `main` (no build command, output = repo root): https://playretroarcade.pages.dev
 
+## Third-party games
+
+Open-source games may be added for future ad monetization, but only under licenses that allow commercial use (MIT, BSD, Apache, Unlicense, MPL; never any "NC" license). Each one keeps its upstream LICENSE file and in-game credits in its own folder (`2048/` is the pattern: gabrielecirulli/2048, MIT), and gets a small "Back to PlayRetroArcade" link. Never add emulated ROMs or games whose *names* are live trademarks.
+
 ## Conventions
 
 - Never commit editor/OS files, backups (`*.bak`, `*.tmp`, `index_old.html`-style copies), or one-off fix scripts — see `.gitignore`.
