@@ -29,6 +29,21 @@
       position: relative;
     }
 
+    .home-pill {
+      position: fixed;
+      top: 20px;
+      left: 16px;
+      z-index: 1500; /* above HUD, below menus so menus keep their own Back button */
+      background: linear-gradient(135deg, #00f5ff, #0077aa);
+      color: #001018;
+      font-weight: 700;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+    .home-pill:hover { transform: translateY(-2px); }
+
     .hud {
       position: fixed;
       top: 20px;
@@ -280,6 +295,7 @@
 <body>
   <div class="game-container">
     <!-- HUD -->
+    <a href="../index.html" class="home-pill">🏠 Home</a>
     <div class="hud">
       <div class="hud-item">
         <span class="hud-icon">🏆</span>

@@ -72,6 +72,16 @@
             box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
         }
 
+        .home-pill {
+            background: linear-gradient(135deg, #00f5ff, #0077aa);
+            color: #001018;
+            font-weight: 700;
+            text-decoration: none;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        .home-pill:hover { transform: translateY(-2px); }
+
         .radar-scope {
             position: absolute;
             top: calc(100% + 8px); /* below the stats bar; vertically centering it clipped the top off-screen */
@@ -191,6 +201,7 @@
         
         <div class="ui-overlay">
             <div class="game-stats">
+                <a href="../index.html" class="stat-item home-pill">🏠 Home</a>
                 <div class="stat-item">
                     <div>🏆 Score: <span id="score">0</span></div>
                 </div>
