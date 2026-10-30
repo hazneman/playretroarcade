@@ -20,6 +20,10 @@ Static retro-games site: a catalog home page plus 8 self-contained HTML5 canvas 
 
 Cloudflare Pages, auto-deploys from `main` (no build command, output = repo root): https://playretroarcade.pages.dev
 
+## Design system
+
+`Public/arcade.css` is the single source of design truth: palette, the one brand cyan (#00f5ff — never introduce a second cyan), the three-step radius scale (8/12/20), font stacks (system UI for body, 'Courier New' only for big titles and HUD chips), shadows, and shared `arc-*` components (topbar, pill, btn, panel, chip, overlay). Every first-party page links it before its own `<style>` and differs only by `--game-accent` (e.g. Basketball orange, RaceCar red) plus its own game art. Don't redefine shell values locally — alias the arcade tokens. Third-party games (2048, ADarkRoom) keep their upstream look and do NOT link it.
+
 ## Third-party games
 
 Open-source games may be added for future ad monetization, but only under licenses that allow commercial use (MIT, BSD, Apache, Unlicense, MPL; never any "NC" license). Each one keeps its upstream LICENSE file and in-game credits in its own folder (`2048/` and `ADarkRoom/` are the pattern), and gets a small "Back to PlayRetroArcade" link. Strip any analytics tags and CDN script loads when vendoring. Never add emulated ROMs or games whose *names* are live trademarks — and vet the ASSETS separately from the code license: jakesgordon/javascript-racer was rejected because its code is MIT but its sprites are ripped from Sega's OutRun and its music is licensed to that project only.
