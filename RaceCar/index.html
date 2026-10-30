@@ -626,6 +626,7 @@
       <div class="panel-section">
         <div class="panel-title">Game Actions</div>
         <button class="btn" onclick="togglePause()">⏸️ Pause</button>
+        <button class="btn" id="soundBtn" onclick="toggleSound()">🔊 Sound: On</button>
         <button class="btn" onclick="resetRace()">🔄 Reset Race</button>
         <button class="btn" onclick="goHome()">🏠 Home</button>
       </div>
@@ -762,8 +763,19 @@
       }
     }
     
+    let soundEnabled = localStorage.getItem('racecarSound') !== 'off';
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('racecarSound', soundEnabled ? 'on' : 'off');
+      updateSoundBtn();
+    }
+    function updateSoundBtn() {
+      document.getElementById('soundBtn').textContent = soundEnabled ? '🔊 Sound: On' : '🔇 Sound: Off';
+    }
+    updateSoundBtn();
+
     function playEngineSound(speed) {
-      if (!audioContext) return;
+      if (!audioContext || !soundEnabled) return;
       
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
@@ -783,7 +795,7 @@
     }
     
     function playLapSound() {
-      if (!audioContext) return;
+      if (!audioContext || !soundEnabled) return;
       
       // Play a quick ascending tone
       for (let i = 0; i < 3; i++) {

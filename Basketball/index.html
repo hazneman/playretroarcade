@@ -522,6 +522,7 @@
       <div class="panel-section">
         <div class="panel-title">Game Actions</div>
         <button class="btn" onclick="togglePause()">⏸️ Pause</button>
+        <button class="btn" id="soundBtn" onclick="toggleSound()">🔊 Sound: On</button>
         <button class="btn" onclick="resetGame()">🔄 Reset</button>
         <button class="btn" onclick="goHome()">🏠 Home</button>
       </div>
@@ -654,8 +655,19 @@
       }
     }
     
+    let soundEnabled = localStorage.getItem('basketballSound') !== 'off';
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('basketballSound', soundEnabled ? 'on' : 'off');
+      updateSoundBtn();
+    }
+    function updateSoundBtn() {
+      document.getElementById('soundBtn').textContent = soundEnabled ? '🔊 Sound: On' : '🔇 Sound: Off';
+    }
+    updateSoundBtn();
+
     function playSound(frequency, duration, type = 'sine') {
-      if (!audioContext) return;
+      if (!audioContext || !soundEnabled) return;
       
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();

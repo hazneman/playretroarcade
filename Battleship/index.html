@@ -67,6 +67,17 @@
     }
     .topbar .stats b { color: var(--accent); }
 
+    .sound-btn {
+      background: rgba(0, 245, 255, 0.12);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 7px 11px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .sound-btn:hover { background: rgba(0, 245, 255, 0.25); }
+
     .status-banner {
       text-align: center;
       font-size: 18px;
@@ -265,6 +276,7 @@
     <a class="home-btn" href="../index.html">🏠 Home</a>
     <h1>⚓ Battleship — Amiral Battı</h1>
     <div class="stats">Wins <b id="winCount">0</b> · Losses <b id="lossCount">0</b></div>
+    <button class="btn sound-btn" id="soundBtn" title="Sound on/off">🔊</button>
   </div>
 
   <div class="status-banner" id="statusBanner">Place your fleet</div>
@@ -761,7 +773,19 @@
 
     // ---------- Sound (tiny WebAudio blips, no assets) ----------
     let audioCtx = null;
+    let soundEnabled = localStorage.getItem('battleshipSound') !== 'off';
+    function updateSoundBtn() {
+      document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+    }
+    document.getElementById('soundBtn').addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('battleshipSound', soundEnabled ? 'on' : 'off');
+      updateSoundBtn();
+    });
+    updateSoundBtn();
+
     function playSound(kind) {
+      if (!soundEnabled) return;
       try {
         audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
         const t = audioCtx.currentTime;

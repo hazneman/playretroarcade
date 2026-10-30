@@ -83,6 +83,8 @@
         }
         .home-pill:hover { transform: translateY(-2px); }
 
+        .pause-pill { font-family: 'Courier New', monospace; font-size: 1em; }
+
         .radar-scope {
             position: absolute;
             top: calc(100% + 8px); /* below the stats bar; vertically centering it clipped the top off-screen */
@@ -204,6 +206,7 @@
         <div class="ui-overlay">
             <div class="game-stats">
                 <a href="../index.html" class="stat-item home-pill">🏠 Home</a>
+                <button class="stat-item home-pill pause-pill" id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
                 <div class="stat-item">
                     <div>🏆 Score: <span id="score">0</span></div>
                 </div>
@@ -783,6 +786,24 @@
                 }
             }
         }
+
+        function togglePause() {
+            if (gameState === 'playing') {
+                gameState = 'paused';
+                document.getElementById('pauseBtn').textContent = '▶ Resume';
+            } else if (gameState === 'paused') {
+                gameState = 'playing';
+                document.getElementById('pauseBtn').textContent = '⏸ Pause';
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.code === 'KeyP' || e.code === 'Escape') &&
+                (gameState === 'playing' || gameState === 'paused')) {
+                e.preventDefault();
+                togglePause();
+            }
+        });
 
         // Menu functions
         function showMainMenu() {

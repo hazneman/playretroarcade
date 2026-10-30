@@ -44,6 +44,13 @@
     }
     .home-pill:hover { transform: translateY(-2px); }
 
+    .pause-pill {
+      left: 112px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
     .hud {
       font-family: 'Courier New', monospace;
       position: fixed;
@@ -297,6 +304,7 @@
   <div class="game-container">
     <!-- HUD -->
     <a href="../index.html" class="home-pill">🏠 Home</a>
+    <button class="home-pill pause-pill" id="pausePill" onclick="togglePauseGame()">⏸ Pause</button>
     <div class="hud">
       <div class="hud-item">
         <span class="hud-icon">🏆</span>
@@ -389,6 +397,12 @@
     </div>
 
     <!-- Game Over Menu -->
+    <div class="menu-overlay" id="pauseMenu" style="display: none;">
+      <h1 class="menu-title">⏸ PAUSED</h1>
+      <button class="menu-button" onclick="togglePauseGame()">▶ RESUME</button>
+      <button class="menu-button" onclick="window.location.href='../index.html'">🏠 BACK TO GAMES</button>
+    </div>
+
     <div class="menu-overlay" id="gameOverMenu" style="display: none;">
       <h1 class="menu-title">💀 SYSTEM BREACHED</h1>
       <p class="menu-subtitle">The AI security system has detected your intrusion!</p>
@@ -922,7 +936,15 @@
       // Keyboard events
       document.addEventListener('keydown', (e) => {
         game.keys[e.code] = true;
-        
+
+        if (e.code === 'KeyP' || e.code === 'Escape') {
+          if (game.gameState === 'playing' || game.gameState === 'paused') {
+            e.preventDefault();
+            togglePauseGame();
+            return;
+          }
+        }
+
         if (game.gameState === 'playing') {
           if (e.code === 'Space') {
             e.preventDefault();
@@ -1272,6 +1294,17 @@
     }
 
     // Game loop
+    function togglePauseGame() {
+      if (game.gameState === 'playing') {
+        game.gameState = 'paused';
+        document.getElementById('pauseMenu').style.display = 'flex';
+      } else if (game.gameState === 'paused') {
+        document.getElementById('pauseMenu').style.display = 'none';
+        game.gameState = 'playing';
+        gameLoop(); // the loop exits while paused; restart it
+      }
+    }
+
     function gameLoop() {
       if (game.gameState !== 'playing') return;
       
