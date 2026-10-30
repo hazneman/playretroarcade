@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sky & Sea Defense - PlayRetroArcade</title>
+    <link rel="stylesheet" href="../Public/arcade.css">
     <style>
         :root {
-            --neon-cyan: #00f5ff;
-            --neon-pink: #ff006e;
-            --neon-yellow: #ffbe0b;
+            --neon-cyan: var(--arcade-cyan);
+            --neon-pink: var(--arcade-pink);
+            --neon-yellow: var(--arcade-yellow);
             --dark-bg: #0a0a0a;
             --dark-secondary: #1a1a1a;
         }
@@ -21,7 +22,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* readable body; retro mono stays on title and HUD */
-            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
+            background: var(--arcade-bg-gradient);
             color: var(--neon-cyan);
             overflow: hidden;
             height: 100vh;
@@ -67,7 +68,7 @@
             font-family: 'Courier New', monospace;
             background: rgba(0, 245, 255, 0.1);
             border: 1px solid var(--neon-cyan);
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             padding: 10px 15px;
             backdrop-filter: blur(10px);
             box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
@@ -159,7 +160,7 @@
         .control-item {
             background: rgba(255, 0, 110, 0.1);
             border: 1px solid var(--neon-pink);
-            border-radius: 6px;
+            border-radius: var(--radius-sm);
             padding: 8px 12px;
             font-size: 0.9em;
         }
@@ -167,7 +168,7 @@
         .game-button {
             background: linear-gradient(45deg, var(--neon-cyan), #0080ff);
             border: none;
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             padding: 15px 30px;
             color: #000;
             font-weight: bold;
