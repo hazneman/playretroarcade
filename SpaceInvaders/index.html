@@ -1382,7 +1382,7 @@
       
       // Engine glow effect
       ctx.shadowColor = '#00ff88';
-      ctx.shadowBlur = 15;
+      ctx.shadowBlur = 6;
       ctx.fillStyle = '#88ffaa';
       ctx.fillRect(player.x + 10, player.y + 30, 4, 6);
       ctx.fillRect(player.x + player.width - 14, player.y + 30, 4, 6);
@@ -1460,7 +1460,7 @@
         
         // Eye glow effect
         ctx.shadowColor = '#ffffff';
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 3;
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(alien.x + 13, alien.y + 9, 1, 1);
         ctx.fillRect(alien.x + alien.width - 14, alien.y + 9, 1, 1);
@@ -1483,7 +1483,7 @@
         
         // Bullet glow effect
         ctx.shadowColor = '#41c9ff';
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 6;
         ctx.fillStyle = '#88ddff';
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         ctx.shadowBlur = 0;
@@ -1505,7 +1505,7 @@
         
         // Bullet glow effect
         ctx.shadowColor = '#ff4141';
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 2;
         ctx.fillStyle = '#ff8888';
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         ctx.shadowBlur = 0;
@@ -1525,25 +1525,25 @@
         // Outer explosion ring (yellow)
         ctx.fillStyle = '#ffff00';
         ctx.shadowColor = '#ffff00';
-        ctx.shadowBlur = 20;
+        ctx.shadowBlur = 3;
         ctx.fillRect(explosion.x - size/2, explosion.y - size/2, size, size);
         
         // Middle explosion ring (orange)
         ctx.fillStyle = '#ff8800';
         ctx.shadowColor = '#ff8800';
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 6;
         ctx.fillRect(explosion.x - size/3, explosion.y - size/3, size * 2/3, size * 2/3);
         
         // Inner explosion core (red)
         ctx.fillStyle = '#ff4141';
         ctx.shadowColor = '#ff4141';
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 4;
         ctx.fillRect(explosion.x - size/4, explosion.y - size/4, size/2, size/2);
         
         // Hot center (white)
         ctx.fillStyle = '#ffffff';
         ctx.shadowColor = '#ffffff';
-        ctx.shadowBlur = 5;
+        ctx.shadowBlur = 2;
         ctx.fillRect(explosion.x - size/8, explosion.y - size/8, size/4, size/4);
         
         ctx.shadowBlur = 0;

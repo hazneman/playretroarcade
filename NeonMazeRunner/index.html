@@ -63,7 +63,7 @@
       padding: 15px 25px;
       border-radius: 10px;
       border: 2px solid #00f5ff;
-      box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
       z-index: 1000;
       font-size: 16px;
       font-weight: bold;
@@ -82,7 +82,7 @@
     #gameCanvas {
       border: 3px solid #00f5ff;
       border-radius: 10px;
-      box-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
+      box-shadow: 0 0 14px rgba(0, 245, 255, 0.3);
       background: #000;
     }
 
@@ -110,7 +110,7 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 20px;
-      text-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+      text-shadow: 0 0 10px rgba(0, 245, 255, 0.35);
     }
 
     .menu-subtitle {
@@ -656,7 +656,7 @@
 
         // Inner glow
         ctx.shadowColor = this.color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 4;
         ctx.strokeStyle = this.color;
         ctx.lineWidth = 2;
         ctx.strokeRect(this.x + 2, this.y + 2, this.size - 4, this.size - 4);
@@ -893,7 +893,7 @@
 
         // Glow effect
         ctx.shadowColor = this.color;
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 3;
         ctx.strokeStyle = this.color;
         ctx.lineWidth = 2;
         ctx.strokeRect(this.x + 2, this.y + 2, this.size - 4, this.size - 4);
@@ -1379,7 +1379,7 @@
       ctx.globalAlpha = pulse;
       ctx.fillStyle = '#00f5ff';
       ctx.shadowColor = '#00f5ff';
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 4;
       
       const size = TILE_SIZE * 0.4;
       const x = packet.x + (TILE_SIZE - size) / 2;
@@ -1407,7 +1407,7 @@
       const config = POWER_UPS[powerUp.type];
       ctx.fillStyle = config.color;
       ctx.shadowColor = config.color;
-      ctx.shadowBlur = 15;
+      ctx.shadowBlur = 6;
       
       const size = TILE_SIZE * 0.6;
       ctx.fillRect(-size/2, -size/2, size, size);
@@ -1429,7 +1429,7 @@
       ctx.globalAlpha = pulse;
       ctx.fillStyle = '#ffbe0b';
       ctx.shadowColor = '#ffbe0b';
-      ctx.shadowBlur = 20;
+      ctx.shadowBlur = 3;
       
       const size = TILE_SIZE * 0.8;
       const x = portal.x + (TILE_SIZE - size) / 2;
