@@ -74,9 +74,8 @@
 
         .radar-scope {
             position: absolute;
-            top: 50%;
-            right: 20px;
-            transform: translateY(-50%);
+            top: calc(100% + 8px); /* below the stats bar; vertically centering it clipped the top off-screen */
+            right: 16px;
             width: 120px;
             height: 120px;
             border: 2px solid var(--neon-cyan);
@@ -105,7 +104,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: #04060c; /* opaque: the in-game HUD must not bleed through menus */
             display: flex;
             flex-direction: column;
             justify-content: center;
