@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧱 Brick Breaker - PlayRetroArcade</title>
+  <link rel="icon" href="../Public/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../Public/arcade.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--arcade-bg-gradient);
+      color: var(--arcade-text);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 16px 20px 8px;
+      padding: 14px 22px;
+      background: var(--arcade-surface);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+    }
+    .home-btn {
+      background: linear-gradient(135deg, var(--game-accent), var(--accent-deep));
+      color: var(--game-accent-ink);
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      transition: transform 0.15s ease;
+    }
+    .home-btn:hover { transform: translateY(-2px); }
+    .topbar h1 { font-size: 21px; color: var(--game-accent); }
+    .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .stat-pill {
+      font-family: var(--font-retro);
+      font-size: 13px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-sm);
+      padding: 7px 12px;
+    }
+    .icon-btn {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
+      color: var(--arcade-text);
+      border-radius: var(--radius-md);
+      padding: 7px 11px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .icon-btn:hover { background: var(--accent-line); }
+
+    .layout {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 10px 20px 40px;
+      flex-wrap: wrap;
+    }
+    canvas {
+      background: #0a0e18;
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      max-width: 100%;
+    }
+
+    .panel {
+      background: var(--arcade-surface);
+      border: 1px solid var(--arcade-line);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      width: 220px;
+    }
+    .panel h3 { font-size: 14px; color: var(--game-accent); margin-bottom: 10px; }
+    .panel .hint { font-size: 12.5px; color: var(--arcade-muted); line-height: 1.55; }
+    .lb-list { list-style: none; font-size: 13px; }
+    .lb-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 2px;
+      border-bottom: 1px dashed var(--arcade-line);
+    }
+    .lb-list li span:last-child { font-family: var(--font-retro); color: var(--game-accent); }
+    .lb-note { font-size: 11.5px; color: var(--arcade-muted); margin-top: 8px; }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 5, 8, 0.88);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .overlay.hidden { display: none; }
+    .card {
+      background: var(--arcade-surface-strong);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-lg);
+      padding: 34px 42px;
+      text-align: center;
+      max-width: 420px;
+    }
+    .card h2 { color: var(--game-accent); font-size: 26px; margin-bottom: 10px; }
+    .card p { color: var(--arcade-muted); font-size: 14.5px; line-height: 1.55; margin-bottom: 8px; }
+    .btn {
+      background: linear-gradient(135deg, var(--game-accent), var(--accent-deep));
+      color: var(--game-accent-ink);
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 12px 22px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .name-row { margin-top: 10px; display: flex; gap: 8px; justify-content: center; }
+    .name-row input {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-md);
+      color: var(--arcade-text);
+      padding: 10px 12px;
+      font-size: 14px;
+      width: 160px;
+    }
+    .name-row button {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
+      color: var(--arcade-text);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #submitMsg { font-size: 12.5px; margin-top: 8px; color: var(--arcade-muted); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="home-btn" href="../index.html">🏠 Home</a>
+    <h1>🧱 Brick Breaker</h1>
+    <div class="right">
+      <span class="stat-pill">Score <b id="scoreEl">0</b></span>
+      <span class="stat-pill">Best <b id="bestEl">0</b></span>
+      <span class="stat-pill">Level <b id="levelEl">1</b></span>
+      <span class="stat-pill">Lives <b id="livesEl">3</b></span>
+      <button class="icon-btn" id="pauseBtn" title="Pause (P)">⏸</button>
+      <button class="icon-btn" id="soundBtn" title="Sound on/off">🔊</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <canvas id="game" width="640" height="560"></canvas>
+    <div class="panel">
+      <h3>🏆 Top Scores</h3>
+      <ol class="lb-list" id="lbList"><li><span>loading…</span></li></ol>
+      <div class="lb-note" id="lbNote"></div>
+      <h3 style="margin-top:16px;">How to Play</h3>
+      <div class="hint">
+        Move the paddle with the <b>mouse</b> or <b>←/→</b>. Clear every brick
+        to advance. The ball angles off the paddle depending on where it lands —
+        use the edges to steer. <b>P</b> pauses.
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="startOverlay">
+    <div class="card">
+      <h2>🧱 Brick Breaker</h2>
+      <p>Smash the wall, keep the ball alive. Three lives, endless levels, rising speed.</p>
+      <button class="btn" id="startBtn">▶ Start Game</button>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="gameOverOverlay">
+    <div class="card">
+      <h2 id="goTitle">Game Over</h2>
+      <p id="goText"></p>
+      <div class="name-row" id="nameRow">
+        <input id="nameInput" maxlength="16" placeholder="nickname">
+        <button id="submitScoreBtn">Save score</button>
+      </div>
+      <div id="submitMsg"></div>
+      <button class="btn" id="againBtn">🔁 Play Again</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const ROW_COLORS = ['#ff006e', '#ff6b35', '#ffbe0b', '#00ff41', '#00f5ff', '#8a7dff'];
+    const ROW_POINTS = [60, 50, 40, 30, 20, 10];
+
+    let state = 'menu'; // menu | playing | paused | dead-pause | over
+    let score = 0, lives = 3, level = 1;
+    let best = parseInt(localStorage.getItem('brickBreakerBest') || '0', 10);
+
+    const paddle = { w: 100, h: 14, x: W / 2 - 50, y: H - 36, speed: 9 };
+    const ball = { x: W / 2, y: H - 60, r: 8, vx: 0, vy: 0, stuck: true };
+    let bricks = [];
+    const keys = {};
+
+    function buildLevel(n) {
+      bricks = [];
+      const rows = Math.min(6, 3 + n);          // 4 rows on level 1, up to 6
+      const cols = 10, bw = 56, bh = 20, gap = 6;
+      const left = (W - cols * (bw + gap) + gap) / 2;
+      for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++)
+          bricks.push({ x: left + c * (bw + gap), y: 70 + r * (bh + gap), w: bw, h: bh,
+                        color: ROW_COLORS[r % ROW_COLORS.length],
+                        points: ROW_POINTS[r % ROW_POINTS.length], alive: true });
+    }
+
+    function ballSpeed() { return 5 + Math.min(4, (level - 1) * 0.7); }
+
+    function serveBall() {
+      ball.stuck = true;
+      ball.x = paddle.x + paddle.w / 2;
+      ball.y = paddle.y - ball.r - 1;
+      ball.vx = 0; ball.vy = 0;
+    }
+
+    function launchBall() {
+      if (!ball.stuck) return;
+      ball.stuck = false;
+      const a = -Math.PI / 2 + (Math.random() * 0.6 - 0.3);
+      ball.vx = Math.cos(a) * ballSpeed();
+      ball.vy = Math.sin(a) * ballSpeed();
+      playSound('launch');
+    }
+
+    function resetGame() {
+      score = 0; lives = 3; level = 1;
+      buildLevel(1);
+      paddle.x = W / 2 - paddle.w / 2;
+      serveBall();
+      updateHud();
+    }
+
+    // ---------- update ----------
+    function update() {
+      if (keys.ArrowLeft) paddle.x -= paddle.speed;
+      if (keys.ArrowRight) paddle.x += paddle.speed;
+      paddle.x = Math.max(6, Math.min(W - paddle.w - 6, paddle.x));
+
+      if (ball.stuck) {
+        ball.x = paddle.x + paddle.w / 2;
+        ball.y = paddle.y - ball.r - 1;
+        return;
+      }
+
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      // walls
+      if (ball.x - ball.r < 0) { ball.x = ball.r; ball.vx = Math.abs(ball.vx); playSound('wall'); }
+      if (ball.x + ball.r > W) { ball.x = W - ball.r; ball.vx = -Math.abs(ball.vx); playSound('wall'); }
+      if (ball.y - ball.r < 0) { ball.y = ball.r; ball.vy = Math.abs(ball.vy); playSound('wall'); }
+
+      // paddle: bounce angle depends on where the ball lands
+      if (ball.vy > 0 &&
+          ball.y + ball.r >= paddle.y && ball.y + ball.r <= paddle.y + paddle.h + 10 &&
+          ball.x >= paddle.x - ball.r && ball.x <= paddle.x + paddle.w + ball.r) {
+        const t = Math.max(-1, Math.min(1, (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2)));
+        const angle = -Math.PI / 2 + t * 1.05; // up to ~60 degrees off vertical
+        const sp = ballSpeed();
+        ball.vx = Math.cos(angle) * sp;
+        ball.vy = Math.sin(angle) * sp;
+        ball.y = paddle.y - ball.r;
+        playSound('paddle');
+      }
+
+      // bricks
+      for (const b of bricks) {
+        if (!b.alive) continue;
+        if (ball.x + ball.r < b.x || ball.x - ball.r > b.x + b.w ||
+            ball.y + ball.r < b.y || ball.y - ball.r > b.y + b.h) continue;
+        b.alive = false;
+        score += b.points;
+        // reflect off the nearest face
+        const overlapX = Math.min(ball.x + ball.r - b.x, b.x + b.w - (ball.x - ball.r));
+        const overlapY = Math.min(ball.y + ball.r - b.y, b.y + b.h - (ball.y - ball.r));
+        if (overlapX < overlapY) ball.vx = -ball.vx; else ball.vy = -ball.vy;
+        playSound('brick');
+        updateHud();
+        break;
+      }
+
+      if (bricks.every(b => !b.alive)) {
+        level++;
+        score += 100;
+        buildLevel(level);
+        serveBall();
+        updateHud();
+        playSound('level');
+        return;
+      }
+
+      // dropped
+      if (ball.y - ball.r > H) {
+        lives--;
+        updateHud();
+        if (lives <= 0) { gameOver(); return; }
+        playSound('drop');
+        serveBall();
+      }
+    }
+
+    function gameOver() {
+      state = 'over';
+      playSound('over');
+      if (score > best) { best = score; localStorage.setItem('brickBreakerBest', String(best)); }
+      updateHud();
+      document.getElementById('goTitle').textContent = '💥 Game Over';
+      document.getElementById('goText').textContent =
+        `You scored ${score} and reached level ${level}.`;
+      document.getElementById('submitMsg').textContent = '';
+      document.getElementById('nameRow').style.display = (score > 0 && leaderboardUp) ? 'flex' : 'none';
+      document.getElementById('nameInput').value = localStorage.getItem('arcadeNickname') || '';
+      document.getElementById('gameOverOverlay').classList.remove('hidden');
+    }
+
+    // ---------- draw ----------
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      for (const b of bricks) {
+        if (!b.alive) continue;
+        ctx.fillStyle = b.color;
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.fillRect(b.x, b.y, b.w, 4);
+      }
+
+      // paddle
+      ctx.fillStyle = '#00f5ff';
+      ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillRect(paddle.x, paddle.y, paddle.w, 4);
+
+      // ball
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (ball.stuck && state === 'playing') {
+        ctx.fillStyle = 'rgba(232, 234, 237, 0.75)';
+        ctx.font = '15px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('click / space to launch', W / 2, H - 70);
+      }
+      if (state === 'paused') {
+        ctx.fillStyle = 'rgba(232, 234, 237, 0.9)';
+        ctx.font = 'bold 30px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⏸ PAUSED', W / 2, H / 2);
+      }
+    }
+
+    function loop() {
+      if (state === 'playing') update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function updateHud() {
+      document.getElementById('scoreEl').textContent = score;
+      document.getElementById('bestEl').textContent = best;
+      document.getElementById('levelEl').textContent = level;
+      document.getElementById('livesEl').textContent = lives;
+    }
+
+    // ---------- input ----------
+    canvas.addEventListener('mousemove', e => {
+      const r = canvas.getBoundingClientRect();
+      paddle.x = (e.clientX - r.left) * (W / r.width) - paddle.w / 2;
+      paddle.x = Math.max(6, Math.min(W - paddle.w - 6, paddle.x));
+    });
+    canvas.addEventListener('click', () => { if (state === 'playing') launchBall(); });
+    canvas.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const r = canvas.getBoundingClientRect();
+      paddle.x = (e.touches[0].clientX - r.left) * (W / r.width) - paddle.w / 2;
+      paddle.x = Math.max(6, Math.min(W - paddle.w - 6, paddle.x));
+    }, { passive: false });
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); if (state === 'playing') launchBall(); }, { passive: false });
+
+    document.addEventListener('keydown', e => {
+      keys[e.key] = true;
+      if (e.key === ' ') { e.preventDefault(); if (state === 'playing') launchBall(); }
+      if ((e.key === 'p' || e.key === 'P' || e.key === 'Escape') &&
+          (state === 'playing' || state === 'paused')) togglePause();
+    });
+    document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+    function togglePause() {
+      if (state === 'playing') state = 'paused';
+      else if (state === 'paused') state = 'playing';
+      document.getElementById('pauseBtn').textContent = state === 'paused' ? '▶' : '⏸';
+    }
+    document.getElementById('pauseBtn').addEventListener('click', togglePause);
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      document.getElementById('startOverlay').classList.add('hidden');
+      resetGame();
+      state = 'playing';
+    });
+    document.getElementById('againBtn').addEventListener('click', () => {
+      document.getElementById('gameOverOverlay').classList.add('hidden');
+      resetGame();
+      state = 'playing';
+    });
+
+    // ---------- sound ----------
+    let soundEnabled = localStorage.getItem('brickBreakerSound') !== 'off';
+    let audioCtx = null;
+    function updateSoundBtn() {
+      document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+    }
+    document.getElementById('soundBtn').addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('brickBreakerSound', soundEnabled ? 'on' : 'off');
+      updateSoundBtn();
+    });
+    updateSoundBtn();
+
+    function playSound(kind) {
+      if (!soundEnabled) return;
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const t = audioCtx.currentTime;
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        const cfg = {
+          wall:   ['sine', 220, 0.08, 0.1],
+          paddle: ['sine', 330, 0.08, 0.12],
+          brick:  ['square', 520, 0.07, 0.1],
+          launch: ['triangle', 440, 0.1, 0.12],
+          drop:   ['sawtooth', 130, 0.3, 0.18],
+          level:  ['triangle', 660, 0.35, 0.15],
+          over:   ['sawtooth', 90, 0.6, 0.2]
+        }[kind] || ['sine', 300, 0.1, 0.1];
+        o.type = cfg[0];
+        o.frequency.setValueAtTime(cfg[1], t);
+        if (kind === 'level') o.frequency.setValueAtTime(880, t + 0.15);
+        if (kind === 'over') o.frequency.exponentialRampToValueAtTime(40, t + 0.6);
+        g.gain.setValueAtTime(cfg[3], t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + cfg[2]);
+        o.start(t); o.stop(t + cfg[2]);
+      } catch (e) { /* audio blocked */ }
+    }
+
+    // ---------- shared leaderboard (Cloudflare Pages Function + KV) ----------
+    const GAME_ID = 'brickbreaker';
+    let leaderboardUp = false;
+
+    async function loadLeaderboard() {
+      const list = document.getElementById('lbList');
+      const note = document.getElementById('lbNote');
+      try {
+        const res = await fetch('/api/scores?game=' + GAME_ID);
+        if (!res.ok) throw new Error('http ' + res.status);
+        const rows = await res.json();
+        leaderboardUp = true;
+        note.textContent = '';
+        list.innerHTML = rows.length
+          ? rows.slice(0, 10).map((r, i) =>
+              `<li><span>${i + 1}. ${escapeHtml(r.name)}</span><span>${r.score}</span></li>`).join('')
+          : '<li><span>no scores yet — be first!</span></li>';
+      } catch (e) {
+        leaderboardUp = false;
+        list.innerHTML = '';
+        note.textContent = 'Shared leaderboard is offline — your best score is saved on this device.';
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, ch =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    }
+
+    document.getElementById('submitScoreBtn').addEventListener('click', async () => {
+      const name = document.getElementById('nameInput').value.trim();
+      const msg = document.getElementById('submitMsg');
+      if (name.length < 2) { msg.textContent = 'Nickname needs at least 2 characters.'; return; }
+      localStorage.setItem('arcadeNickname', name);
+      msg.textContent = 'Saving…';
+      try {
+        const res = await fetch('/api/scores', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ game: GAME_ID, name, score })
+        });
+        if (!res.ok) throw new Error('http ' + res.status);
+        msg.textContent = '✅ Saved to the leaderboard!';
+        document.getElementById('nameRow').style.display = 'none';
+        loadLeaderboard();
+      } catch (e) {
+        msg.textContent = 'Could not reach the leaderboard — score kept on this device.';
+      }
+    });
+
+    // ---------- boot ----------
+    buildLevel(1);
+    serveBall();
+    updateHud();
+    loadLeaderboard();
+    loop();
+  </script>
+</body>
+</html>
