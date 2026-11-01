@@ -225,7 +225,16 @@
         x: aim.x + (Math.random() * 2 - 1) * scatter,
         y: aim.y + (Math.random() * 2 - 1) * scatter * 0.7
       };
-      shot = { from: { ...BALL_START }, to: target, t: 0, dur: Math.max(22, 40 - power * 16) };
+      // a low ball between the posts cannot go out under the bar:
+      // it rolls over the line (the keeper can still get down to it)
+      let roller = false;
+      if (target.x > GOAL.left + 8 && target.x < GOAL.right - 8 &&
+          target.y > GOAL.bottom - 16) {
+        target.y = GOAL.bottom - 16 - Math.random() * 10;
+        roller = true;
+      }
+      shot = { from: { ...BALL_START }, to: target, t: 0,
+               dur: Math.max(22, 40 - power * 16), roller };
 
       const camp = campedZone();
       let diveX, diveY, camped = false;
@@ -490,8 +499,8 @@
       if (shot) {
         const t = Math.min(1, shot.t / shot.dur);
         bx = lerp(shot.from.x, shot.to.x, t);
-        // arc the flight a little
-        by = lerp(shot.from.y, shot.to.y, t) - Math.sin(t * Math.PI) * 40;
+        // arc the flight a little - rollers hug the grass
+        by = lerp(shot.from.y, shot.to.y, t) - Math.sin(t * Math.PI) * (shot.roller ? 6 : 40);
         r = lerp(11, 6, t); // depth illusion: shrinks toward the goal
       }
       ctx.fillStyle = '#ffffff';
