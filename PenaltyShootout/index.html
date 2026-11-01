@@ -296,8 +296,11 @@
         // not where his dive would eventually end - fast shots beat slow dives
         const kp = keeperPosAt(shot.t);
         const rx = keeper.reach * 0.62; // arms reach less sideways than the body spans
-        const ry = keeper.reach;
-        const dx = (t.x - kp.x) / rx, dy = (t.y - kp.y) / ry;
+        // asymmetric vertical reach: arms stretch far above him, but a ball
+        // below his center passes his feet - a leaping keeper can't save a roller
+        const dyRaw = t.y - kp.y;
+        const ry = dyRaw > 0 ? Math.min(55, keeper.reach * 0.55) : keeper.reach;
+        const dx = (t.x - kp.x) / rx, dy = dyRaw / ry;
         saved = dx * dx + dy * dy <= 1;
         if (saved) {
           // freeze the dive at the catch and put the ball in his gloves
