@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚽ Penalty Shootout - PlayRetroArcade</title>
+  <link rel="icon" href="../Public/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../Public/arcade.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --game-accent: #00ff41; } /* pitch green */
+    body {
+      background: var(--arcade-bg-gradient);
+      color: var(--arcade-text);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 16px 20px 8px;
+      padding: 14px 22px;
+      background: var(--arcade-surface);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+    }
+    .home-btn {
+      background: linear-gradient(135deg, var(--game-accent), var(--accent-deep));
+      color: var(--game-accent-ink);
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      transition: transform 0.15s ease;
+    }
+    .home-btn:hover { transform: translateY(-2px); }
+    .topbar h1 { font-size: 21px; color: var(--game-accent); }
+    .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .stat-pill {
+      font-family: var(--font-retro);
+      font-size: 13px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-sm);
+      padding: 7px 12px;
+    }
+    .icon-btn {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
+      color: var(--arcade-text);
+      border-radius: var(--radius-md);
+      padding: 7px 11px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .icon-btn:hover { background: var(--accent-line); }
+
+    .layout {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 10px 20px 40px;
+      flex-wrap: wrap;
+    }
+    canvas {
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      max-width: 100%;
+      cursor: crosshair;
+    }
+    .panel {
+      background: var(--arcade-surface);
+      border: 1px solid var(--arcade-line);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      width: 220px;
+    }
+    .panel h3 { font-size: 14px; color: var(--game-accent); margin-bottom: 10px; }
+    .panel .hint { font-size: 12.5px; color: var(--arcade-muted); line-height: 1.6; }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 5, 8, 0.88);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .overlay.hidden { display: none; }
+    .card {
+      background: var(--arcade-surface-strong);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-lg);
+      padding: 34px 42px;
+      text-align: center;
+      max-width: 440px;
+    }
+    .card h2 { color: var(--game-accent); font-size: 26px; margin-bottom: 10px; }
+    .card p { color: var(--arcade-muted); font-size: 14.5px; line-height: 1.55; margin-bottom: 8px; }
+    .btn {
+      background: linear-gradient(135deg, var(--game-accent), var(--accent-deep));
+      color: var(--game-accent-ink);
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 12px 22px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    .btn:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="home-btn" href="../index.html">🏠 Home</a>
+    <h1>⚽ Penalty Shootout</h1>
+    <div class="right">
+      <span class="stat-pill">Score <b id="scoreEl">0</b></span>
+      <span class="stat-pill">Goals <b id="goalsEl">0</b></span>
+      <span class="stat-pill">Level <b id="levelEl">1</b></span>
+      <span class="stat-pill">❤️ <b id="livesEl">3</b></span>
+      <button class="icon-btn" id="soundBtn" title="Sound on/off">🔊</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <canvas id="game" width="640" height="520"></canvas>
+    <div class="panel">
+      <h3>How to Play</h3>
+      <div class="hint">
+        <b>Aim</b> with the mouse — the target moves inside the goal.<br>
+        <b>Hold</b> the mouse button to charge power, <b>release</b> to shoot.<br><br>
+        More power beats the keeper's dive, but the shot scatters more —
+        and corners score bonus points. Three saves or misses end the game.<br><br>
+        The keeper learns every level. Good luck. 🧤
+      </div>
+      <h3 style="margin-top:16px;">Scoring</h3>
+      <div class="hint">
+        Goal: 100 + level bonus<br>
+        Corner shots: up to +60<br>
+        Level up every 5 goals
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="startOverlay">
+    <div class="card">
+      <h2>⚽ Penalty Shootout</h2>
+      <p>You against the keeper. Pick your corner, charge the shot, beat the dive.
+         Three failed attempts and the whistle blows.</p>
+      <button class="btn" id="startBtn">▶ Kick Off</button>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="gameOverOverlay">
+    <div class="card" id="gameOverCard">
+      <h2>🏁 Full Time</h2>
+      <p id="goText"></p>
+      <button class="btn" id="againBtn">🔁 Play Again</button>
+    </div>
+  </div>
+
+  <script src="../Public/leaderboard.js"></script>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    // Goal mouth in canvas coordinates
+    const GOAL = { left: 120, right: 520, top: 110, bottom: 300 };
+    const BALL_START = { x: W / 2, y: 470 };
+
+    let state = 'menu'; // menu | aim | charge | shot | result | over
+    let score = 0, goals = 0, lives = 3, level = 1, streak = 0;
+    let aim = { x: W / 2, y: 220 };
+    let power = 0;                 // 0..1 while charging
+    let shot = null;               // {from,to,t,dur,target,scattered}
+    let keeper = null;             // {x,y, diveFrom, diveTo, t, dur, reach}
+    let message = null;            // {text,color,until}
+    let resultUntil = 0;
+
+    const KEEPER_HOME = { x: W / 2, y: 235 };
+
+    function keeperReach() { return Math.max(50, 90 - power * 38) + (level - 1) * 3; } // power shrinks, levels grow the save window
+    function guessChance() { return Math.min(0.85, 0.45 + (level - 1) * 0.07); }
+
+    function startGame() {
+      score = 0; goals = 0; lives = 3; level = 1; streak = 0;
+      state = 'aim';
+      updateHud();
+    }
+
+    function shoot() {
+      // scatter grows with power
+      const scatter = power * 46;
+      const target = {
+        x: aim.x + (Math.random() * 2 - 1) * scatter,
+        y: aim.y + (Math.random() * 2 - 1) * scatter * 0.7
+      };
+      shot = { from: { ...BALL_START }, to: target, t: 0, dur: Math.max(22, 40 - power * 16) };
+
+      // keeper picks a zone (left / center / right): the right one with
+      // guessChance, otherwise one of the other two at random
+      const aimZone = aim.x < W / 2 - 70 ? -1 : (aim.x > W / 2 + 70 ? 1 : 0);
+      let diveZone;
+      if (Math.random() < guessChance()) {
+        diveZone = aimZone;
+      } else {
+        const others = [-1, 0, 1].filter(z => z !== aimZone);
+        diveZone = others[Math.floor(Math.random() * others.length)];
+      }
+      const diveX = diveZone === 0
+        ? W / 2 + (Math.random() * 60 - 30)
+        : W / 2 + diveZone * (80 + Math.random() * 110);
+      const diveY = 130 + Math.random() * 150; // can reach the top corners too
+      keeper = {
+        diveFrom: { ...KEEPER_HOME },
+        diveTo: { x: diveX, y: diveY },
+        t: 0,
+        dur: Math.max(18, 34 - level * 1.5),
+        reach: keeperReach()
+      };
+      state = 'shot';
+      playSound('kick');
+    }
+
+    function resolveShot() {
+      const t = shot.to;
+      const onTarget = t.x > GOAL.left + 8 && t.x < GOAL.right - 8 &&
+                       t.y > GOAL.top + 8 && t.y < GOAL.bottom - 6;
+      let saved = false;
+      if (onTarget) {
+        const d = Math.hypot(t.x - keeper.diveTo.x, t.y - keeper.diveTo.y);
+        saved = d < keeper.reach;
+      }
+
+      if (onTarget && !saved) {
+        streak++;
+        goals++;
+        const cornerDist = Math.min(
+          Math.hypot(t.x - GOAL.left, t.y - GOAL.top),
+          Math.hypot(t.x - GOAL.right, t.y - GOAL.top),
+          Math.hypot(t.x - GOAL.left, t.y - GOAL.bottom),
+          Math.hypot(t.x - GOAL.right, t.y - GOAL.bottom));
+        const cornerBonus = Math.max(0, Math.round(60 - cornerDist * 0.4));
+        const pts = 100 + (level - 1) * 20 + cornerBonus + (streak >= 3 ? streak * 5 : 0);
+        score += pts;
+        message = { text: `GOAL! +${pts}`, color: '#00ff41' };
+        playSound('goal');
+        if (goals % 5 === 0) { level++; playSound('level'); }
+      } else {
+        streak = 0;
+        lives--;
+        message = onTarget
+          ? { text: 'SAVED! 🧤', color: '#ffbe0b' }
+          : { text: 'OFF TARGET!', color: '#ff4d4d' };
+        playSound(onTarget ? 'save' : 'miss');
+      }
+      updateHud();
+      state = 'result';
+      resultUntil = performance.now() + 1300;
+    }
+
+    function endGame() {
+      state = 'over';
+      playSound('over');
+      const bestKey = 'penaltyBest';
+      const best = parseInt(localStorage.getItem(bestKey) || '0', 10);
+      if (score > best) localStorage.setItem(bestKey, String(score));
+      document.getElementById('goText').textContent =
+        `${goals} goals, level ${level}, final score ${score}.`;
+      document.getElementById('gameOverOverlay').classList.remove('hidden');
+      ArcadeLB.offerSubmit('penalty', score, document.getElementById('gameOverCard'));
+    }
+
+    // ---------- loop ----------
+    function step() {
+      if (state === 'charge') power = Math.min(1, power + 0.022);
+
+      if (state === 'shot') {
+        shot.t++;
+        keeper.t++;
+        if (shot.t >= shot.dur) resolveShot();
+      }
+
+      if (state === 'result' && performance.now() > resultUntil) {
+        message = null;
+        shot = null;
+        keeper = null;
+        power = 0;
+        if (lives <= 0) { endGame(); } else { state = 'aim'; }
+      }
+
+      draw();
+      requestAnimationFrame(step);
+    }
+
+    // ---------- drawing ----------
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+
+    function draw() {
+      // stadium sky + stands
+      const sky = ctx.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0, '#0d1b2e');
+      sky.addColorStop(0.45, '#14273e');
+      sky.addColorStop(0.46, '#1b2432');
+      sky.addColorStop(1, '#0a0e18');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W, H);
+
+      // crowd dots
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      for (let i = 0; i < 90; i++) {
+        ctx.fillRect((i * 53) % W, 20 + ((i * 29) % 70), 3, 3);
+      }
+
+      // pitch
+      const pitch = ctx.createLinearGradient(0, 300, 0, H);
+      pitch.addColorStop(0, '#1c5c2e');
+      pitch.addColorStop(1, '#10381d');
+      ctx.fillStyle = pitch;
+      ctx.fillRect(0, 300, W, H - 300);
+      // mowing stripes
+      ctx.fillStyle = 'rgba(255,255,255,0.04)';
+      for (let i = 0; i < 6; i++) ctx.fillRect(0, 300 + i * 38, W, 19);
+      // penalty spot + arc
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(W / 2, 470, 5, 0, Math.PI * 2); ctx.stroke();
+
+      drawGoal();
+      drawKeeper();
+      drawBall();
+
+      // aim crosshair
+      if (state === 'aim' || state === 'charge') {
+        ctx.strokeStyle = '#00f5ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(aim.x, aim.y, 14, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(aim.x - 20, aim.y); ctx.lineTo(aim.x - 8, aim.y);
+        ctx.moveTo(aim.x + 8, aim.y); ctx.lineTo(aim.x + 20, aim.y);
+        ctx.moveTo(aim.x, aim.y - 20); ctx.lineTo(aim.x, aim.y - 8);
+        ctx.moveTo(aim.x, aim.y + 8); ctx.lineTo(aim.x, aim.y + 20);
+        ctx.stroke();
+      }
+
+      // power bar
+      if (state === 'charge') {
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(W / 2 - 102, 496, 204, 16);
+        const hue = 120 - power * 120; // green -> red
+        ctx.fillStyle = `hsl(${hue}, 90%, 50%)`;
+        ctx.fillRect(W / 2 - 100, 498, 200 * power, 12);
+      }
+
+      // result message
+      if (message) {
+        ctx.fillStyle = message.color;
+        ctx.font = 'bold 42px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = message.color;
+        ctx.shadowBlur = 8;
+        ctx.fillText(message.text, W / 2, 400);
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    function drawGoal() {
+      ctx.strokeStyle = '#f4f4f4';
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(GOAL.left, GOAL.bottom);
+      ctx.lineTo(GOAL.left, GOAL.top);
+      ctx.lineTo(GOAL.right, GOAL.top);
+      ctx.lineTo(GOAL.right, GOAL.bottom);
+      ctx.stroke();
+      // net
+      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      ctx.lineWidth = 1;
+      for (let x = GOAL.left + 20; x < GOAL.right; x += 20) {
+        ctx.beginPath(); ctx.moveTo(x, GOAL.top); ctx.lineTo(x, GOAL.bottom); ctx.stroke();
+      }
+      for (let y = GOAL.top + 20; y < GOAL.bottom; y += 20) {
+        ctx.beginPath(); ctx.moveTo(GOAL.left, y); ctx.lineTo(GOAL.right, y); ctx.stroke();
+      }
+      // goal line
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(60, GOAL.bottom + 2); ctx.lineTo(W - 60, GOAL.bottom + 2); ctx.stroke();
+    }
+
+    function drawKeeper() {
+      let kx = KEEPER_HOME.x, ky = KEEPER_HOME.y, lean = 0;
+      if (keeper) {
+        const t = ease(Math.min(1, keeper.t / keeper.dur));
+        kx = lerp(keeper.diveFrom.x, keeper.diveTo.x, t);
+        ky = lerp(keeper.diveFrom.y, keeper.diveTo.y, t);
+        lean = (keeper.diveTo.x - keeper.diveFrom.x) * 0.003 * t;
+      } else if (state === 'aim' || state === 'charge') {
+        kx += Math.sin(performance.now() * 0.003) * 18; // nervous shuffle
+      }
+      ctx.save();
+      ctx.translate(kx, ky);
+      ctx.rotate(lean);
+      // legs
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(-10, 26, 8, 26);
+      ctx.fillRect(2, 26, 8, 26);
+      // jersey
+      ctx.fillStyle = '#ffbe0b';
+      ctx.fillRect(-14, -8, 28, 36);
+      // arms out
+      ctx.fillRect(-30, -4, 16, 8);
+      ctx.fillRect(14, -4, 16, 8);
+      // gloves
+      ctx.fillStyle = '#f4f4f4';
+      ctx.fillRect(-34, -6, 6, 10);
+      ctx.fillRect(28, -6, 6, 10);
+      // head
+      ctx.fillStyle = '#fdbcb4';
+      ctx.beginPath(); ctx.arc(0, -17, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    function drawBall() {
+      let bx = BALL_START.x, by = BALL_START.y, r = 11;
+      if (shot) {
+        const t = Math.min(1, shot.t / shot.dur);
+        bx = lerp(shot.from.x, shot.to.x, t);
+        // arc the flight a little
+        by = lerp(shot.from.y, shot.to.y, t) - Math.sin(t * Math.PI) * 40;
+        r = lerp(11, 6, t); // depth illusion: shrinks toward the goal
+      }
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(bx, by, r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#1b2432';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(bx, by, r, 0, Math.PI * 2); ctx.stroke();
+      // simple panel marks
+      ctx.beginPath(); ctx.arc(bx, by, r * 0.45, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    function updateHud() {
+      document.getElementById('scoreEl').textContent = score;
+      document.getElementById('goalsEl').textContent = goals;
+      document.getElementById('levelEl').textContent = level;
+      document.getElementById('livesEl').textContent = lives;
+    }
+
+    // ---------- input ----------
+    function canvasPos(e) {
+      const r = canvas.getBoundingClientRect();
+      const cx = (e.touches ? e.touches[0].clientX : e.clientX);
+      const cy = (e.touches ? e.touches[0].clientY : e.clientY);
+      return { x: (cx - r.left) * (W / r.width), y: (cy - r.top) * (H / r.height) };
+    }
+    function moveAim(e) {
+      if (state !== 'aim' && state !== 'charge') return;
+      const p = canvasPos(e);
+      aim.x = Math.max(GOAL.left - 30, Math.min(GOAL.right + 30, p.x));
+      aim.y = Math.max(GOAL.top - 20, Math.min(GOAL.bottom + 10, p.y));
+    }
+    canvas.addEventListener('mousemove', moveAim);
+    canvas.addEventListener('touchmove', e => { e.preventDefault(); moveAim(e); }, { passive: false });
+    canvas.addEventListener('mousedown', () => { if (state === 'aim') { state = 'charge'; power = 0; } });
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault(); moveAim(e);
+      if (state === 'aim') { state = 'charge'; power = 0; }
+    }, { passive: false });
+    window.addEventListener('mouseup', () => { if (state === 'charge') shoot(); });
+    window.addEventListener('touchend', e => { if (state === 'charge') { e.preventDefault(); shoot(); } }, { passive: false });
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      document.getElementById('startOverlay').classList.add('hidden');
+      startGame();
+    });
+    document.getElementById('againBtn').addEventListener('click', () => {
+      document.getElementById('gameOverOverlay').classList.add('hidden');
+      startGame();
+    });
+
+    // ---------- sound ----------
+    let soundEnabled = localStorage.getItem('penaltySound') !== 'off';
+    let audioCtx = null;
+    function updateSoundBtn() {
+      document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+    }
+    document.getElementById('soundBtn').addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('penaltySound', soundEnabled ? 'on' : 'off');
+      updateSoundBtn();
+    });
+    updateSoundBtn();
+
+    function playSound(kind) {
+      if (!soundEnabled) return;
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const t = audioCtx.currentTime;
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        const cfg = {
+          kick:  ['sine', 150, 0.12, 0.2],
+          goal:  ['triangle', 523, 0.5, 0.18],
+          save:  ['square', 240, 0.25, 0.14],
+          miss:  ['sawtooth', 160, 0.3, 0.15],
+          level: ['triangle', 660, 0.4, 0.15],
+          over:  ['sawtooth', 100, 0.7, 0.18]
+        }[kind] || ['sine', 300, 0.1, 0.1];
+        o.type = cfg[0];
+        o.frequency.setValueAtTime(cfg[1], t);
+        if (kind === 'goal') { o.frequency.setValueAtTime(659, t + 0.15); o.frequency.setValueAtTime(784, t + 0.3); }
+        if (kind === 'over') o.frequency.exponentialRampToValueAtTime(45, t + 0.7);
+        g.gain.setValueAtTime(cfg[3], t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + cfg[2]);
+        o.start(t); o.stop(t + cfg[2]);
+      } catch (e) { /* audio blocked */ }
+    }
+
+    updateHud();
+    step();
+  </script>
+</body>
+</html>
