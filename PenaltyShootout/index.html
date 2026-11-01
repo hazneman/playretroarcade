@@ -243,6 +243,8 @@
         const zc = zoneCenter(camp);
         diveX = zc.x + (Math.random() * 24 - 12);
         diveY = zc.y + (Math.random() * 20 - 10);
+        // never a statue: if the camp spot is where he already stands, crouch into it
+        if (Math.hypot(diveX - KEEPER_HOME.x, diveY - KEEPER_HOME.y) < 55) diveY = 285;
         camped = true;
       } else {
         // normal AI: guess a zone (left / center / right)
@@ -254,10 +256,15 @@
           const others = [-1, 0, 1].filter(z => z !== aimZone);
           diveZone = others[Math.floor(Math.random() * others.length)];
         }
-        diveX = diveZone === 0
-          ? W / 2 + (Math.random() * 60 - 30)
-          : W / 2 + diveZone * (80 + Math.random() * 110);
-        diveY = 130 + Math.random() * 150; // can reach the top corners too
+        if (diveZone === 0) {
+          // guarding the middle is still a visible move: drop low or leap high
+          diveX = W / 2 + (Math.random() * 60 - 30);
+          diveY = Math.random() < 0.5 ? 282 + Math.random() * 10   // crouch save
+                                      : 150 + Math.random() * 25;  // high leap
+        } else {
+          diveX = W / 2 + diveZone * (80 + Math.random() * 110);
+          diveY = 130 + Math.random() * 150; // can reach the top corners too
+        }
       }
       keeper = {
         diveFrom: { ...KEEPER_HOME },
@@ -314,7 +321,11 @@
         score += pts;
         message = { text: `GOAL! +${pts}`, color: '#00ff41' };
         playSound('goal');
-        if (goals % 5 === 0) { level++; playSound('level'); }
+        if (goals % 5 === 0) {
+          level++;
+          message.sub = `⬆ LEVEL ${level} — the keeper gets sharper!`;
+          playSound('level');
+        }
       } else {
         if (keeper.camped) goalZones = [];
         streak = 0;
@@ -326,7 +337,7 @@
       }
       updateHud();
       state = 'result';
-      resultUntil = performance.now() + 1300;
+      resultUntil = performance.now() + (message.sub ? 1900 : 1300);
     }
 
     function endGame() {
@@ -350,6 +361,8 @@
         keeper.t++;
         if (shot.t >= shot.dur) resolveShot();
       }
+
+      if (state === 'result' && keeper && keeper.t < keeper.dur) keeper.t++;
 
       if (state === 'result' && performance.now() > resultUntil) {
         message = null;
@@ -432,6 +445,11 @@
         ctx.shadowBlur = 8;
         ctx.fillText(message.text, W / 2, 400);
         ctx.shadowBlur = 0;
+        if (message.sub) {
+          ctx.fillStyle = '#00f5ff';
+          ctx.font = 'bold 20px sans-serif';
+          ctx.fillText(message.sub, W / 2, 434);
+        }
       }
     }
 
