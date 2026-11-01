@@ -191,8 +191,8 @@
 
     const KEEPER_HOME = { x: W / 2, y: 235 };
 
-    function keeperReach() { return Math.max(56, 97 - power * 36) + (level - 1) * 4; } // power shrinks, levels grow the save window
-    function guessChance() { return Math.min(0.9, 0.56 + (level - 1) * 0.06); }
+    function keeperReach() { return Math.max(56, 97 - power * 36) + (level - 1) * 6; } // power shrinks, levels grow the save window
+    function guessChance() { return Math.min(0.92, 0.56 + (level - 1) * 0.08); }
 
     // 3x2 grid over the goal mouth; "same spot" = same zone
     function zoneOf(x, y) {
@@ -262,14 +262,33 @@
       playSound('kick');
     }
 
+    function keeperPosAt(frame) {
+      const t = ease(Math.min(1, frame / keeper.dur));
+      return {
+        x: lerp(keeper.diveFrom.x, keeper.diveTo.x, t),
+        y: lerp(keeper.diveFrom.y, keeper.diveTo.y, t)
+      };
+    }
+
     function resolveShot() {
       const t = shot.to;
       const onTarget = t.x > GOAL.left + 8 && t.x < GOAL.right - 8 &&
                        t.y > GOAL.top + 8 && t.y < GOAL.bottom - 6;
       let saved = false;
       if (onTarget) {
-        const d = Math.hypot(t.x - keeper.diveTo.x, t.y - keeper.diveTo.y);
-        saved = d < keeper.reach;
+        // judge the save where the keeper ACTUALLY is when the ball arrives,
+        // not where his dive would eventually end - fast shots beat slow dives
+        const kp = keeperPosAt(shot.t);
+        const rx = keeper.reach * 0.62; // arms reach less sideways than the body spans
+        const ry = keeper.reach;
+        const dx = (t.x - kp.x) / rx, dy = (t.y - kp.y) / ry;
+        saved = dx * dx + dy * dy <= 1;
+        if (saved) {
+          // freeze the dive at the catch and put the ball in his gloves
+          keeper.diveTo = { x: kp.x, y: kp.y };
+          keeper.t = keeper.dur;
+          shot.to = { x: kp.x + (t.x > kp.x ? 16 : -16), y: kp.y - 4 };
+        }
       }
 
       if (onTarget && !saved) {
