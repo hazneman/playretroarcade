@@ -276,7 +276,13 @@
       if (ball.vy > 0 &&
           ball.y + ball.r >= paddle.y && ball.y + ball.r <= paddle.y + paddle.h + 10 &&
           ball.x >= paddle.x - ball.r && ball.x <= paddle.x + paddle.w + ball.r) {
-        const t = Math.max(-1, Math.min(1, (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2)));
+        let t = Math.max(-1, Math.min(1, (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2)));
+        // never perfectly vertical, or the ball can shuttle forever in a
+        // cleared column between paddle and top wall
+        if (Math.abs(t) < 0.15) {
+          const sign = t === 0 ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(t);
+          t = sign * (0.15 + Math.random() * 0.1);
+        }
         const angle = -Math.PI / 2 + t * 1.05; // up to ~60 degrees off vertical
         const sp = ballSpeed();
         ball.vx = Math.cos(angle) * sp;
