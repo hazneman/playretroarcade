@@ -5,6 +5,41 @@
   <title>2048 - PlayRetroArcade</title>
 
   <link href="style/main.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../Public/arcade.css">
+  <style>
+    /* PlayRetroArcade shell: dark site background, game keeps its own beige card */
+    html { background: none; }
+    body {
+      background: var(--arcade-bg-gradient);
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px 0 40px;
+    }
+    .container {
+      background: #faf8ef;
+      width: 548px;
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+    }
+    .pra-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--arcade-cyan), var(--accent-deep));
+      color: var(--game-accent-ink);
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: 13px;
+      text-decoration: none;
+      border-radius: var(--radius-md);
+      padding: 9px 15px;
+      margin-bottom: 4px;
+    }
+    @media screen and (max-width: 560px) {
+      .container { width: auto; margin: 0 10px; padding: 14px; }
+    }
+  </style>
   <link rel="shortcut icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="meta/apple-touch-icon.png">
   <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone 5+ -->
@@ -18,7 +53,7 @@
 </head>
 <body>
   <div class="container">
-    <p><a href="../index.html">🏠 Back to PlayRetroArcade</a></p>
+    <p><a class="pra-home" href="../index.html">🏠 PlayRetroArcade</a></p>
     <div class="heading">
       <h1 class="title">2048</h1>
       <div class="scores-container">

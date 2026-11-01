@@ -234,7 +234,8 @@
         Ship.init();
       }
 
-      if($SM.get('config.lightsOff', true)){
+      // PlayRetroArcade: dark is the default; an explicit 'lights on' choice is respected
+      if($SM.get('config.lightsOff', true) !== false){
         Engine.turnLightsOff();
       }
 

@@ -22,7 +22,7 @@ Cloudflare Pages, auto-deploys from `main` (no build command, output = repo root
 
 ## Design system
 
-`Public/arcade.css` is the single source of design truth: palette, the one brand cyan (#00f5ff — never introduce a second cyan), the three-step radius scale (8/12/20), font stacks (system UI for body, 'Courier New' only for big titles and HUD chips), shadows, and shared `arc-*` components (topbar, pill, btn, panel, chip, overlay). Every first-party page links it before its own `<style>` and differs only by `--game-accent` (e.g. Basketball orange, RaceCar red) plus its own game art. Don't redefine shell values locally — alias the arcade tokens. Third-party games (2048, ADarkRoom) keep their upstream look and do NOT link it.
+`Public/arcade.css` is the single source of design truth: palette, the one brand cyan (#00f5ff — never introduce a second cyan), the three-step radius scale (8/12/20), font stacks (system UI for body, 'Courier New' only for big titles and HUD chips), shadows, and shared `arc-*` components (topbar, pill, btn, panel, chip, overlay). Every first-party page links it before its own `<style>` and differs only by `--game-accent` (e.g. Basketball orange, RaceCar red) plus its own game art. Don't redefine shell values locally — alias the arcade tokens. Third-party games keep their upstream *in-game* look, but their page shell is themed to the site: 2048 links arcade.css and floats its beige board as a card on the dark background; A Dark Room defaults to its own built-in dark mode (config.lightsOff, user toggle respected) with a site Home pill. Never restyle their game internals.
 
 ## Third-party games
 
