@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bug Reports - PlayRetroArcade</title>
+  <link rel="icon" href="../Public/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../Public/arcade.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--arcade-bg-gradient);
+      color: var(--arcade-text);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      padding: 30px 20px;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 { color: var(--arcade-cyan); font-size: 22px; margin-bottom: 14px; }
+    .bar { display: flex; gap: 8px; margin-bottom: 18px; }
+    input {
+      flex: 1;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-md);
+      color: var(--arcade-text);
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    button {
+      background: linear-gradient(135deg, var(--arcade-cyan), var(--accent-deep));
+      color: var(--game-accent-ink);
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 10px 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .report {
+      background: var(--arcade-surface);
+      border: 1px solid var(--arcade-line);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .report .meta { font-size: 12px; color: var(--arcade-muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .report .meta b { color: var(--arcade-cyan); font-weight: 600; }
+    .report .msg { font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+    #status { color: var(--arcade-muted); font-size: 13px; margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🐞 Bug Reports</h1>
+    <div class="bar">
+      <input id="key" type="password" placeholder="FEEDBACK_KEY">
+      <button id="load">Load</button>
+    </div>
+    <div id="status"></div>
+    <div id="list"></div>
+  </div>
+  <script>
+    const keyEl = document.getElementById('key');
+    const statusEl = document.getElementById('status');
+    const listEl = document.getElementById('list');
+    keyEl.value = localStorage.getItem('feedbackAdminKey') || '';
+
+    const esc = s => String(s).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    async function load() {
+      const key = keyEl.value.trim();
+      if (!key) { statusEl.textContent = 'Enter the FEEDBACK_KEY you set in the Cloudflare dashboard.'; return; }
+      localStorage.setItem('feedbackAdminKey', key);
+      statusEl.textContent = 'Loading…';
+      listEl.innerHTML = '';
+      try {
+        const r = await fetch('/api/feedback?key=' + encodeURIComponent(key), { cache: 'no-store' });
+        if (r.status === 403) { statusEl.textContent = '403 — wrong key, or FEEDBACK_KEY is not set on the Pages project yet.'; return; }
+        if (!r.ok) { statusEl.textContent = 'Error ' + r.status; return; }
+        const rows = await r.json();
+        statusEl.textContent = rows.length + ' report(s), newest first.';
+        listEl.innerHTML = rows.map(x =>
+          '<div class="report"><div class="meta"><b>' + esc(x.page || '?') + '</b><span>' +
+          new Date(x.at).toLocaleString() + '</span></div><div class="msg">' + esc(x.message) + '</div></div>'
+        ).join('') || '<div id="status">No reports yet 🎉</div>';
+      } catch (e) {
+        statusEl.textContent = 'Could not reach /api/feedback.';
+      }
+    }
+    document.getElementById('load').addEventListener('click', load);
+    keyEl.addEventListener('keydown', e => { if (e.key === 'Enter') load(); });
+    if (keyEl.value) load();
+  </script>
+</body>
+</html>
