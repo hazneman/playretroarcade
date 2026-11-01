@@ -629,6 +629,89 @@
     const PLAYER_HEIGHT = 40;
     const ALIEN_WIDTH = 40;
     const ALIEN_HEIGHT = 30;
+
+    // Pixel bitmap sprites: one species per row color, two march frames each.
+    // Original designs in the spirit of the classics (not copies).
+    const ALIEN_SPRITES = {
+      red: [[ // "squid" - narrow, trailing tentacles
+        '....1111....',
+        '..11111111..',
+        '.1111111111.',
+        '111.1111.111',
+        '111111111111',
+        '...11..11...',
+        '..11.11.11..',
+        '.1........1.'
+      ], [
+        '....1111....',
+        '..11111111..',
+        '.1111111111.',
+        '111.1111.111',
+        '111111111111',
+        '..1.1..1.1..',
+        '.1..1..1..1.',
+        '..1......1..'
+      ]],
+      yellow: [[ // "crab" - wide arms
+        '..1......1..',
+        '...1....1...',
+        '..11111111..',
+        '.11.1111.11.',
+        '111111111111',
+        '1.11111111.1',
+        '1.1......1.1',
+        '...11..11...'
+      ], [
+        '..1......1..',
+        '1..1....1..1',
+        '1.11111111.1',
+        '111.1111.111',
+        '.1111111111.',
+        '..11111111..',
+        '..1......1..',
+        '.11......11.'
+      ]],
+      green: [[ // "octopus" - round, many legs
+        '...111111...',
+        '.1111111111.',
+        '111111111111',
+        '111..11..111',
+        '111111111111',
+        '...111111...',
+        '..11.11.11..',
+        '11........11'
+      ], [
+        '...111111...',
+        '.1111111111.',
+        '111111111111',
+        '111..11..111',
+        '111111111111',
+        '..111..111..',
+        '.11..11..11.',
+        '..11....11..'
+      ]]
+    };
+
+    const PLAYER_SPRITE = [
+      '.......1.......',
+      '......111......',
+      '......111......',
+      '.1111111111111.',
+      '111111111111111',
+      '111111111111111',
+      '11.111111111.11',
+      '11.111111111.11',
+      '....11...11....',
+      '...111...111...'
+    ];
+
+    function drawBitmap(rows, x, y, w, h, color) {
+      const ch = h / rows.length, cw = w / rows[0].length;
+      ctx.fillStyle = color;
+      for (let r = 0; r < rows.length; r++)
+        for (let cc = 0; cc < rows[r].length; cc++)
+          if (rows[r][cc] === '1') ctx.fillRect(x + cc * cw, y + r * ch, cw + 0.5, ch + 0.5);
+    }
     const ALIEN_ROWS = 5;
     const ALIEN_COLS = 11;
     const ALIEN_SPACING_X = 55;
@@ -1359,117 +1442,26 @@
         return;
       }
 
-      // Draw player
-      // Main ship body (dark blue/gray)
-      ctx.fillStyle = '#2a4a6b';
-      ctx.fillRect(player.x + 5, player.y + 10, player.width - 10, player.height - 15);
-      
-      // Ship wings (lighter blue)
-      ctx.fillStyle = '#4a7c8a';
-      ctx.fillRect(player.x, player.y + 20, player.width, 15);
-      
-      // Central fuselage (bright blue)
-      ctx.fillStyle = '#00aaff';
-      ctx.fillRect(player.x + 15, player.y + 5, player.width - 30, player.height - 10);
-      
-      // Cockpit/bridge (bright white)
+      // Draw player: pixel cannon ship
+      drawBitmap(PLAYER_SPRITE, player.x, player.y, player.width, player.height, '#2e9dff');
+      // cockpit
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(player.x + player.width/2 - 6, player.y + 8, 12, 10);
-      
-      // Engine thrusters (glowing)
-      ctx.fillStyle = '#00ff88';
-      ctx.fillRect(player.x + 8, player.y + 28, 8, 8);
-      ctx.fillRect(player.x + player.width - 16, player.y + 28, 8, 8);
-      
-      // Engine glow effect
+      ctx.fillRect(player.x + player.width * 0.44, player.y + player.height * 0.34, player.width * 0.12, player.height * 0.2);
+      // engine flames
       ctx.shadowColor = '#00ff88';
-      ctx.shadowBlur = 6;
-      ctx.fillStyle = '#88ffaa';
-      ctx.fillRect(player.x + 10, player.y + 30, 4, 6);
-      ctx.fillRect(player.x + player.width - 14, player.y + 30, 4, 6);
+      ctx.shadowBlur = 4;
+      ctx.fillStyle = '#00ff88';
+      ctx.fillRect(player.x + player.width * 0.25, player.y + player.height * 0.92, player.width * 0.12, player.height * 0.14);
+      ctx.fillRect(player.x + player.width * 0.63, player.y + player.height * 0.92, player.width * 0.12, player.height * 0.14);
       ctx.shadowBlur = 0;
-      
-      // Forward cannons
-      ctx.fillStyle = '#ff6600';
-      ctx.fillRect(player.x + 12, player.y, 4, 8);
-      ctx.fillRect(player.x + player.width - 16, player.y, 4, 8);
-      
-      // Ship details/panels
-      ctx.fillStyle = '#1a3a5b';
-      ctx.fillRect(player.x + 20, player.y + 12, player.width - 40, 3);
-      ctx.fillRect(player.x + 20, player.y + 18, player.width - 40, 3);
 
-      // Draw aliens
+      // Draw aliens: one bitmap species per row color, two march frames
       for (let alien of aliens) {
         if (!alien.alive) continue;
-        
-        let primaryColor = alien.type === 'red' ? '#ff4141' : 
-                          alien.type === 'yellow' ? '#ffff00' : '#00ff41';
-        let secondaryColor = alien.type === 'red' ? '#aa2020' : 
-                            alien.type === 'yellow' ? '#cccc00' : '#00aa20';
-        let accentColor = alien.type === 'red' ? '#ff8888' : 
-                         alien.type === 'yellow' ? '#ffff88' : '#88ff88';
-        
-        // Animated alien sprite with futuristic design
-        if (alien.animFrame === 0) {
-          // Frame 1 - Main body
-          ctx.fillStyle = primaryColor;
-          ctx.fillRect(alien.x + 8, alien.y + 3, alien.width - 16, 8);
-          ctx.fillRect(alien.x + 3, alien.y + 8, alien.width - 6, alien.height - 16);
-          ctx.fillRect(alien.x + 8, alien.y + alien.height - 8, alien.width - 16, 5);
-          
-          // Wing extensions
-          ctx.fillStyle = secondaryColor;
-          ctx.fillRect(alien.x, alien.y + 10, 8, 6);
-          ctx.fillRect(alien.x + alien.width - 8, alien.y + 10, 8, 6);
-          
-          // Center core (glowing)
-          ctx.fillStyle = accentColor;
-          ctx.fillRect(alien.x + alien.width/2 - 4, alien.y + 6, 8, 8);
-          
-          // Wing tips
-          ctx.fillStyle = primaryColor;
-          ctx.fillRect(alien.x - 2, alien.y + 12, 4, 2);
-          ctx.fillRect(alien.x + alien.width - 2, alien.y + 12, 4, 2);
-          
-        } else {
-          // Frame 2 - Slightly different pose
-          ctx.fillStyle = primaryColor;
-          ctx.fillRect(alien.x + 6, alien.y + 2, alien.width - 12, 10);
-          ctx.fillRect(alien.x + 2, alien.y + 10, alien.width - 4, alien.height - 20);
-          ctx.fillRect(alien.x + 6, alien.y + alien.height - 10, alien.width - 12, 8);
-          
-          // Wing extensions (different angle)
-          ctx.fillStyle = secondaryColor;
-          ctx.fillRect(alien.x - 1, alien.y + 8, 10, 8);
-          ctx.fillRect(alien.x + alien.width - 9, alien.y + 8, 10, 8);
-          
-          // Center core (pulsing)
-          ctx.fillStyle = accentColor;
-          ctx.fillRect(alien.x + alien.width/2 - 5, alien.y + 5, 10, 10);
-          
-          // Wing tips
-          ctx.fillStyle = primaryColor;
-          ctx.fillRect(alien.x - 3, alien.y + 10, 6, 4);
-          ctx.fillRect(alien.x + alien.width - 3, alien.y + 10, 6, 4);
-        }
-        
-        // Alien eyes/sensors (always visible)
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(alien.x + 12, alien.y + 8, 3, 3);
-        ctx.fillRect(alien.x + alien.width - 15, alien.y + 8, 3, 3);
-        
-        // Eye glow effect
-        ctx.shadowColor = '#ffffff';
-        ctx.shadowBlur = 3;
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(alien.x + 13, alien.y + 9, 1, 1);
-        ctx.fillRect(alien.x + alien.width - 14, alien.y + 9, 1, 1);
-        ctx.shadowBlur = 0;
-        
-        // Weapon ports
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(alien.x + alien.width/2 - 2, alien.y + alien.height - 5, 4, 3);
+        const color = alien.type === 'red' ? '#ff4141' :
+                      alien.type === 'yellow' ? '#ffd23f' : '#00ff41';
+        const frames = ALIEN_SPRITES[alien.type] || ALIEN_SPRITES.green;
+        drawBitmap(frames[alien.animFrame % 2], alien.x, alien.y, alien.width, alien.height, color);
       }
 
       // Draw player bullets
