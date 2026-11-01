@@ -579,7 +579,7 @@
     // Player Character
     let player = {
       x: 400,
-      y: 480,
+      y: 505,
       width: 30,
       height: 50,
       targetX: 400,
@@ -591,8 +591,8 @@
     
     // Basketball Physics
     let ball = {
-      x: 400,
-      y: 460,
+      x: 416,
+      y: 517,
       vx: 0,
       vy: 0,
       radius: 12,
@@ -603,13 +603,15 @@
     };
     
     let basket = {
-      x: 400,
-      y: 120,
-      width: 50,
+      // SIDE VIEW: the hoop hangs on the right; the rim is seen edge-on as a
+      // horizontal segment from its front tip (x - width/2) to the backboard.
+      x: 660,            // rim center
+      y: 300,            // rim height
+      width: 55,         // rim depth (front tip to back)
       height: 6,
-      backboardW: 110,   // front-facing board width, centered on the rim
-      backboardH: 70,
-      backboardGap: 30,  // vertical gap between rim plane and board bottom (leaves a swish window for clean arcs)
+      boardX: 695,       // backboard face: a real wall — bank shots work
+      boardTop: 190,
+      boardBottom: 315,
       netPoints: [],
       // Animation properties for reactions
       rimShake: 0,
@@ -630,14 +632,12 @@
     
     // Court positions where player can shoot from
     const shootingPositions = [
-      { x: 200, y: 480, name: "Left Wing" },
-      { x: 300, y: 500, name: "Left Corner" },
-      { x: 400, y: 520, name: "Free Throw" },
-      { x: 500, y: 500, name: "Right Corner" },
-      { x: 600, y: 480, name: "Right Wing" },
-      { x: 400, y: 460, name: "Top of Key" },
-      { x: 350, y: 480, name: "Left Elbow" },
-      { x: 450, y: 480, name: "Right Elbow" }
+      { x: 480, y: 505, name: "Close Range" },
+      { x: 400, y: 505, name: "Free Throw" },
+      { x: 320, y: 505, name: "Mid Range" },
+      { x: 240, y: 505, name: "Three Pointer" },
+      { x: 150, y: 505, name: "Downtown" },
+      { x: 420, y: 505, name: "Elbow" }
     ];
     
     // Game Constants
@@ -750,8 +750,8 @@
     }
     
     function resetBall() {
-      ball.x = player.x;
-      ball.y = player.y - 20;
+      ball.x = player.x + 16;
+      ball.y = player.y + 12;
       ball.vx = 0;
       ball.vy = 0;
       ball.inHand = true;
@@ -846,14 +846,14 @@
         
         // Update ball position while moving
         if (ball.inHand) {
-          ball.x = player.x;
-          ball.y = player.y - 15 + Math.sin(Date.now() * 0.01) * 3; // Dribbling animation
+          ball.x = player.x + 16;
+          ball.y = player.y + 12 + Math.sin(Date.now() * 0.01) * 3; // Dribbling animation
         }
       } else {
         player.moving = false;
         if (ball.inHand && !player.shootingPose) {
-          ball.x = player.x;
-          ball.y = player.y - 20;
+          ball.x = player.x + 16;
+          ball.y = player.y + 12;
         }
       }
       
@@ -969,9 +969,16 @@
         }
       }
       
-      // The backboard is decorative only: in this front view it sits behind
-      // the rim in depth, so the ball arcs "in front of" the glass. Making it
-      // solid meant every high arc slammed into it on the way up.
+      // Side-view backboard: a real vertical wall just behind the rim.
+      // Overshooting bounces the ball back toward the hoop — bank shots!
+      if (ball.vx > 0 &&
+          ball.x + ball.radius > basket.boardX &&
+          ball.y > basket.boardTop && ball.y < basket.boardBottom) {
+        ball.x = basket.boardX - ball.radius;
+        ball.vx = -Math.abs(ball.vx) * BOUNCE_DAMPING;
+        playBounceSound();
+        ball.bounces++;
+      }
 
       // Rim collision: only the two metal rim edges are solid. The ball flies
       // freely through the aperture; hitting an edge reflects it off the
@@ -1082,7 +1089,7 @@
         
         // Distance bonus
         const distance = Math.sqrt(Math.pow(player.x - basket.x, 2) + Math.pow(player.y - basket.y, 2));
-        if (distance > 250) {
+        if (distance > 330) {
           points += 1;
           message = "LONG SHOT! " + message;
         }
@@ -1113,175 +1120,156 @@
     
     // Rendering
     function drawCourt() {
-      // Court background - wooden floor
-      const gradient = ctx.createLinearGradient(0, canvas.height - 100, 0, canvas.height);
+      const floorY = canvas.height - 40;
+
+      // Hardwood floor
+      const gradient = ctx.createLinearGradient(0, floorY, 0, canvas.height);
       gradient.addColorStop(0, '#deb887');
       gradient.addColorStop(1, '#8b7355');
       ctx.fillStyle = gradient;
-      ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
-      
-      // Court lines
+      ctx.fillRect(0, floorY, canvas.width, 40);
+
+      // floor edge line
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 3;
-      
-      // Free throw circle
       ctx.beginPath();
-      ctx.arc(400, 400, 80, 0, Math.PI * 2);
+      ctx.moveTo(0, floorY);
+      ctx.lineTo(canvas.width, floorY);
       ctx.stroke();
-      
-      // Three point arc
-      ctx.beginPath();
-      ctx.arc(basket.x, canvas.height - 20, 200, Math.PI, 0);
-      ctx.stroke();
-      
-      // Free throw line
-      ctx.beginPath();
-      ctx.moveTo(320, 400);
-      ctx.lineTo(480, 400);
-      ctx.stroke();
-      
-      // Lane lines
-      ctx.beginPath();
-      ctx.moveTo(350, 400);
-      ctx.lineTo(350, canvas.height - 20);
-      ctx.moveTo(450, 400);
-      ctx.lineTo(450, canvas.height - 20);
-      ctx.stroke();
-      
-      // Draw shooting positions
-      ctx.fillStyle = 'rgba(255, 107, 53, 0.3)';
+
+      // free-throw and three-point marks on the floor
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      [[400, 'FT'], [240, '3PT']].forEach(([mx, label]) => {
+        ctx.beginPath();
+        ctx.moveTo(mx, floorY);
+        ctx.lineTo(mx, floorY + 14);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, mx, floorY + 26);
+      });
+
+      // shooting position dots on the floor
+      ctx.fillStyle = 'rgba(255, 107, 53, 0.35)';
       shootingPositions.forEach(pos => {
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
+        ctx.ellipse(pos.x, floorY - 2, 13, 5, 0, 0, Math.PI * 2);
         ctx.fill();
       });
     }
     
     function drawBasket() {
-      // Calculate shake offset for rim reaction
       const shakeX = (Math.random() - 0.5) * basket.rimShake;
       const shakeY = (Math.random() - 0.5) * basket.rimShake * 0.5;
-      
-      // Backboard (front-facing, centered above the rim)
-      const boardLeft = basket.x - basket.backboardW / 2;
-      const boardBottom = basket.y - basket.backboardGap;
-      const boardTop = boardBottom - basket.backboardH;
+      const floorY = canvas.height - 40;
+      const rimFrontX = basket.x - basket.width / 2;
+      const rimBackX = basket.boardX;
 
-      // Ceiling mount pole down to the board
+      // Pole at the right edge, rooted in the floor
       ctx.fillStyle = '#6b7280';
-      ctx.fillRect(basket.x - 4, 0, 8, boardTop + 4);
+      ctx.fillRect(basket.boardX + 18, basket.boardTop + 30, 10, floorY - basket.boardTop - 30);
+      // arm from pole to board
+      ctx.fillRect(basket.boardX, basket.boardTop + 30, 28, 8);
 
-      // Board face (slightly translucent "glass")
-      ctx.fillStyle = 'rgba(248, 249, 250, 0.92)';
-      ctx.fillRect(boardLeft, boardTop, basket.backboardW, basket.backboardH);
-
-      // Board outline
+      // Backboard seen edge-on: tall thin board
+      ctx.fillStyle = 'rgba(248, 249, 250, 0.95)';
+      ctx.fillRect(basket.boardX, basket.boardTop, 7, basket.boardBottom - basket.boardTop);
       ctx.strokeStyle = '#333333';
       ctx.lineWidth = 2;
-      ctx.strokeRect(boardLeft, boardTop, basket.backboardW, basket.backboardH);
+      ctx.strokeRect(basket.boardX, basket.boardTop, 7, basket.boardBottom - basket.boardTop);
 
-      // Shooter's square above the rim
-      ctx.strokeStyle = '#dc2626';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(basket.x - 18, boardBottom - 28, 36, 22);
-      
-      // Rim shadow/depth (with shake)
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-      ctx.beginPath();
-      ctx.ellipse(basket.x + shakeX, basket.y + 3 + shakeY, basket.width/2, basket.width/6, 0, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Rim (front-facing circular view with shake)
+      // Rim: horizontal bar from front tip to the board (with shake)
       ctx.strokeStyle = '#dc2626';
       ctx.lineWidth = 6;
       ctx.beginPath();
-      ctx.ellipse(basket.x + shakeX, basket.y + shakeY, basket.width/2, basket.width/6, 0, 0, Math.PI * 2);
+      ctx.moveTo(rimFrontX + shakeX, basket.y + shakeY);
+      ctx.lineTo(rimBackX, basket.y + shakeY * 0.4);
       ctx.stroke();
-      
-      // Inner rim (for depth with shake)
-      ctx.strokeStyle = '#b91c1c';
-      ctx.lineWidth = 3;
+      // front tip knob
+      ctx.fillStyle = '#b91c1c';
       ctx.beginPath();
-      ctx.ellipse(basket.x + shakeX, basket.y + shakeY, basket.width/2 - 3, basket.width/6 - 1, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      
-      // Rim support brackets connecting rim to the board bottom (with shake)
-      ctx.strokeStyle = '#666666';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(basket.x - basket.width/3 + shakeX, basket.y + shakeY);
-      ctx.lineTo(basket.x - 10, boardBottom);
-      ctx.moveTo(basket.x + basket.width/3 + shakeX, basket.y + shakeY);
-      ctx.lineTo(basket.x + 10, boardBottom);
-      ctx.stroke();
-      
-      // Net (hanging from circular rim with enhanced sway)
+      ctx.arc(rimFrontX + shakeX, basket.y + shakeY, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Net: strands hanging from the rim, narrowing downward
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
       ctx.lineWidth = 2;
-      for (let i = 0; i < 12; i++) {
-        const angle = (i / 12) * Math.PI * 2;
-        const rimX = basket.x + Math.cos(angle) * (basket.width/2 - 2) + shakeX;
-        const rimY = basket.y + Math.sin(angle) * (basket.width/6 - 1) + shakeY;
-        
-        // Enhanced sway with reaction animation
-        const baseSway = Math.sin(Date.now() * 0.005 + i * 0.5) * 3;
-        const reactionSway = Math.sin(Date.now() * 0.02 + i) * basket.netSwayIntensity;
-        const totalSway = baseSway + reactionSway;
-        
+      const netDepth = 34;
+      const strands = 7;
+      for (let i = 0; i < strands; i++) {
+        const t = i / (strands - 1);
+        const topX = rimFrontX + t * (rimBackX - rimFrontX) + shakeX * (1 - t);
+        const baseSway = Math.sin(Date.now() * 0.005 + i * 0.7) * 2;
+        const reactionSway = Math.sin(Date.now() * 0.02 + i) * basket.netSwayIntensity * 0.5;
+        const sway = baseSway + reactionSway;
+        // bottom pulls toward the net's center
+        const bottomX = rimFrontX + (rimBackX - rimFrontX) * (0.25 + t * 0.5) + sway;
         ctx.beginPath();
-        ctx.moveTo(rimX, rimY);
-        ctx.quadraticCurveTo(
-          rimX + totalSway, 
-          rimY + 20 + Math.abs(totalSway) * 0.5, 
-          rimX + totalSway * 0.3, 
-          rimY + 30 + Math.abs(totalSway) * 0.8
-        );
+        ctx.moveTo(topX, basket.y + 3);
+        ctx.quadraticCurveTo(topX + sway, basket.y + netDepth * 0.6, bottomX, basket.y + netDepth);
         ctx.stroke();
       }
+      // net bottom rim
+      ctx.beginPath();
+      ctx.moveTo(rimFrontX + (rimBackX - rimFrontX) * 0.25, basket.y + netDepth);
+      ctx.lineTo(rimFrontX + (rimBackX - rimFrontX) * 0.75, basket.y + netDepth);
+      ctx.stroke();
     }
     
     function drawPlayer() {
+      // Side view: the player faces the hoop on the right
       const x = player.x;
       const y = player.y;
-      
-      // Player shadow
+
+      // Shadow on the floor
       ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
       ctx.beginPath();
-      ctx.ellipse(x, y + player.height + 5, player.width/2, 8, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 2, y + player.height + 6, 16, 5, 0, 0, Math.PI * 2);
       ctx.fill();
-      
-      // Body
-      ctx.fillStyle = '#ff6b35'; // Jersey color
-      ctx.fillRect(x - player.width/2, y, player.width, player.height * 0.6);
-      
-      // Head
-      ctx.fillStyle = '#fdbcb4'; // Skin color
-      ctx.beginPath();
-      ctx.arc(x, y - 10, 12, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Arms
-      const armOffset = player.shootingPose ? 15 : (player.moving ? Math.sin(player.animFrame * 0.3) * 8 : 5);
-      ctx.fillStyle = '#fdbcb4';
-      ctx.fillRect(x - player.width/2 - 8, y + 5, 8, 25);
-      ctx.fillRect(x + player.width/2, y + 5, 8, 25);
-      
-      // Legs
-      ctx.fillStyle = '#1e3a8a'; // Shorts color
-      const legOffset = player.moving ? Math.sin(player.animFrame * 0.4) * 5 : 0;
-      ctx.fillRect(x - 8 + legOffset, y + player.height * 0.6, 6, player.height * 0.4);
-      ctx.fillRect(x + 2 - legOffset, y + player.height * 0.6, 6, player.height * 0.4);
-      
-      // Shoes
+
+      const legSwing = player.moving ? Math.sin(player.animFrame * 0.4) * 5 : 0;
+
+      // Back leg + front leg (shorts color)
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(x - 7 + legSwing, y + 30, 6, 20);
+      ctx.fillRect(x + 3 - legSwing, y + 30, 6, 20);
+      // Shoes pointing right
       ctx.fillStyle = '#000000';
-      ctx.fillRect(x - 10, y + player.height, 8, 6);
-      ctx.fillRect(x + 2, y + player.height, 8, 6);
-      
+      ctx.fillRect(x - 7 + legSwing, y + 50, 10, 5);
+      ctx.fillRect(x + 3 - legSwing, y + 50, 10, 5);
+
+      // Torso (jersey)
+      ctx.fillStyle = '#ff6b35';
+      ctx.fillRect(x - 8, y + 6, 18, 26);
+
+      // Back arm (behind torso, slight swing)
+      ctx.fillStyle = '#fdbcb4';
+      ctx.fillRect(x - 12, y + 9, 5, 20);
+
+      // Front arm: raised toward the hoop when shooting, else holding the ball
+      if (player.shootingPose) {
+        ctx.save();
+        ctx.translate(x + 8, y + 10);
+        ctx.rotate(-0.9); // up-and-forward
+        ctx.fillRect(0, -2, 22, 5);
+        ctx.restore();
+      } else {
+        ctx.fillRect(x + 8, y + 12, 12, 5);
+      }
+
+      // Head with a hint of forward gaze
+      ctx.fillStyle = '#fdbcb4';
+      ctx.beginPath();
+      ctx.arc(x + 3, y - 4, 11, 0, Math.PI * 2);
+      ctx.fill();
+
       // Jersey number
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 12px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('23', x, y + 20);
+      ctx.fillText('23', x + 1, y + 24);
     }
     
     function drawBall() {
@@ -1408,14 +1396,11 @@
         const angle = Math.atan2(dy, dx);
         
         // Scale velocity based on distance for more responsive arc
-        let baseVelocity = Math.max(8, Math.min(20, distance * 0.08 + power * 6));
-        let shootAngle = angle;
-        
-        // Force upward angle if shooting too flat, but allow shorter arcs
-        const minAngle = -0.3 - (distance * 0.001);
-        if (shootAngle > minAngle) {
-          shootAngle = minAngle - (power * 0.2);
-        }
+        // Side view: a jump shot always launches up-and-forward on a high
+        // arc. Aim picks the arc; power adds speed AND steepens the arc,
+        // which is what long-range shots need.
+        let baseVelocity = Math.min(22, 13 + distance * 0.012 + power * 3.2);
+        let shootAngle = Math.max(-1.45, Math.min(-1.05, angle) - power * 0.1);
         
         let vx = Math.cos(shootAngle) * baseVelocity;
         let vy = Math.sin(shootAngle) * baseVelocity;
@@ -1457,14 +1442,11 @@
         const angle = Math.atan2(dy, dx);
         
         // Scale velocity based on distance for more responsive shooting
-        let baseVelocity = Math.max(8, Math.min(20, distance * 0.08 + power * 6));
-        let shootAngle = angle;
-        
-        // Force upward angle if shooting too flat, but allow shorter arcs
-        const minAngle = -0.3 - (distance * 0.001);
-        if (shootAngle > minAngle) {
-          shootAngle = minAngle - (power * 0.2);
-        }
+        // Side view: a jump shot always launches up-and-forward on a high
+        // arc. Aim picks the arc; power adds speed AND steepens the arc,
+        // which is what long-range shots need.
+        let baseVelocity = Math.min(22, 13 + distance * 0.012 + power * 3.2);
+        let shootAngle = Math.max(-1.45, Math.min(-1.05, angle) - power * 0.1);
         
         ball.vx = Math.cos(shootAngle) * baseVelocity;
         ball.vy = Math.sin(shootAngle) * baseVelocity;
