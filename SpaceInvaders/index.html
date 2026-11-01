@@ -7,6 +7,7 @@
   <meta name="description" content="Defend Earth from waves of alien invaders in this classic arcade shooter!">
   <link rel="icon" href="../Public/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../Public/arcade.css">
+  <script src="../Public/leaderboard.js"></script>
   <style>
     :root {
       --bg: var(--arcade-surface-strong);
@@ -1177,6 +1178,7 @@
         showOverlay('New High Score!', `Congratulations! New high score: ${score.toLocaleString()}<br><br>Click "Start Game" to play again!`);
       } else {
         showOverlay('Game Over!', `Final Score: ${score.toLocaleString()}<br>High Score: ${highScore.toLocaleString()}<br><br>Click "Start Game" to try again!`);
+        ArcadeLB.offerSubmit('spaceinvaders', score, overlay);
       }
     }
 

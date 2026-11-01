@@ -6,6 +6,7 @@
   <title>🏀 Basketball Shootout - Play Retro Arcade</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏀</text></svg>">
   <link rel="stylesheet" href="../Public/arcade.css">
+  <script src="../Public/leaderboard.js"></script>
   <style>
     :root {
       --game-accent: #ff6b35;
@@ -798,6 +799,7 @@
       document.getElementById('finalStats').textContent = 
         `Shots: ${shotsMade}/${shotsAttempted} (${shotsAttempted > 0 ? Math.round((shotsMade / shotsAttempted) * 100) : 0}%)`;
       document.getElementById('gameOverScreen').style.display = 'flex';
+      ArcadeLB.offerSubmit('basketball', score, document.querySelector('#gameOverScreen .card'));
     }
     
     function showStartScreen() {

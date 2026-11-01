@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sky & Sea Defense - PlayRetroArcade</title>
     <link rel="stylesheet" href="../Public/arcade.css">
+  <script src="../Public/leaderboard.js"></script>
     <style>
         :root {
             --neon-cyan: var(--arcade-cyan);
@@ -776,6 +777,7 @@
         function gameOver() {
             gameState = 'gameOver';
             document.getElementById('finalScore').textContent = gameStats.score;
+            ArcadeLB.offerSubmit('skysea', gameStats.score, document.getElementById('gameOverMenu'));
             document.getElementById('finalWave').textContent = gameStats.wave - 1;
             document.getElementById('gameOverMenu').style.display = 'flex';
             

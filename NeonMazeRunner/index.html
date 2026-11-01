@@ -6,6 +6,7 @@
   <title>Neon Maze Runner - Cyberpunk Action Game</title>
   <meta name="description" content="Navigate through digital mazes, collect data packets, and avoid AI security drones in this cyberpunk action game!">
   <link rel="stylesheet" href="../Public/arcade.css">
+  <script src="../Public/leaderboard.js"></script>
   <style>
     * {
       margin: 0;
@@ -1247,6 +1248,7 @@
       game.gameState = 'gameOver';
       
       document.getElementById('finalScore').textContent = game.score;
+      ArcadeLB.offerSubmit('neonmaze', game.score, document.getElementById('gameOverMenu'));
       document.getElementById('finalLevel').textContent = game.level;
       document.getElementById('finalData').textContent = (5 + Math.floor((game.level - 1) / 2)) - game.dataPackets.length;
       
@@ -1269,6 +1271,7 @@
       }
       
       showMenu('victoryMenu');
+      ArcadeLB.offerSubmit('neonmaze', game.score, document.getElementById('victoryMenu'));
     }
 
     function createParticles(x, y, color) {

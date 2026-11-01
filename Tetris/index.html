@@ -7,6 +7,7 @@
   <meta name="description" content="Play classic Tetris with modern graphics. Stack blocks, clear lines, and beat your high score!">
   <link rel="icon" href="../Public/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../Public/arcade.css">
+  <script src="../Public/leaderboard.js"></script>
   <style>
     :root {
       --bg: var(--arcade-surface-strong);
@@ -1293,6 +1294,7 @@
       stopBackgroundMusic();
       updateBestScore();
       showOverlay('Game Over', `Score: ${score} | Best: ${bestEl.textContent}<br>Press R to restart`);
+      ArcadeLB.offerSubmit('tetris', score, overlay);
     }
 
     function updateBestScore() {

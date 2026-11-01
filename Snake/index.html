@@ -7,6 +7,7 @@
   <meta name="description" content="Play a fast, retro Snake game right in your browser. Mobile-friendly, no download." />
   <link rel="icon" href="../Public/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../Public/arcade.css">
+  <script src="../Public/leaderboard.js"></script>
   <style>
     :root {
       --bg: var(--arcade-surface-strong);
@@ -1092,6 +1093,7 @@
       dead = true; playing = false; gameState = 'gameOver'; setBest(score); 
       stopBackgroundMusic();
       showOverlay('Game Over', 'Press <kbd>R</kbd> to restart');
+      ArcadeLB.offerSubmit('snake', score, overlay);
       flashHit(); return;
     }
 

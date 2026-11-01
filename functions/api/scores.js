@@ -9,7 +9,10 @@
 //   namespace. Until then every request returns 503 and the games fall
 //   back to device-local best scores.
 
-const GAMES = new Set(['brickbreaker']); // add ids here as games adopt the board
+const GAMES = new Set([
+  'brickbreaker', 'snake', 'tetris', 'spaceinvaders',
+  'basketball', 'neonmaze', 'skysea', 'battleship',
+]);
 const MAX_ROWS = 50;
 
 function json(data, status = 200) {

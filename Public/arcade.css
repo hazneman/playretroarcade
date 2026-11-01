@@ -134,6 +134,54 @@
   color: var(--arcade-text);
 }
 
+/* Leaderboard box injected into game-over overlays (Public/leaderboard.js) */
+.arc-lb-box {
+  margin: 16px auto 0;
+  max-width: 300px;
+  text-align: left;
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  color: var(--arcade-text);
+  background: var(--arcade-surface);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+.arc-lb-title { color: var(--game-accent); font-weight: 700; margin-bottom: 6px; }
+.arc-lb-list { list-style: none; margin: 0; padding: 0; }
+.arc-lb-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+  border-bottom: 1px dashed var(--arcade-line);
+}
+.arc-lb-list li span:last-child { font-family: var(--font-retro); color: var(--game-accent); }
+.arc-lb-empty { color: var(--arcade-muted); padding: 4px 0; }
+.arc-lb-row { display: flex; gap: 8px; margin-top: 10px; }
+.arc-lb-name {
+  flex: 1;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-sm);
+  color: var(--arcade-text);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: var(--font-ui);
+}
+.arc-lb-save {
+  background: linear-gradient(135deg, var(--game-accent), var(--accent-deep));
+  color: var(--game-accent-ink);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.arc-lb-msg { font-size: 12px; color: var(--arcade-muted); margin-top: 6px; }
+
 /* Full-screen opaque menu overlay (no HUD bleed-through) */
 .arc-overlay {
   position: fixed;

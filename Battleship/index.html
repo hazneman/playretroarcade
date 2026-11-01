@@ -6,6 +6,7 @@
   <title>⚓ Battleship (Amiral Battı) - PlayRetroArcade</title>
   <link rel="icon" href="../Public/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../Public/arcade.css">
+  <script src="../Public/leaderboard.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -749,9 +750,12 @@
 
       const shotsFired = enemy.fired;
       document.getElementById('gameOverTitle').textContent = playerWon ? '🏆 Victory!' : '💀 Defeat';
+      // leaderboard score: fewer shots = more points (perfect game of 17 shots = 166)
+      const lbScore = playerWon ? Math.max(10, 200 - shotsFired * 2) : 0;
       document.getElementById('gameOverText').textContent = playerWon
-        ? `You destroyed the enemy fleet in ${shotsFired} shots. Amiral Battı!`
+        ? `You destroyed the enemy fleet in ${shotsFired} shots. Amiral Battı! Leaderboard score: ${lbScore}`
         : 'Your fleet was destroyed. Better luck next time, Admiral.';
+      ArcadeLB.offerSubmit('battleship', lbScore, document.querySelector('#gameOverOverlay .card'));
       if (!playerWon) {
         // reveal remaining enemy ships
         enemy.ships.filter(s => !s.sunk).forEach(s => renderShipSprite(enemyBoardEl, s));
