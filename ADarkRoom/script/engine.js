@@ -430,7 +430,8 @@
       if(typeof Storage != 'undefined' && localStorage) {
         var prestige = Prestige.get();
         window.State = {};
-        localStorage.clear();
+        // only this game's save - other games on this origin keep their data
+        localStorage.removeItem('gameState');
         Prestige.set(prestige);
       }
       if(!noReload) {

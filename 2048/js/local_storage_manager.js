@@ -19,8 +19,27 @@ window.fakeStorage = {
 };
 
 function LocalStorageManager() {
-  this.bestScoreKey     = "bestScore";
-  this.gameStateKey     = "gameState";
+  // Namespaced: this site serves several games from one origin, and
+  // A Dark Room also uses a bare "gameState" key.
+  this.bestScoreKey     = "2048.bestScore";
+  this.gameStateKey     = "2048.gameState";
+  // one-time migration of the old un-namespaced best score
+  try {
+    var oldBest = window.localStorage.getItem("bestScore");
+    if (oldBest !== null && window.localStorage.getItem(this.bestScoreKey) === null) {
+      window.localStorage.setItem(this.bestScoreKey, oldBest);
+      window.localStorage.removeItem("bestScore");
+    }
+    // clean up a stale un-namespaced 2048 save, but only if it is
+    // unmistakably 2048's shape (A Dark Room uses the same key name)
+    var oldState = window.localStorage.getItem("gameState");
+    if (oldState) {
+      var parsed = JSON.parse(oldState);
+      if (parsed && parsed.grid && parsed.grid.cells && parsed.score !== undefined) {
+        window.localStorage.removeItem("gameState");
+      }
+    }
+  } catch (e) {}
 
   var supported = this.localStorageSupported();
   this.storage = supported ? window.localStorage : window.fakeStorage;
