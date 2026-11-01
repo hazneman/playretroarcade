@@ -36,6 +36,13 @@
       padding: 9px 15px;
       margin-bottom: 4px;
     }
+    /* leaderboard box on 2048's light game-over panel */
+    .arc-lb-box { background: #ffffff; border-color: #d8cfc0; color: #776e65; }
+    .arc-lb-title, .arc-lb-list li span:last-child { color: #f67c5f; }
+    .arc-lb-empty, .arc-lb-msg { color: #a89f91; }
+    .arc-lb-name { background: #faf8ef; border-color: #d8cfc0; color: #776e65; }
+    .arc-lb-save { background: #8f7a66; color: #f9f6f2; }
+
     @media screen and (max-width: 560px) {
       .container { width: auto; margin: 0 10px; padding: 14px; }
     }
@@ -131,5 +138,24 @@
   <script src="js/local_storage_manager.js"></script>
   <script src="js/game_manager.js"></script>
   <script src="js/application.js"></script>
+  <script src="../Public/leaderboard.js"></script>
+  <script>
+    // PlayRetroArcade shell: offer the shared leaderboard when the game ends.
+    // Observes the DOM only - the vendored game code stays untouched.
+    (function () {
+      var msg = document.querySelector('.game-message');
+      if (!msg || !window.ArcadeLB) return;
+      var offered = false;
+      new MutationObserver(function () {
+        var over = msg.classList.contains('game-over') || msg.classList.contains('game-won');
+        if (!over) { offered = false; return; }
+        if (offered) return;
+        offered = true;
+        var node = document.querySelector('.score-container');
+        var score = parseInt(node && node.childNodes[0] && node.childNodes[0].textContent, 10) || 0;
+        ArcadeLB.offerSubmit('2048', score, msg);
+      }).observe(msg, { attributes: true, attributeFilter: ['class'] });
+    })();
+  </script>
 </body>
 </html>

@@ -13,6 +13,7 @@ const GAMES = new Set([
   'brickbreaker', 'snake', 'tetris', 'spaceinvaders',
   'basketball', 'neonmaze', 'skysea', 'battleship',
   'racecar', // value = best lap in milliseconds
+  '2048', 'darkroom',
 ]);
 // games where the stored value is a time: lower is better
 const LOWER_IS_BETTER = new Set(['racecar']);
