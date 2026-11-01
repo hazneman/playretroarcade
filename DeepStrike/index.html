@@ -239,7 +239,7 @@
 
       charges.forEach(ch => {
         if (ch.y < SURFACE) { ch.vy = 3; }           // falling through air
-        else { ch.vy = 1.2 + level * 0.1; }          // sinking
+        else { ch.vy = Math.min(2.8, 0.7 + (level - 1) * 0.25); } // sinks slowly at first, faster each level
         ch.y += ch.vy;
         const nearSub = Math.hypot(ch.x - sub.x, ch.y - sub.y) < 26;
         if (ch.y >= ch.fuse || nearSub) {
