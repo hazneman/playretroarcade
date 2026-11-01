@@ -6,6 +6,7 @@
   <title>🏎️ Race Car Championship - Play Retro Arcade</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏎️</text></svg>">
   <link rel="stylesheet" href="../Public/arcade.css">
+  <script src="../Public/leaderboard.js"></script>
   <style>
     :root {
       --game-accent: #ff1744;
@@ -980,6 +981,11 @@
       document.getElementById('raceCompletionMsg').textContent = completionMsg;
       document.getElementById('finalPosition').innerHTML = `<strong>Final Position: ${getPositionSuffix(position)}</strong>`;
       document.getElementById('finalTime').textContent = `Best Lap Time: ${bestLapTime === Infinity ? 'No time recorded' : formatTime(bestLapTime)}`;
+      if (bestLapTime !== Infinity) {
+        ArcadeLB.offerSubmit('racecar', Math.round(bestLapTime),
+          document.querySelector('#gameOverScreen .card'),
+          { time: true, title: '⏱️ Best Laps' });
+      }
       document.getElementById('totalRaceTime').textContent = `Total Race Time: ${formatTime(totalRaceTime)}`;
       document.getElementById('totalLapsCompleted').textContent = `Laps Completed: ${currentLap}/${totalLaps}`;
       

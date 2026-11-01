@@ -18,13 +18,21 @@ window.ArcadeLB = (function () {
     return r.json();
   }
 
-  function listHtml(rows) {
-    if (!rows.length) return '<div class="arc-lb-empty">no scores yet — be first!</div>';
-    return '<ol class="arc-lb-list">' + rows.slice(0, 5).map(r =>
-      '<li><span>' + esc(r.name) + '</span><span>' + r.score + '</span></li>').join('') + '</ol>';
+  function fmtTime(ms) {
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    const cs = Math.floor((ms % 1000) / 10);
+    return m + ':' + String(s).padStart(2, '0') + '.' + String(cs).padStart(2, '0');
   }
 
-  async function offerSubmit(game, score, host) {
+  function listHtml(rows, opts) {
+    if (!rows.length) return '<div class="arc-lb-empty">no scores yet — be first!</div>';
+    const show = v => (opts && opts.time) ? fmtTime(v) : v;
+    return '<ol class="arc-lb-list">' + rows.slice(0, 5).map(r =>
+      '<li><span>' + esc(r.name) + '</span><span>' + show(r.score) + '</span></li>').join('') + '</ol>';
+  }
+
+  async function offerSubmit(game, score, host, opts) {
     if (!host) return;
     const old = host.querySelector('.arc-lb-box');
     if (old) old.remove();
@@ -35,11 +43,13 @@ window.ArcadeLB = (function () {
     const box = document.createElement('div');
     box.className = 'arc-lb-box';
     const canSubmit = Number.isInteger(score) && score >= 1;
+    const title = (opts && opts.title) || '🏆 Top Scores';
+    const saveLabel = (opts && opts.time) ? 'Save time' : 'Save score';
     box.innerHTML =
-      '<div class="arc-lb-title">🏆 Top Scores</div>' + listHtml(rows) +
+      '<div class="arc-lb-title">' + title + '</div>' + listHtml(rows, opts) +
       (canSubmit
         ? '<div class="arc-lb-row"><input class="arc-lb-name" maxlength="16" placeholder="nickname">' +
-          '<button class="arc-lb-save">Save score</button></div><div class="arc-lb-msg"></div>'
+          '<button class="arc-lb-save">' + saveLabel + '</button></div><div class="arc-lb-msg"></div>'
         : '');
     host.appendChild(box);
     if (!canSubmit) return;
@@ -67,7 +77,7 @@ window.ArcadeLB = (function () {
         msg.textContent = '✅ Saved!';
         box.querySelector('.arc-lb-row').style.display = 'none';
         try {
-          box.querySelector('.arc-lb-list, .arc-lb-empty').outerHTML = listHtml(await getRows(game));
+          box.querySelector('.arc-lb-list, .arc-lb-empty').outerHTML = listHtml(await getRows(game), opts);
         } catch (e) { /* list refresh is best-effort */ }
       } catch (e) {
         msg.textContent = 'Could not reach the leaderboard.';

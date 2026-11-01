@@ -12,7 +12,10 @@
 const GAMES = new Set([
   'brickbreaker', 'snake', 'tetris', 'spaceinvaders',
   'basketball', 'neonmaze', 'skysea', 'battleship',
+  'racecar', // value = best lap in milliseconds
 ]);
+// games where the stored value is a time: lower is better
+const LOWER_IS_BETTER = new Set(['racecar']);
 const MAX_ROWS = 50;
 
 function json(data, status = 200) {
@@ -57,17 +60,19 @@ export async function onRequestPost({ request, env }) {
   const key = 'scores:' + game;
   const rows = JSON.parse((await env.SCORES.get(key)) || '[]');
 
-  // keep each nickname's best score only
+  // keep each nickname's best entry only (lowest for times, highest for scores)
+  const timeBased = LOWER_IS_BETTER.has(game);
   const existing = rows.find(r => r.name.toLowerCase() === name.toLowerCase());
   if (existing) {
-    if (score <= existing.score) return json({ ok: true, kept: existing.score });
+    const worseOrEqual = timeBased ? score >= existing.score : score <= existing.score;
+    if (worseOrEqual) return json({ ok: true, kept: existing.score });
     existing.score = score;
     existing.at = Date.now();
   } else {
     rows.push({ name, score, at: Date.now() });
   }
 
-  rows.sort((a, b) => b.score - a.score);
+  rows.sort(timeBased ? (a, b) => a.score - b.score : (a, b) => b.score - a.score);
   rows.length = Math.min(rows.length, MAX_ROWS);
   await env.SCORES.put(key, JSON.stringify(rows));
   return json({ ok: true });
