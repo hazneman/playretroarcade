@@ -90,6 +90,35 @@
 <body>
 	<style>
 	div#notifications { padding-top: 46px; } /* room for the fixed Home pill */
+	/* Make it obvious WHY an event choice is unavailable: show its cost
+	   inline on the button instead of only in a hover tooltip. */
+	#event .button.disabled {
+		opacity: 0.5;
+		border-style: dashed !important;
+		cursor: not-allowed;
+	}
+	#event .button.disabled div.tooltip {
+		display: block;
+		position: static;
+		width: auto;
+		border: none;
+		background: none;
+		box-shadow: none;
+		color: inherit;
+		font-size: 11px;
+		padding: 3px 0 0;
+		margin: 0;
+	}
+	#event .button.disabled div.tooltip::before { content: "needs "; }
+	#event .button.disabled div.tooltip .row_key,
+	#event .button.disabled div.tooltip .row_val {
+		float: none;
+		display: inline;
+		width: auto;
+		text-align: left;
+	}
+	#event .button.disabled div.tooltip .row_val::before { content: " "; }
+	#event .button.disabled div.tooltip .row_val::after { content: "  "; }
 	#praIntro {
 		position: fixed;
 		top: 52px;
