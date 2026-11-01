@@ -140,7 +140,8 @@
         <b>Hold</b> the mouse button to charge power, <b>release</b> to shoot.<br><br>
         More power beats the keeper's dive, but the shot scatters more —
         and corners score bonus points. Three saves or misses end the game.<br><br>
-        The keeper learns every level. Good luck. 🧤
+        The keeper learns every level — and if you score twice from the
+        same spot, he'll be waiting there for the third. Vary your corners! 🧤
       </div>
       <h3 style="margin-top:16px;">Scoring</h3>
       <div class="hint">
@@ -185,6 +186,7 @@
     let shot = null;               // {from,to,t,dur,target,scattered}
     let keeper = null;             // {x,y, diveFrom, diveTo, t, dur, reach}
     let message = null;            // {text,color,until}
+    let goalZones = [];            // zone of each conceded goal (keeper memory)
     let resultUntil = 0;
 
     const KEEPER_HOME = { x: W / 2, y: 235 };
@@ -192,8 +194,26 @@
     function keeperReach() { return Math.max(56, 97 - power * 36) + (level - 1) * 4; } // power shrinks, levels grow the save window
     function guessChance() { return Math.min(0.9, 0.56 + (level - 1) * 0.06); }
 
+    // 3x2 grid over the goal mouth; "same spot" = same zone
+    function zoneOf(x, y) {
+      const col = x < GOAL.left + 133 ? 0 : (x < GOAL.right - 133 ? 1 : 2);
+      const row = y < (GOAL.top + GOAL.bottom) / 2 ? 0 : 1;
+      return col + ',' + row;
+    }
+    // burned twice in a row from one zone -> the keeper camps it
+    function campedZone() {
+      const n = goalZones.length;
+      return n >= 2 && goalZones[n - 1] === goalZones[n - 2] ? goalZones[n - 1] : null;
+    }
+    function zoneCenter(z) {
+      const [col, row] = z.split(',').map(Number);
+      return { x: [GOAL.left + 66, W / 2, GOAL.right - 66][col],
+               y: [GOAL.top + 50, GOAL.bottom - 48][row] };
+    }
+
     function startGame() {
       score = 0; goals = 0; lives = 3; level = 1; streak = 0;
+      goalZones = [];
       state = 'aim';
       updateHud();
     }
@@ -207,26 +227,36 @@
       };
       shot = { from: { ...BALL_START }, to: target, t: 0, dur: Math.max(22, 40 - power * 16) };
 
-      // keeper picks a zone (left / center / right): the right one with
-      // guessChance, otherwise one of the other two at random
-      const aimZone = aim.x < W / 2 - 70 ? -1 : (aim.x > W / 2 + 70 ? 1 : 0);
-      let diveZone;
-      if (Math.random() < guessChance()) {
-        diveZone = aimZone;
+      const camp = campedZone();
+      let diveX, diveY, camped = false;
+      if (camp && Math.random() < 0.92) {
+        // burned twice from the same spot: the keeper parks on that zone
+        const zc = zoneCenter(camp);
+        diveX = zc.x + (Math.random() * 24 - 12);
+        diveY = zc.y + (Math.random() * 20 - 10);
+        camped = true;
       } else {
-        const others = [-1, 0, 1].filter(z => z !== aimZone);
-        diveZone = others[Math.floor(Math.random() * others.length)];
+        // normal AI: guess a zone (left / center / right)
+        const aimZone = aim.x < W / 2 - 70 ? -1 : (aim.x > W / 2 + 70 ? 1 : 0);
+        let diveZone;
+        if (Math.random() < guessChance()) {
+          diveZone = aimZone;
+        } else {
+          const others = [-1, 0, 1].filter(z => z !== aimZone);
+          diveZone = others[Math.floor(Math.random() * others.length)];
+        }
+        diveX = diveZone === 0
+          ? W / 2 + (Math.random() * 60 - 30)
+          : W / 2 + diveZone * (80 + Math.random() * 110);
+        diveY = 130 + Math.random() * 150; // can reach the top corners too
       }
-      const diveX = diveZone === 0
-        ? W / 2 + (Math.random() * 60 - 30)
-        : W / 2 + diveZone * (80 + Math.random() * 110);
-      const diveY = 130 + Math.random() * 150; // can reach the top corners too
       keeper = {
         diveFrom: { ...KEEPER_HOME },
         diveTo: { x: diveX, y: diveY },
         t: 0,
         dur: Math.max(18, 34 - level * 1.5),
-        reach: keeperReach()
+        reach: keeperReach() * (camped ? 1.3 : 1), // camping covers the whole zone
+        camped
       };
       state = 'shot';
       playSound('kick');
@@ -245,6 +275,7 @@
       if (onTarget && !saved) {
         streak++;
         goals++;
+        goalZones.push(zoneOf(t.x, t.y));
         const cornerDist = Math.min(
           Math.hypot(t.x - GOAL.left, t.y - GOAL.top),
           Math.hypot(t.x - GOAL.right, t.y - GOAL.top),
@@ -257,6 +288,7 @@
         playSound('goal');
         if (goals % 5 === 0) { level++; playSound('level'); }
       } else {
+        if (keeper.camped) goalZones = [];
         streak = 0;
         lives--;
         message = onTarget
@@ -408,6 +440,8 @@
         lean = (keeper.diveTo.x - keeper.diveFrom.x) * 0.003 * t;
       } else if (state === 'aim' || state === 'charge') {
         kx += Math.sin(performance.now() * 0.003) * 18; // nervous shuffle
+        const camp = campedZone();
+        if (camp) kx += (zoneCenter(camp).x - W / 2) * 0.28; // subtle lean toward the hot corner
       }
       ctx.save();
       ctx.translate(kx, ky);
