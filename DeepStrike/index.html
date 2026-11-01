@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🤿 Deep Strike - PlayRetroArcade</title>
+  <link rel="icon" href="../Public/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../Public/arcade.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --game-accent: #ffc233; } /* yellow submarine */
+    body {
+      background: var(--arcade-bg-gradient);
+      color: var(--arcade-text);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 16px 20px 8px;
+      padding: 14px 22px;
+      background: var(--arcade-surface);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+    }
+    .home-btn {
+      background: linear-gradient(135deg, var(--game-accent), var(--accent-deep));
+      color: var(--game-accent-ink);
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      transition: transform 0.15s ease;
+    }
+    .home-btn:hover { transform: translateY(-2px); }
+    .topbar h1 { font-size: 21px; color: var(--game-accent); }
+    .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .stat-pill {
+      font-family: var(--font-retro);
+      font-size: 13px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-sm);
+      padding: 7px 12px;
+    }
+    .icon-btn {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
+      color: var(--arcade-text);
+      border-radius: var(--radius-md);
+      padding: 7px 11px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .icon-btn:hover { background: var(--accent-line); }
+    .layout {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 10px 20px 40px;
+      flex-wrap: wrap;
+    }
+    canvas {
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      max-width: 100%;
+    }
+    .panel {
+      background: var(--arcade-surface);
+      border: 1px solid var(--arcade-line);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      width: 220px;
+    }
+    .panel h3 { font-size: 14px; color: var(--game-accent); margin-bottom: 10px; }
+    .panel .hint { font-size: 12.5px; color: var(--arcade-muted); line-height: 1.6; }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 5, 8, 0.88);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .overlay.hidden { display: none; }
+    .card {
+      background: var(--arcade-surface-strong);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-lg);
+      padding: 34px 42px;
+      text-align: center;
+      max-width: 440px;
+    }
+    .card h2 { color: var(--game-accent); font-size: 26px; margin-bottom: 10px; }
+    .card p { color: var(--arcade-muted); font-size: 14.5px; line-height: 1.55; margin-bottom: 8px; }
+    .btn {
+      background: linear-gradient(135deg, var(--game-accent), var(--accent-deep));
+      color: var(--game-accent-ink);
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 12px 22px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    .btn:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="home-btn" href="../index.html">🏠 Home</a>
+    <h1>🤿 Deep Strike</h1>
+    <div class="right">
+      <span class="stat-pill">Score <b id="scoreEl">0</b></span>
+      <span class="stat-pill">Hull <b id="hullEl">3</b></span>
+      <span class="stat-pill">Level <b id="levelEl">1</b></span>
+      <button class="icon-btn" id="pauseBtn" title="Pause (P)">⏸</button>
+      <button class="icon-btn" id="soundBtn" title="Sound on/off">🔊</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <canvas id="game" width="640" height="520"></canvas>
+    <div class="panel">
+      <h3>How to Play</h3>
+      <div class="hint">
+        You are the yellow submarine. 🟡<br><br>
+        <b>Arrows / WASD</b> — dive, climb and cruise underwater.<br>
+        <b>Space</b> — fire a torpedo. It swims up, and past the surface it
+        becomes a missile — ships <i>and</i> planes are fair game.<br><br>
+        Planes drop depth charges that sink and explode. Keep your distance
+        or outrun the blast. Three hits and the hull gives in.
+      </div>
+      <h3 style="margin-top:16px;">Scoring</h3>
+      <div class="hint">
+        Ship: 100 (+speed bonus)<br>
+        Plane: 250<br>
+        Level up every 1000 points
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="startOverlay">
+    <div class="card">
+      <h2>🤿 Deep Strike</h2>
+      <p>Enemy convoys above, patrol planes in the sky, one yellow submarine
+         below. Torpedo the ships, snipe the planes, dodge the depth charges.</p>
+      <button class="btn" id="startBtn">▶ Dive!</button>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="gameOverOverlay">
+    <div class="card" id="gameOverCard">
+      <h2>💥 Hull Breach</h2>
+      <p id="goText"></p>
+      <button class="btn" id="againBtn">🔁 Dive Again</button>
+    </div>
+  </div>
+
+  <script src="../Public/leaderboard.js"></script>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const SURFACE = 170;           // waterline
+    const SUB_MIN_Y = SURFACE + 45;
+
+    let state = 'menu'; // menu | playing | paused | over
+    let score = 0, hull = 3, level = 1;
+    let frame = 0;
+
+    const sub = { x: W / 2, y: 360, vx: 0, vy: 0, w: 64, h: 24, hurtUntil: 0 };
+    let torpedoes = [], ships = [], planes = [], charges = [], booms = [], bubbles = [];
+    const keys = {};
+
+    function reset() {
+      score = 0; hull = 3; level = 1; frame = 0;
+      sub.x = W / 2; sub.y = 360; sub.vx = 0; sub.vy = 0; sub.hurtUntil = 0;
+      torpedoes = []; ships = []; planes = []; charges = []; booms = []; bubbles = [];
+      updateHud();
+    }
+
+    function lvl() { return 1 + Math.floor(score / 1000); }
+    function shipEvery() { return Math.max(70, 150 - level * 12); }
+    function planeEvery() { return Math.max(110, 240 - level * 20); }
+
+    // ---------- spawning ----------
+    function spawnShip() {
+      const dir = Math.random() < 0.5 ? 1 : -1;
+      const speed = (1 + Math.random() * 0.9 + level * 0.15) * dir;
+      ships.push({ x: dir > 0 ? -70 : W + 70, y: SURFACE - 8, speed, w: 64, h: 18 });
+    }
+    function spawnPlane() {
+      const dir = Math.random() < 0.5 ? 1 : -1;
+      const speed = (1.6 + Math.random() + level * 0.2) * dir;
+      planes.push({ x: dir > 0 ? -60 : W + 60, y: 55 + Math.random() * 70, speed, w: 52, h: 16, drop: 40 + Math.random() * 60 });
+    }
+
+    // ---------- update ----------
+    function update() {
+      frame++;
+      level = lvl();
+
+      // sub movement with gentle inertia
+      const acc = 0.35;
+      if (keys.ArrowLeft || keys.a) sub.vx -= acc;
+      if (keys.ArrowRight || keys.d) sub.vx += acc;
+      if (keys.ArrowUp || keys.w) sub.vy -= acc;
+      if (keys.ArrowDown || keys.s) sub.vy += acc;
+      sub.vx *= 0.93; sub.vy *= 0.93;
+      sub.x = Math.max(40, Math.min(W - 40, sub.x + sub.vx));
+      sub.y = Math.max(SUB_MIN_Y, Math.min(H - 30, sub.y + sub.vy));
+
+      if (frame % 7 === 0) bubbles.push({ x: sub.x - 34, y: sub.y - 4, r: 2 + Math.random() * 2, vy: -0.6 });
+
+      if (frame % shipEvery() === 0) spawnShip();
+      if (frame % planeEvery() === 0) spawnPlane();
+
+      ships.forEach(s => { s.x += s.speed; });
+      ships = ships.filter(s => s.x > -90 && s.x < W + 90);
+
+      planes.forEach(p => {
+        p.x += p.speed;
+        if (--p.drop <= 0 && p.x > 40 && p.x < W - 40) {
+          charges.push({ x: p.x, y: SURFACE - 30, vy: 0, fuse: SURFACE + 60 + Math.random() * (H - SURFACE - 120) });
+          p.drop = 90 + Math.random() * 90;
+          playSound('splash');
+        }
+      });
+      planes = planes.filter(p => p.x > -80 && p.x < W + 80);
+
+      charges.forEach(ch => {
+        if (ch.y < SURFACE) { ch.vy = 3; }           // falling through air
+        else { ch.vy = 1.2 + level * 0.1; }          // sinking
+        ch.y += ch.vy;
+        const nearSub = Math.hypot(ch.x - sub.x, ch.y - sub.y) < 26;
+        if (ch.y >= ch.fuse || nearSub) {
+          explode(ch.x, ch.y, 56 + level * 2, true);
+          ch.dead = true;
+        }
+      });
+      charges = charges.filter(ch => !ch.dead && ch.y < H + 20);
+
+      torpedoes.forEach(t => {
+        t.y -= t.y > SURFACE ? 4.6 : 7;              // missile mode is faster
+        if (frame % 4 === 0 && t.y > SURFACE) bubbles.push({ x: t.x, y: t.y + 10, r: 1.6, vy: -0.4 });
+        // vs ships
+        for (const s of ships) {
+          if (Math.abs(t.x - s.x) < s.w / 2 && Math.abs(t.y - s.y) < s.h) {
+            s.dead = t.dead = true;
+            const pts = 100 + Math.round(Math.abs(s.speed) * 30);
+            score += pts;
+            explode(s.x, s.y, 44, false, '+' + pts);
+            break;
+          }
+        }
+        // vs planes
+        if (!t.dead) for (const p of planes) {
+          if (Math.abs(t.x - p.x) < p.w / 2 && Math.abs(t.y - p.y) < 16) {
+            p.dead = t.dead = true;
+            score += 250;
+            explode(p.x, p.y, 40, false, '+250');
+            break;
+          }
+        }
+      });
+      torpedoes = torpedoes.filter(t => !t.dead && t.y > -20);
+      ships = ships.filter(s => !s.dead);
+      planes = planes.filter(p => !p.dead);
+
+      booms.forEach(b => { b.t++; });
+      booms = booms.filter(b => b.t < 34);
+
+      bubbles.forEach(b => { b.y += b.vy; });
+      bubbles = bubbles.filter(b => b.y > SURFACE + 4);
+
+      updateHud();
+      if (hull <= 0) gameOver();
+    }
+
+    function explode(x, y, r, hurts, label) {
+      booms.push({ x, y, r, t: 0, label });
+      playSound('boom');
+      if (hurts) {
+        const d = Math.hypot(x - sub.x, y - sub.y);
+        if (d < r + 18 && performance.now() > sub.hurtUntil) {
+          hull--;
+          sub.hurtUntil = performance.now() + 1200; // brief invulnerability
+          playSound('hit');
+        }
+      }
+    }
+
+    function fire() {
+      if (torpedoes.length >= 3) return; // max 3 in the water
+      torpedoes.push({ x: sub.x + 8, y: sub.y - 16 }); // launches by the sail, so shots go where you are
+      playSound('fire');
+    }
+
+    function gameOver() {
+      state = 'over';
+      playSound('over');
+      const best = parseInt(localStorage.getItem('deepStrikeBest') || '0', 10);
+      if (score > best) localStorage.setItem('deepStrikeBest', String(score));
+      document.getElementById('goText').textContent =
+        `Final score ${score} — level ${level}.`;
+      document.getElementById('gameOverOverlay').classList.remove('hidden');
+      ArcadeLB.offerSubmit('submarine', score, document.getElementById('gameOverCard'));
+    }
+
+    // ---------- drawing ----------
+    function draw() {
+      // sky
+      const sky = ctx.createLinearGradient(0, 0, 0, SURFACE);
+      sky.addColorStop(0, '#0d1b2e');
+      sky.addColorStop(1, '#27425f');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W, SURFACE);
+      // stars
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      for (let i = 0; i < 24; i++) ctx.fillRect((i * 83) % W, (i * 37) % (SURFACE - 40), 2, 2);
+
+      // sea
+      const sea = ctx.createLinearGradient(0, SURFACE, 0, H);
+      sea.addColorStop(0, '#0b3a5c');
+      sea.addColorStop(1, '#041826');
+      ctx.fillStyle = sea;
+      ctx.fillRect(0, SURFACE, W, H - SURFACE);
+
+      // waterline waves
+      ctx.strokeStyle = 'rgba(159, 216, 255, 0.7)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 8) {
+        const y = SURFACE + Math.sin((x + frame * 1.4) * 0.05) * 3;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      bubbles.forEach(b => {
+        ctx.strokeStyle = 'rgba(159, 232, 255, 0.5)';
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.stroke();
+      });
+
+      ships.forEach(drawShip);
+      planes.forEach(drawPlane);
+      charges.forEach(ch => {
+        ctx.fillStyle = '#39424e';
+        ctx.save(); ctx.translate(ch.x, ch.y); ctx.rotate(0.3);
+        ctx.fillRect(-5, -7, 10, 14);
+        ctx.restore();
+        ctx.fillStyle = '#ff4d4d';
+        ctx.fillRect(ch.x - 1.5, ch.y - 2, 3, 4);
+      });
+      torpedoes.forEach(t => {
+        ctx.fillStyle = t.y > SURFACE ? '#4dd9ff' : '#ffd23f';
+        ctx.fillRect(t.x - 2.5, t.y - 10, 5, 20);
+        ctx.beginPath(); ctx.arc(t.x, t.y - 10, 2.5, 0, Math.PI * 2); ctx.fill();
+      });
+
+      drawSub();
+
+      booms.forEach(b => {
+        const k = b.t / 34;
+        ctx.globalAlpha = 1 - k;
+        ctx.fillStyle = '#ffbe0b';
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r * (0.4 + k * 0.8), 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ff6b35';
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r * (0.2 + k * 0.5), 0, Math.PI * 2); ctx.fill();
+        if (b.label) {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 15px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(b.label, b.x, b.y - b.r - 6);
+        }
+        ctx.globalAlpha = 1;
+      });
+
+      if (state === 'paused') {
+        ctx.fillStyle = 'rgba(232, 234, 237, 0.9)';
+        ctx.font = 'bold 30px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⏸ PAUSED', W / 2, H / 2);
+      }
+    }
+
+    function drawShip(s) {
+      const d = Math.sign(s.speed);
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.scale(d, 1);
+      ctx.fillStyle = '#5d6873';
+      ctx.beginPath();
+      ctx.moveTo(-32, -2); ctx.lineTo(32, -2); ctx.lineTo(24, 10); ctx.lineTo(-26, 10); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#394250';
+      ctx.fillRect(-14, -12, 20, 10);
+      ctx.fillRect(2, -18, 7, 8);
+      ctx.restore();
+    }
+
+    function drawPlane(p) {
+      const d = Math.sign(p.speed);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.scale(d, 1);
+      ctx.fillStyle = '#8a98a8';
+      ctx.beginPath();                        // fuselage
+      ctx.moveTo(-24, 0); ctx.lineTo(20, -3); ctx.lineTo(26, 0); ctx.lineTo(20, 3); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#6b7a8a';
+      ctx.beginPath();                        // wing
+      ctx.moveTo(-4, -1); ctx.lineTo(-14, 9); ctx.lineTo(-7, 9); ctx.lineTo(4, -1); ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();                        // tail
+      ctx.moveTo(-20, -1); ctx.lineTo(-26, -9); ctx.lineTo(-21, -9); ctx.lineTo(-16, -1); ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawSub() {
+      const hurt = performance.now() < sub.hurtUntil && Math.floor(frame / 4) % 2 === 0;
+      ctx.save();
+      ctx.translate(sub.x, sub.y);
+      if (hurt) ctx.globalAlpha = 0.4;
+      // hull
+      const grad = ctx.createLinearGradient(0, -14, 0, 14);
+      grad.addColorStop(0, '#ffdf6b');
+      grad.addColorStop(1, '#e09a1e');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 32, 13, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#8a5c10';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      // sail
+      ctx.fillStyle = '#ff9d4d';
+      ctx.beginPath();
+      ctx.roundRect(-10, -24, 20, 13, 5);
+      ctx.fill();
+      ctx.stroke();
+      // periscope
+      ctx.strokeStyle = '#8a5c10';
+      ctx.beginPath(); ctx.moveTo(-3, -24); ctx.lineTo(-3, -31); ctx.lineTo(3, -31); ctx.stroke();
+      // portholes
+      ctx.fillStyle = '#4dd9ff';
+      [-14, 0, 14].forEach(px => { ctx.beginPath(); ctx.arc(px, 1, 3.4, 0, Math.PI * 2); ctx.fill(); });
+      // propeller splash
+      ctx.strokeStyle = 'rgba(159, 232, 255, 0.6)';
+      ctx.beginPath(); ctx.ellipse(-36, 0, 4, 8 + Math.sin(frame * 0.5) * 2, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    }
+
+    function updateHud() {
+      document.getElementById('scoreEl').textContent = score;
+      document.getElementById('hullEl').textContent = hull;
+      document.getElementById('levelEl').textContent = level;
+    }
+
+    function loop() {
+      if (state === 'playing') update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    // ---------- input ----------
+    document.addEventListener('keydown', e => {
+      keys[e.key] = true;
+      if (e.key === ' ') { e.preventDefault(); if (state === 'playing') fire(); }
+      if ((e.key === 'p' || e.key === 'P' || e.key === 'Escape') &&
+          (state === 'playing' || state === 'paused')) togglePause();
+    });
+    document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+    // touch: drag to steer, tap to fire
+    let touchStart = null;
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      touchStart = { t: performance.now() };
+    }, { passive: false });
+    canvas.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const r = canvas.getBoundingClientRect();
+      const x = (e.touches[0].clientX - r.left) * (W / r.width);
+      const y = (e.touches[0].clientY - r.top) * (H / r.height);
+      sub.vx += (x - sub.x) * 0.02;
+      sub.vy += (Math.max(SUB_MIN_Y, y) - sub.y) * 0.02;
+      if (touchStart) touchStart.moved = true;
+    }, { passive: false });
+    canvas.addEventListener('touchend', e => {
+      e.preventDefault();
+      if (touchStart && !touchStart.moved && state === 'playing') fire();
+      touchStart = null;
+    }, { passive: false });
+
+    function togglePause() {
+      if (state === 'playing') state = 'paused';
+      else if (state === 'paused') state = 'playing';
+      document.getElementById('pauseBtn').textContent = state === 'paused' ? '▶' : '⏸';
+    }
+    document.getElementById('pauseBtn').addEventListener('click', togglePause);
+    document.getElementById('startBtn').addEventListener('click', () => {
+      document.getElementById('startOverlay').classList.add('hidden');
+      reset();
+      state = 'playing';
+    });
+    document.getElementById('againBtn').addEventListener('click', () => {
+      document.getElementById('gameOverOverlay').classList.add('hidden');
+      reset();
+      state = 'playing';
+    });
+
+    // ---------- sound ----------
+    let soundEnabled = localStorage.getItem('deepStrikeSound') !== 'off';
+    let audioCtx = null;
+    function updateSoundBtn() {
+      document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+    }
+    document.getElementById('soundBtn').addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('deepStrikeSound', soundEnabled ? 'on' : 'off');
+      updateSoundBtn();
+    });
+    updateSoundBtn();
+
+    function playSound(kind) {
+      if (!soundEnabled) return;
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const t = audioCtx.currentTime;
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        const cfg = {
+          fire:   ['triangle', 320, 0.12, 0.12],
+          splash: ['sine', 500, 0.1, 0.08],
+          boom:   ['sawtooth', 110, 0.35, 0.16],
+          hit:    ['square', 80, 0.4, 0.2],
+          over:   ['sawtooth', 90, 0.8, 0.2]
+        }[kind] || ['sine', 300, 0.1, 0.1];
+        o.type = cfg[0];
+        o.frequency.setValueAtTime(cfg[1], t);
+        if (kind === 'boom' || kind === 'hit' || kind === 'over')
+          o.frequency.exponentialRampToValueAtTime(35, t + cfg[2]);
+        g.gain.setValueAtTime(cfg[3], t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + cfg[2]);
+        o.start(t); o.stop(t + cfg[2]);
+      } catch (e) { /* audio blocked */ }
+    }
+
+    updateHud();
+    loop();
+  </script>
+</body>
+</html>

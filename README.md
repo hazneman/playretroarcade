@@ -16,6 +16,7 @@ Quick, clean, and kid-friendly retro games. Pick a classic and play instantly �
 | 🚢 **Battleship (Amiral Battı)** | The classic hidden-fleet guessing game vs an AI admiral |
 | 🧱 **Brick Breaker** | Smash the neon wall — with a shared online leaderboard |
 | ⚽ **Penalty Shootout** | Beat the diving keeper — corners score big |
+| 🤿 **Deep Strike** | Submarine vs convoys and patrol planes — dodge the depth charges |
 | 🔢 **2048** | The beloved sliding-tile puzzle ([open source, MIT](https://github.com/gabrielecirulli/2048) by Gabriele Cirulli) |
 | 🔥 **A Dark Room** | Minimalist text adventure ([open source, MPL-2.0](https://github.com/doublespeakgames/adarkroom) by Doublespeak Games) |
 
